@@ -33,7 +33,7 @@ static void ausrc_destructor(void *arg)
 {
 	struct ausrc_st *st = arg;
 
-	info("aaudio: recorder: closing stream\n");
+	info_bs("aaudio: recorder: closing stream\n");
 	aaudio_close_stream(st->recorderStream);
 
 	mem_deref(st->sampv);
@@ -89,15 +89,15 @@ static void* restart_recorder_stream(void* data) {
 
 	result = open_recorder_stream(st);
 	if (result != AAUDIO_OK) {
-		warning("aaudio: recorder: failed to open stream\n");
+		warning_bs("aaudio: recorder: failed to open stream\n");
 		return NULL;
 	}
 
 	result = AAudioStream_requestStart(st->recorderStream);
 	if (result != AAUDIO_OK)
-		warning("aaudio: recorder: failed to start stream\n");
+		warning_bs("aaudio: recorder: failed to start stream\n");
 	else
-		info("aaudio: recorder: stream started\n");
+		info_bs("aaudio: recorder: stream started\n");
 
 	pthread_exit(NULL);
 }
@@ -112,15 +112,15 @@ static void errorCallback(AAudioStream *stream, void *userData,
 
 	aaudio_stream_state_t streamState = AAudioStream_getState(stream);
 	if (streamState == AAUDIO_STREAM_STATE_DISCONNECTED) {
-		info("aaudio: recorder: stream disconnected\n");
+		info_bs("aaudio: recorder: stream disconnected\n");
 		res = pthread_create(&thread_id, NULL,
 				     restart_recorder_stream, (void *)st);
 		if (res) {
-			warning("aaudio: recorder: error creating thread: "
+			warning_bs("aaudio: recorder: error creating thread: "
 				"%d\n",	res);
 			return;
 		}
-		info("aaudio: recorder: created new thread (%u)\n",
+		info_bs("aaudio: recorder: created new thread (%u)\n",
 		     thread_id);
 	}
 }
@@ -133,7 +133,7 @@ static int open_recorder_stream(struct ausrc_st *st) {
 
 	result = AAudio_createStreamBuilder(&builder);
 	if (result != AAUDIO_OK) {
-		warning("aaudio: recorder: failed to create stream builder: "
+		warning_bs("aaudio: recorder: failed to create stream builder: "
 			"error %s\n", AAudio_convertResultToText(result));
 		return result;
 	}
@@ -156,12 +156,12 @@ static int open_recorder_stream(struct ausrc_st *st) {
 
 	result = AAudioStreamBuilder_openStream(builder, &st->recorderStream);
 	if (result != AAUDIO_OK) {
-		warning("aaudio: recorder: failed to open stream: error %s\n",
+		warning_bs("aaudio: recorder: failed to open stream: error %s\n",
 			AAudio_convertResultToText(result));
 		return result;
 	}
 
-	info("aaudio: recorder: opened stream with direction %d, "
+	info_bs("aaudio: recorder: opened stream with direction %d, "
 	     "sharing mode %d, sample rate %d, format %d, sessionId %d, "
 	     "input preset %d, usage %d, performance mode %d\n",
 	     AAudioStream_getDirection(st->recorderStream),
@@ -181,7 +181,7 @@ static int open_recorder_stream(struct ausrc_st *st) {
 		AAudioStream_getBufferCapacityInFrames(st->recorderStream);
 	int32_t bufferSize = AAudioStream_getBufferSizeInFrames(
 		st->recorderStream);
-	info("aaudio: recorder: buffer capacity: %d, buffer size: %d\n",
+	info_bs("aaudio: recorder: buffer capacity: %d, buffer size: %d\n",
 	     bufferCapacity,  bufferSize);
 
 	return AAUDIO_OK;
@@ -198,17 +198,17 @@ int aaudio_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if (!stp || !as || !prm || !rh)
 		return EINVAL;
 
-	info ("aaudio: recorder: opening recorder(%u Hz, %d channels,"
+	info_bs("aaudio: recorder: opening recorder(%u Hz, %d channels,"
 	      "device '%s')\n", prm->srate, prm->ch, dev);
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("aaudio: recorder: unsupported sample format (%s)\n",
+		warning_bs("aaudio: recorder: unsupported sample format (%s)\n",
 			aufmt_name((enum aufmt)prm->fmt));
 		return ENOTSUP;
 	}
 
 	if (prm->ch != 1) {
-		warning("aaudio: recorder: unsupported channel count (%u)\n",
+		warning_bs("aaudio: recorder: unsupported channel count (%u)\n",
 			prm->ch);
 		return ENOTSUP;
 	}
@@ -238,14 +238,14 @@ int aaudio_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 
 	result = AAudioStream_requestStart(st->recorderStream);
 	if (result != AAUDIO_OK) {
-		warning("aaudio: recorder: failed to start stream\n");
+		warning_bs("aaudio: recorder: failed to start stream\n");
 		goto out;
 	}
 
 	module_event("aaudio", "recorder sessionid", NULL, NULL, "%d",
 		     AAudioStream_getSessionId(st->recorderStream));
 
-	info("aaudio: recorder: stream started\n");
+	info_bs("aaudio: recorder: stream started\n");
 
   out:
 	if (result != AAUDIO_OK) {

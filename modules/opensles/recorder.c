@@ -103,7 +103,7 @@ static int createAudioRecorder(struct ausrc_st *st, struct ausrc_prm *prm)
 						 &audioSrc,
 						 &audioSnk, 1, id, req);
 	if (SL_RESULT_SUCCESS != r) {
-		warning("opensles: CreateAudioRecorder failed: r = %d\n", r);
+		warning_bs("opensles: CreateAudioRecorder failed: r = %d\n", r);
 		return ENODEV;
 	}
 
@@ -169,12 +169,12 @@ int opensles_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		return EINVAL;
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("opensles: record: unsupported sample format (%s)\n",
+		warning_bs("opensles: record: unsupported sample format (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}
 
-	debug("opensles: opening recorder %uHz, %uchannels\n",
+	debug_bs("opensles: opening recorder %uHz, %uchannels\n",
 			prm->srate, prm->ch);
 
 	st = mem_zalloc(sizeof(*st), ausrc_destructor);
@@ -201,7 +201,7 @@ int opensles_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 
 	err = startRecording(st);
 	if (err) {
-		warning("opensles: failed to start recorder\n");
+		warning_bs("opensles: failed to start recorder\n");
 		goto out;
 	}
 

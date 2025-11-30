@@ -118,14 +118,14 @@ static void registry_event_global(void *arg, uint32_t id,
 	media_class = spa_dict_lookup(props, PW_KEY_MEDIA_CLASS);
 	node_name = spa_dict_lookup(props, PW_KEY_NODE_NAME);
 	if (!str_cmp(media_class, "Audio/Source") && str_isset(node_name)) {
-		debug("pipewire: adding (%u) %s: \"%s\"\n",
+		debug_bs("pipewire: adding (%u) %s: \"%s\"\n",
 		      id, media_class, node_name);
 		mediadev_add(&pw->ausrc->dev_list, node_name);
 		(void)pw_dev_add(id, node_name);
 	}
 
 	if (!str_cmp(media_class, "Audio/Sink") && str_isset(node_name)) {
-		debug("pipewire: adding (%u) %s: \"%s\"\n",
+		debug_bs("pipewire: adding (%u) %s: \"%s\"\n",
 		      id, media_class, node_name);
 		mediadev_add(&pw->auplay->dev_list, node_name);
 		(void)pw_dev_add(id, node_name);
@@ -201,14 +201,14 @@ static struct pw_stat *pw_stat_alloc(void)
 		goto errout;
 
 	pw_thread_loop_unlock(pw->loop);
-	info("pipewire: connected to pipewire\n");
+	info_bs("pipewire: connected to pipewire\n");
 	return pw;
 
 errout:
 	if (pw->loop)
 		pw_thread_loop_unlock(pw->loop);
 
-	warning("pipewire: could not connect to pipewire\n");
+	warning_bs("pipewire: could not connect to pipewire\n");
 	mem_deref(pw);
 	return NULL;
 }
@@ -271,7 +271,7 @@ static int module_init(void)
 
 	pw_init(NULL, NULL);
 	setvbuf(stderr, NULL, _IONBF, 0);
-	info("pipewire: headers %s library %s \n",
+	info_bs("pipewire: headers %s library %s \n",
 	     pw_get_headers_version(), pw_get_library_version());
 
 	d = pw_stat_alloc();

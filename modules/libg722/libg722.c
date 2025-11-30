@@ -198,7 +198,7 @@ static struct aucodec g722 = {
 
 static int module_init(void)
 {
-	info("libg722: using libg722 library\n");
+	info_bs("libg722: using libg722 library\n");
 
 	aucodec_register(baresip_aucodecl(), &g722);
 	return 0;

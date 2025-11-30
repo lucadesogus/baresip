@@ -36,7 +36,7 @@ static int handle_put_sdp(struct session *sess, const struct http_msg *msg)
 	struct session_description sd = {-1, NULL};
 	int err = 0;
 
-	info("demo: handle PUT sdp: content is '%r/%r'\n",
+	info_bs("demo: handle PUT sdp: content is '%r/%r'\n",
 	     &msg->ctyp.type, &msg->ctyp.subtype);
 
 	err = session_description_decode(&sd, msg->mb);
@@ -45,7 +45,7 @@ static int handle_put_sdp(struct session *sess, const struct http_msg *msg)
 
 	err = peerconnection_set_remote_descr(sess->pc, &sd);
 	if (err) {
-		warning("demo: set remote descr error"
+		warning_bs("demo: set remote descr error"
 			" (%m)\n", err);
 		goto out;
 	}
@@ -54,7 +54,7 @@ static int handle_put_sdp(struct session *sess, const struct http_msg *msg)
 
 		err = peerconnection_start_ice(sess->pc);
 		if (err) {
-			warning("demo: failed to start ice"
+			warning_bs("demo: failed to start ice"
 				" (%m)\n", err);
 			goto out;
 		}
@@ -80,7 +80,7 @@ static void handle_get(struct http_conn *conn, const struct pl *path)
 
 	err = conf_loadfile(&mb, buf);
 	if (err) {
-		info("demo: not found: %s\n", buf);
+		info_bs("demo: not found: %s\n", buf);
 		http_ereply(conn, 404, "Not Found");
 		goto out;
 	}
@@ -88,7 +88,7 @@ static void handle_get(struct http_conn *conn, const struct pl *path)
 	ext = fs_file_extension(buf);
 	mime = http_extension_to_mimetype(ext);
 
-	info("demo: loaded file '%s', %zu bytes (%s)\n", buf, mb->end, mime);
+	info_bs("demo: loaded file '%s', %zu bytes (%s)\n", buf, mb->end, mime);
 
 	http_reply(conn, 200, "OK",
 		   "Content-Type: %s;charset=UTF-8\r\n"
@@ -115,7 +115,7 @@ static void http_req_handler(struct http_conn *conn,
 	int err = 0;
 	(void)arg;
 
-	info("demo: request: met=%r, path=%r, prm=%r\n",
+	info_bs("demo: request: met=%r, path=%r, prm=%r\n",
 	     &msg->met, &msg->path, &msg->prm);
 
 	if (msg->path.l > 1)
@@ -210,7 +210,7 @@ static void http_req_handler(struct http_conn *conn,
 						mbuf_get_left(msg->mb),
 						MAX_DEPTH);
 			if (err) {
-				warning("demo: candidate:"
+				warning_bs("demo: candidate:"
 					" could not decode json (%m)\n", err);
 				goto out;
 			}
@@ -231,11 +231,11 @@ static void http_req_handler(struct http_conn *conn,
 	else if (0 == pl_strcasecmp(&msg->met, "DELETE")) {
 
 		/* draft-ietf-wish-whip-03 */
-		info("demo: DELETE -> disconnect\n");
+		info_bs("demo: DELETE -> disconnect\n");
 
 		sess = session_lookup(&demo.sessl, msg);
 		if (sess) {
-			info("demo: closing session %s\n", sess->id);
+			info_bs("demo: closing session %s\n", sess->id);
 			session_close(sess, 0);
 
 			http_reply(conn, 200, "OK",
@@ -256,7 +256,7 @@ static void http_req_handler(struct http_conn *conn,
 				   "\r\n");
 	}
 	else {
-		warning("demo: not found: %r %r\n", &msg->met, &msg->path);
+		warning_bs("demo: not found: %r %r\n", &msg->met, &msg->path);
 		http_ereply(conn, 404, "Not Found");
 	}
 
@@ -278,13 +278,13 @@ int demo_init(const char *server_cert, const char *www_path,
 
 	if (ice_server) {
 
-		info("demo: using ICE server: %s\n", ice_server);
+		info_bs("demo: using ICE server: %s\n", ice_server);
 
 		pl_set_str(&srv, ice_server);
 
 		err = stunuri_decode(&pc_config.ice_server, &srv);
 		if (err) {
-			warning("demo: invalid iceserver '%r' (%m)\n",
+			warning_bs("demo: invalid iceserver '%r' (%m)\n",
 				&srv, err);
 			return err;
 		}
@@ -295,13 +295,13 @@ int demo_init(const char *server_cert, const char *www_path,
 
 	demo.mnat = mnat_find(baresip_mnatl(), "ice");
 	if (!demo.mnat) {
-		warning("demo: medianat 'ice' not found\n");
+		warning_bs("demo: medianat 'ice' not found\n");
 		return ENOENT;
 	}
 
 	demo.menc = menc_find(baresip_mencl(), "dtls_srtp");
 	if (!demo.menc) {
-		warning("demo: mediaenc 'dtls-srtp' not found\n");
+		warning_bs("demo: mediaenc 'dtls-srtp' not found\n");
 		return ENOENT;
 	}
 
@@ -319,13 +319,13 @@ int demo_init(const char *server_cert, const char *www_path,
 
 	demo.www_path = www_path;
 
-	info("demo: listening on:\n");
-	info("    http://127.0.0.1:%u/\n", sa_port(&laddr));
+	info_bs("demo: listening on:\n");
+	info_bs("    http://127.0.0.1:%u/\n", sa_port(&laddr));
 
 	if (!tls)
 		return 0;
 
-	info("    https://%j:%u/\n",
+	info_bs("    https://%j:%u/\n",
 		net_laddr_af(baresip_network(), AF_INET), sa_port(&laddrs));
 
 	return 0;

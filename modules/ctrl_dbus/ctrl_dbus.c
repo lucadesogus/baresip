@@ -137,7 +137,7 @@ static void command_handler(void *data, void *arg)
 	}
 
 	if (err)
-		warning("ctrl_dbus: error processing command \"%s\" (%m)\n",
+		warning_bs("ctrl_dbus: error processing command \"%s\" (%m)\n",
 			st->command, err);
 
 	mbuf_set_pos(st->mb, 0);
@@ -214,7 +214,7 @@ on_handle_invoke(DBusBaresip *interface,
 	if (!err && st->mb) {
 		err = mbuf_strdup(st->mb, &response, mbuf_get_left(st->mb));
 		if (err)
-			warning("ctrl_dbus: could not allocate response (%m)",
+			warning_bs("ctrl_dbus: could not allocate response (%m)",
 					err);
 
 		dbus_baresip_complete_invoke(interface, invocation, response);
@@ -260,7 +260,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 	class = odict_string(od, "class");
 	err = json_encode_odict(&pf, od);
 	if (err) {
-		warning("ctrl_dbus: failed to encode json (%m)\n", err);
+		warning_bs("ctrl_dbus: failed to encode json (%m)\n", err);
 		goto out;
 	}
 
@@ -299,7 +299,7 @@ static void message_handler(struct ua *ua, const struct pl *peer,
 	}
 
 	if (err) {
-		warning("ctrl_dbus: failed to convert SIP message (%m)\n",
+		warning_bs("ctrl_dbus: failed to convert SIP message (%m)\n",
 				err);
 		goto out;
 	}
@@ -413,11 +413,11 @@ on_name_acquired(GDBusConnection *connection, const gchar *name, gpointer arg)
 	if (!g_dbus_interface_skeleton_export(
 				G_DBUS_INTERFACE_SKELETON (st->interface),
 				connection, "/baresip", &error)) {
-		warning("ctrl_dbus: dbus interface could not be exported\n");
+		warning_bs("ctrl_dbus: dbus interface could not be exported\n");
 		g_error_free (error);
 	}
 
-	info("ctrl_dbus: dbus interface %s exported\n", name);
+	info_bs("ctrl_dbus: dbus interface %s exported\n", name);
 
 	modev = mem_zalloc(sizeof(*modev), modev_destructor);
 	if (!modev)
@@ -438,7 +438,7 @@ static void on_bus_aquired (GDBusConnection *connection,
 {
 	(void) connection;
 	(void) arg;
-	info("ctrl_dbus: bus aquired name=%s\n", name);
+	info_bs("ctrl_dbus: bus aquired name=%s\n", name);
 }
 
 
@@ -447,9 +447,9 @@ static void on_name_lost (GDBusConnection *connection,
                                       gpointer         arg)
 {
 	struct ctrl_st *st = arg;
-	info("ctrl_dbus: dbus name lost %s\n", name);
+	info_bs("ctrl_dbus: dbus name lost %s\n", name);
 	if (!st->interface)
-		warning("ctrl_dbus: could not export dbus interface\n");
+		warning_bs("ctrl_dbus: could not export dbus interface\n");
 }
 
 
@@ -481,13 +481,13 @@ static int ctrl_init(void)
 			on_name_acquired, on_name_lost, m_st, NULL);
 
 	if (!m_st->bus_owner) {
-		warning("ctrl_dbus: could not acquire %s on the %r-bus\n",
+		warning_bs("ctrl_dbus: could not acquire %s on the %r-bus\n",
 				name, &use);
 		err = EINVAL;
 		goto outerr;
 	}
 
-	info("ctrl_dbus: name %s acquired on the %r-bus bus_owner=%u\n",
+	info_bs("ctrl_dbus: name %s acquired on the %r-bus bus_owner=%u\n",
 			name, &use, m_st->bus_owner);
 	return 0;
 

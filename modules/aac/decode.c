@@ -57,19 +57,19 @@ static int hdr_decode(struct au_hdr *au_data, const uint8_t *p,
 	au_data->size = bits >> ((sizeof(uint16_t) * 8) - AAC_SIZELENGTH);
 
 	if (au_data->size == 0) {
-		warning("aac: decode: invalid access unit size (zero)\n",
+		warning_bs("aac: decode: invalid access unit size (zero)\n",
 		        au_data->size);
 		return EBADMSG;
 	}
 
 	if (au_data->size > au_data_length) {
-		debug("aac: decode: fragmented access unit "
+		debug_bs("aac: decode: fragmented access unit "
 		      "(au-data-size: %zu > packet-data-size: %zu)\n",
 		      au_data->size, au_data_length);
 	}
 
 	if (au_data->size != au_data_length) {
-		debug("aac: decode: multiple access units per packet (%zu)\n",
+		debug_bs("aac: decode: multiple access units per packet (%zu)\n",
 		      au_data->count);
 	}
 
@@ -104,12 +104,12 @@ int aac_decode_update(struct audec_state **adsp, const struct aucodec *ac,
 
 	ads->dec = aacDecoder_Open(TT_MP4_RAW, 1);
 	if (!ads->dec) {
-		warning("aac: error opening decoder\n");
+		warning_bs("aac: error opening decoder\n");
 		err = ENOMEM;
 		goto out;
 	}
 
-	info("aac: decode update: fmtp='%s'\n", fmtp);
+	info_bs("aac: decode update: fmtp='%s'\n", fmtp);
 
 	err = re_regex(fmtp, str_len(fmtp), "config=[0-9a-f]+", &config);
 	if (err)
@@ -128,7 +128,7 @@ int aac_decode_update(struct audec_state **adsp, const struct aucodec *ac,
 
 	error = aacDecoder_ConfigRaw(ads->dec, &conf, &length);
 	if (error != AAC_DEC_OK) {
-		warning("aac: decode: set config error (0x%x)\n", error);
+		warning_bs("aac: decode: set config error (0x%x)\n", error);
 		err = EPROTO;
 		goto out;
 	}
@@ -138,7 +138,7 @@ int aac_decode_update(struct audec_state **adsp, const struct aucodec *ac,
 	error |= aacDecoder_SetParam(ads->dec, AAC_PCM_MAX_OUTPUT_CHANNELS,
 	                             aac_channels);
 	if (error != AAC_DEC_OK) {
-		warning("aac: decode: set param error (0x%x)\n", error);
+		warning_bs("aac: decode: set param error (0x%x)\n", error);
 		err = EINVAL;
 		goto out;
 	}
@@ -190,7 +190,7 @@ int aac_decode_frm(struct audec_state *ads, int fmt, void *sampv,
 		error =
 		    aacDecoder_Fill(ads->dec, &pBuffer, &bufferSize, &valid);
 		if (error != AAC_DEC_OK) {
-			warning("aac: aacDecoder_Fill() failed (0x%x)\n",
+			warning_bs("aac: aacDecoder_Fill() failed (0x%x)\n",
 			        error);
 			return EPROTO;
 		}
@@ -200,13 +200,13 @@ int aac_decode_frm(struct audec_state *ads, int fmt, void *sampv,
 		error =
 		    aacDecoder_DecodeFrame(ads->dec, &s16[nsamp], size, 0);
 		if (error == AAC_DEC_NOT_ENOUGH_BITS) {
-			warning("aac: aacDecoder_DecodeFrame() failed: "
+			warning_bs("aac: aacDecoder_DecodeFrame() failed: "
 			        "NOT ENOUGH BITS %u / %u\n",
 			        bufferSize, valid);
 			break;
 		}
 		if (error != AAC_DEC_OK) {
-			warning(
+			warning_bs(
 			    "aac: aacDecoder_DecodeFrame() failed (0x%x)\n",
 			    error);
 			return EPROTO;
@@ -214,18 +214,18 @@ int aac_decode_frm(struct audec_state *ads, int fmt, void *sampv,
 
 		info = aacDecoder_GetStreamInfo(ads->dec);
 		if (!info) {
-			warning("aac: decode: unable to get stream info\n");
+			warning_bs("aac: decode: unable to get stream info\n");
 			return EBADMSG;
 		}
 
 		if (info->sampleRate != (INT)aac_samplerate) {
-			warning(
+			warning_bs(
 			    "aac: decode: samplerate mismatch (%d != %d)\n",
 			    info->sampleRate, aac_samplerate);
 			return EPROTO;
 		}
 		if (info->numChannels != (INT)aac_channels) {
-			warning(
+			warning_bs(
 			    "aac: decode: channels mismatch (%d != %d)\n",
 			    info->numChannels, aac_channels);
 			return EPROTO;

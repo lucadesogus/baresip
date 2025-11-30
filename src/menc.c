@@ -21,7 +21,7 @@ void menc_register(struct list *mencl, struct menc *menc)
 
 	list_append(mencl, &menc->le, menc);
 
-	info("mediaenc: %s\n", menc->id);
+	info_bs("mediaenc: %s\n", menc->id);
 }
 
 

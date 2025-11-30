@@ -56,7 +56,7 @@ static void shared_destructor(void *arg)
 	struct shared *st = arg;
 
 	if (re_atomic_rlx(&st->run)) {
-		debug("avformat: stopping read thread\n");
+		debug_bs("avformat: stopping read thread\n");
 		re_atomic_rlx_set(&st->run, false);
 		thrd_join(st->thread, NULL);
 	}
@@ -119,14 +119,14 @@ static int read_thread(void *data)
 			ret = av_read_frame(st->ic, pkt);
 			if (ret == (int)AVERROR_EOF) {
 
-				debug("avformat: rewind stream\n");
+				debug_bs("avformat: rewind stream\n");
 
 				sys_msleep(1000);
 
 				ret = av_seek_frame(st->ic, -1, 0,
 						    AVSEEK_FLAG_BACKWARD);
 				if (ret < 0) {
-					info("avformat: seek error (%d)\n",
+					info_bs("avformat: seek error (%d)\n",
 					     ret);
 					goto out;
 				}
@@ -136,14 +136,14 @@ static int read_thread(void *data)
 				break;
 			}
 			else if (ret < 0) {
-				debug("avformat: read error (%d)\n", ret);
+				debug_bs("avformat: read error (%d)\n", ret);
 				goto out;
 			}
 
 			if (pkt->stream_index == st->au.idx) {
 
 				if (pkt->pts == AV_NOPTS_VALUE) {
-					warning("no audio pts\n");
+					warning_bs("no audio pts\n");
 				}
 
 				auts = 1000 * pkt->pts *
@@ -154,7 +154,7 @@ static int read_thread(void *data)
 			else if (pkt->stream_index == st->vid.idx) {
 
 				if (pkt->pts == AV_NOPTS_VALUE) {
-					warning("no video pts\n");
+					warning_bs("no video pts\n");
 				}
 
 				vidts = 1000 * pkt->pts *
@@ -191,7 +191,7 @@ static int open_codec(struct stream *s, const struct AVStream *strm, int i,
 	if (!codec && use_codec) {
 		codec = avcodec_find_decoder(ctx->codec_id);
 		if (!codec) {
-			info("avformat: can't find codec %i\n", ctx->codec_id);
+			info_bs("avformat: can't find codec %i\n", ctx->codec_id);
 			return ENOENT;
 		}
 	}
@@ -200,7 +200,7 @@ static int open_codec(struct stream *s, const struct AVStream *strm, int i,
 
 		ret = avcodec_open2(ctx, codec, NULL);
 		if (ret < 0) {
-			warning("avformat: error opening codec (%i)\n", ret);
+			warning_bs("avformat: error opening codec (%i)\n", ret);
 			return ENOMEM;
 		}
 	}
@@ -211,7 +211,7 @@ static int open_codec(struct stream *s, const struct AVStream *strm, int i,
 		ret = av_hwdevice_ctx_create(&hwctx, avformat_hwdevice,
 					     NULL, NULL, 0);
 		if (ret < 0) {
-			warning("avformat: error opening hw device '%s'"
+			warning_bs("avformat: error opening hw device '%s'"
 				" (%i) (%s)\n",
 			        av_hwdevice_get_type_name(avformat_hwdevice),
 				ret, av_err2str(ret));
@@ -228,12 +228,12 @@ static int open_codec(struct stream *s, const struct AVStream *strm, int i,
 	s->idx = i;
 
 	if (use_codec) {
-		debug("avformat: '%s' using decoder '%s' (%s)\n",
+		debug_bs("avformat: '%s' using decoder '%s' (%s)\n",
 		      av_get_media_type_string(ctx->codec_type),
 		      codec->name, codec->long_name);
 	}
 	else {
-		debug("avformat: '%s' using pass-through\n",
+		debug_bs("avformat: '%s' using pass-through\n",
 		      av_get_media_type_string(ctx->codec_type));
 	}
 
@@ -296,11 +296,11 @@ int avformat_shared_alloc(struct shared **shp, const char *dev,
 
 		input_format = av_find_input_format(format);
 		if (input_format) {
-			debug("avformat: using format '%s' (%s)\n",
+			debug_bs("avformat: using format '%s' (%s)\n",
 			      input_format->name, input_format->long_name);
 		}
 		else {
-			warning("avformat: input format not found (%s)\n",
+			warning_bs("avformat: input format not found (%s)\n",
 				format);
 		}
 	}
@@ -315,7 +315,7 @@ int avformat_shared_alloc(struct shared **shp, const char *dev,
 		re_snprintf(buf, sizeof(buf), "%ux%u", size->w, size->h);
 		ret = av_dict_set(&format_opts, "video_size", buf, 0);
 		if (ret != 0) {
-			warning("avformat: av_dict_set(video_size) failed"
+			warning_bs("avformat: av_dict_set(video_size) failed"
 				" (ret=%s)\n", av_err2str(ret));
 			err = ENOENT;
 			goto out;
@@ -326,7 +326,7 @@ int avformat_shared_alloc(struct shared **shp, const char *dev,
 		re_snprintf(buf, sizeof(buf), "%2.f", fps);
 		ret = av_dict_set(&format_opts, "framerate", buf, 0);
 		if (ret != 0) {
-			warning("avformat: av_dict_set(framerate) failed"
+			warning_bs("avformat: av_dict_set(framerate) failed"
 				" (ret=%s)\n", av_err2str(ret));
 			err = ENOENT;
 			goto out;
@@ -336,7 +336,7 @@ int avformat_shared_alloc(struct shared **shp, const char *dev,
 	if (video && device) {
 		ret = av_dict_set(&format_opts, "camera_index", device, 0);
 		if (ret != 0) {
-			warning("avformat: av_dict_set(camera_index) failed"
+			warning_bs("avformat: av_dict_set(camera_index) failed"
 				" (ret=%s)\n", av_err2str(ret));
 			err = ENOENT;
 			goto out;
@@ -347,7 +347,7 @@ int avformat_shared_alloc(struct shared **shp, const char *dev,
 		ret = av_dict_set(&format_opts, "input_format",
                                 avformat_inputformat, 0);
 		if (ret != 0) {
-			warning("avformat: av_dict_set(input_format) failed"
+			warning_bs("avformat: av_dict_set(input_format) failed"
 					" (ret=%s)\n", av_err2str(ret));
 			err = ENOENT;
 			goto out;
@@ -368,7 +368,7 @@ int avformat_shared_alloc(struct shared **shp, const char *dev,
 		}
 
 		if (ret != 0) {
-			warning("avformat: av_dict_set(rtsp_transport) failed"
+			warning_bs("avformat: av_dict_set(rtsp_transport) failed"
 				" (ret=%s)\n", av_err2str(ret));
 			err = ENOENT;
 			goto out;
@@ -377,7 +377,7 @@ int avformat_shared_alloc(struct shared **shp, const char *dev,
 
 	ret = avformat_open_input(&st->ic, dev, input_format, &format_opts);
 	if (ret < 0) {
-		warning("avformat: avformat_open_input(%s) failed (ret=%s)\n",
+		warning_bs("avformat: avformat_open_input(%s) failed (ret=%s)\n",
 			dev, av_err2str(ret));
 		err = ENOENT;
 		goto out;
@@ -396,7 +396,7 @@ int avformat_shared_alloc(struct shared **shp, const char *dev,
 
 		ret = avcodec_parameters_to_context(ctx, strm->codecpar);
 		if (ret < 0) {
-			warning("avformat: avcodec_parameters_to_context\n");
+			warning_bs("avformat: avcodec_parameters_to_context\n");
 			err = EPROTO;
 			goto out;
 		}
@@ -494,7 +494,7 @@ static int module_init(void)
 	if (str_isset(hwaccel)) {
 		avformat_hwdevice = av_hwdevice_find_type_by_name(hwaccel);
 		if (avformat_hwdevice == AV_HWDEVICE_TYPE_NONE) {
-			warning("avformat: hwdevice not found (%s)\n",
+			warning_bs("avformat: hwdevice not found (%s)\n",
                                         hwaccel);
 		}
 	}
@@ -511,7 +511,7 @@ static int module_init(void)
 	if (str_isset(decoder)) {
 		avformat_decoder = avcodec_find_decoder_by_name(decoder);
 		if (!avformat_decoder) {
-			warning("avformat: decoder not found (%s)\n", decoder);
+			warning_bs("avformat: decoder not found (%s)\n", decoder);
 			return ENOENT;
 		}
 	}

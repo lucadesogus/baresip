@@ -763,20 +763,20 @@ void log_enable_color(bool enable);
 #ifdef HAVE_RE_ARG
 #define loglv(level, fmt, ...)                                                \
 	_loglv(true, (level), (fmt), RE_VA_ARGS(__VA_ARGS__))
-#define debug(fmt, ...) _debug(true, (fmt), RE_VA_ARGS(__VA_ARGS__))
-#define info(fmt, ...) _info(true, (fmt), RE_VA_ARGS(__VA_ARGS__))
-#define warning(fmt, ...) _warning(true, (fmt), RE_VA_ARGS(__VA_ARGS__))
+#define debug_bs(fmt, ...) _debug_bs(true, (fmt), RE_VA_ARGS(__VA_ARGS__))
+#define info_bs(fmt, ...) _info_bs(true, (fmt), RE_VA_ARGS(__VA_ARGS__))
+#define warning_bs(fmt, ...) _warning_bs(true, (fmt), RE_VA_ARGS(__VA_ARGS__))
 #else
 #define loglv _loglv
-#define debug(...) _debug(false, __VA_ARGS__)
-#define info(...) _info(false, __VA_ARGS__)
-#define warning(...) _warning(false, __VA_ARGS__)
+#define debug_bs(...) _debug_bs(false, __VA_ARGS__)
+#define info_bs(...) _info_bs(false, __VA_ARGS__)
+#define warning_bs(...) _warning_bs(false, __VA_ARGS__)
 #endif
 
 void _loglv(bool safe, enum log_level level, const char *fmt, ...);
-void _debug(bool safe, const char *fmt, ...);
-void _info(bool safe, const char *fmt, ...);
-void _warning(bool safe, const char *fmt, ...);
+void _debug_bs(bool safe, const char *fmt, ...);
+void _info_bs(bool safe, const char *fmt, ...);
+void _warning_bs(bool safe, const char *fmt, ...);
 
 /*
  * Menc - Media encryption (for RTP)

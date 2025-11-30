@@ -34,7 +34,7 @@ static void ausrc_destructor(void *arg)
 
 	/* Wait for termination of other thread */
 	if (re_atomic_rlx(&st->run)) {
-		debug("alsa: stopping recording thread (%s)\n", st->device);
+		debug_bs("alsa: stopping recording thread (%s)\n", st->device);
 		re_atomic_rlx_set(&st->run, false);
 		thrd_join(st->thread, NULL);
 	}
@@ -59,7 +59,7 @@ static int read_thread(void *arg)
 	/* Start */
 	err = snd_pcm_start(st->read);
 	if (err) {
-		warning("alsa: could not start ausrc device '%s' (%s)\n",
+		warning_bs("alsa: could not start ausrc device '%s' (%s)\n",
 			st->device, snd_strerror(err));
 		goto out;
 	}
@@ -130,14 +130,14 @@ int alsa_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 
 	err = snd_pcm_open(&st->read, st->device, SND_PCM_STREAM_CAPTURE, 0);
 	if (err < 0) {
-		warning("alsa: could not open ausrc device '%s' (%s)\n",
+		warning_bs("alsa: could not open ausrc device '%s' (%s)\n",
 			st->device, snd_strerror(err));
 		goto out;
 	}
 
 	pcmfmt = aufmt_to_alsaformat(prm->fmt);
 	if (pcmfmt == SND_PCM_FORMAT_UNKNOWN) {
-		warning("alsa: unknown sample format '%s'\n",
+		warning_bs("alsa: unknown sample format '%s'\n",
 			aufmt_name(prm->fmt));
 		err = EINVAL;
 		goto out;
@@ -146,7 +146,7 @@ int alsa_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	err = alsa_reset(st->read, st->prm.srate, st->prm.ch, num_frames,
 			 pcmfmt);
 	if (err) {
-		warning("alsa: could not reset source '%s' (%s)\n",
+		warning_bs("alsa: could not reset source '%s' (%s)\n",
 			st->device, snd_strerror(err));
 		goto out;
 	}
@@ -158,7 +158,7 @@ int alsa_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		goto out;
 	}
 
-	debug("alsa: recording started (%s) format=%s\n",
+	debug_bs("alsa: recording started (%s) format=%s\n",
 	      st->device, aufmt_name(prm->fmt));
 
  out:

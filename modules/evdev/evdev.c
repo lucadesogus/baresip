@@ -182,7 +182,7 @@ static void evdev_fd_handler(int flags, void *arg)
 
 	/* This might happen if you unplug a USB device */
 	if (flags & FD_EXCEPT) {
-		warning("evdev: fd handler: FD_EXCEPT - device unplugged?\n");
+		warning_bs("evdev: fd handler: FD_EXCEPT - device unplugged?\n");
 		evdev_close(st);
 		return;
 	}
@@ -190,7 +190,7 @@ static void evdev_fd_handler(int flags, void *arg)
 	n = read(st->fd, evv, sizeof(evv));
 
 	if (n < (int) sizeof(struct input_event)) {
-		warning("evdev: event: short read (%m)\n", errno);
+		warning_bs("evdev: event: short read (%m)\n", errno);
 		return;
 	}
 
@@ -208,7 +208,7 @@ static void evdev_fd_handler(int flags, void *arg)
 		if (1 == ev->value) {
 			const int ascii = code2ascii(modifier, ev->code);
 			if (-1 == ascii) {
-				warning("evdev: unhandled key code %u\n",
+				warning_bs("evdev: unhandled key code %u\n",
 					ev->code);
 			}
 			else
@@ -238,7 +238,7 @@ static int evdev_alloc(struct ui_st **stp, const char *dev)
 	st->fd	= open(dev, O_RDWR);
 	if (st->fd < 0) {
 		err = errno;
-		warning("evdev: failed to open device '%s' (%m)\n", dev, err);
+		warning_bs("evdev: failed to open device '%s' (%m)\n", dev, err);
 		goto out;
 	}
 
@@ -246,7 +246,7 @@ static int evdev_alloc(struct ui_st **stp, const char *dev)
 	/* grab the event device to prevent it from propagating
 	   its events to the regular keyboard driver            */
 	if (-1 == ioctl(st->fd, EVIOCGRAB, (void *)1)) {
-		warning("evdev: ioctl EVIOCGRAB on %s (%m)\n", dev, errno);
+		warning_bs("evdev: ioctl EVIOCGRAB on %s (%m)\n", dev, errno);
 	}
 #endif
 
@@ -282,7 +282,7 @@ static int buzz(const struct ui_st *st, int value)
 
 	n = write(st->fd, &ev, sizeof(ev));
 	if (n < 0) {
-		warning("evdev: output: write fd=%d (%m)\n", st->fd, errno);
+		warning_bs("evdev: output: write fd=%d (%m)\n", st->fd, errno);
 	}
 
 	return errno;

@@ -112,12 +112,12 @@ static int module_init(void)
 
 	avcodec_h264enc = avcodec_find_encoder_by_name(h264enc);
 	if (!avcodec_h264enc) {
-		warning("avcodec: h264 encoder not found (%s)\n", h264enc);
+		warning_bs("avcodec: h264 encoder not found (%s)\n", h264enc);
 	}
 
 	avcodec_h264dec = avcodec_find_decoder_by_name(h264dec);
 	if (!avcodec_h264dec) {
-		warning("avcodec: h264 decoder not found (%s)\n", h264dec);
+		warning_bs("avcodec: h264 decoder not found (%s)\n", h264dec);
 	}
 
 	avcodec_h265enc = avcodec_find_encoder_by_name(h265enc);
@@ -132,20 +132,20 @@ static int module_init(void)
 		vidcodec_register(vidcodecl, &h265);
 
 	if (avcodec_h264enc) {
-		info("avcodec: using H.264 encoder '%s' -- %s\n",
+		info_bs("avcodec: using H.264 encoder '%s' -- %s\n",
 		     avcodec_h264enc->name, avcodec_h264enc->long_name);
 	}
 	if (avcodec_h264dec) {
-		info("avcodec: using H.264 decoder '%s' -- %s\n",
+		info_bs("avcodec: using H.264 decoder '%s' -- %s\n",
 		     avcodec_h264dec->name, avcodec_h264dec->long_name);
 	}
 
 	if (avcodec_h265enc) {
-		info("avcodec: using H.265 encoder '%s' -- %s\n",
+		info_bs("avcodec: using H.265 encoder '%s' -- %s\n",
 		     avcodec_h265enc->name, avcodec_h265enc->long_name);
 	}
 	if (avcodec_h265dec) {
-		info("avcodec: using H.265 decoder '%s' -- %s\n",
+		info_bs("avcodec: using H.265 decoder '%s' -- %s\n",
 		     avcodec_h265dec->name, avcodec_h265dec->long_name);
 	}
 
@@ -156,20 +156,20 @@ static int module_init(void)
 		enum AVHWDeviceType type;
 		int ret;
 
-		info("avcodec: enable hwaccel using '%s'\n", hwaccel);
+		info_bs("avcodec: enable hwaccel using '%s'\n", hwaccel);
 
 		type = av_hwdevice_find_type_by_name(hwaccel);
 		if (type == AV_HWDEVICE_TYPE_NONE) {
 
-			warning("avcodec: Device type"
+			warning_bs("avcodec: Device type"
 				" '%s' is not supported.\n", hwaccel);
 
-			info("Available device types:\n");
+			info_bs("Available device types:\n");
 			while ((type = av_hwdevice_iterate_types(type))
 				!= AV_HWDEVICE_TYPE_NONE)
-				info("    %s\n",
+				info_bs("    %s\n",
 				     av_hwdevice_get_type_name(type));
-			info("\n");
+			info_bs("\n");
 
 			return ENOSYS;
 		}
@@ -179,7 +179,7 @@ static int module_init(void)
 
 			config = avcodec_get_hw_config(avcodec_h264dec, i);
 			if (!config) {
-				warning("avcodec: Decoder does not"
+				warning_bs("avcodec: Decoder does not"
 					" support device type %s.\n",
 					av_hwdevice_get_type_name(type));
 				return ENOSYS;
@@ -192,7 +192,7 @@ static int module_init(void)
 
 				avcodec_hw_pix_fmt = config->pix_fmt;
 
-				info("avcodec: decode: using hardware"
+				info_bs("avcodec: decode: using hardware"
 				     " pixel format '%s'\n",
 				     av_get_pix_fmt_name(config->pix_fmt));
 				break;
@@ -202,7 +202,7 @@ static int module_init(void)
 		ret = av_hwdevice_ctx_create(&avcodec_hw_device_ctx, type,
 					     NULL, NULL, 0);
 		if (ret < 0) {
-			warning("avcodec: Failed to create HW device (%s)\n",
+			warning_bs("avcodec: Failed to create HW device (%s)\n",
 				av_err2str(ret));
 			return ENOTSUP;
 		}

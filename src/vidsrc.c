@@ -48,7 +48,7 @@ int vidsrc_register(struct vidsrc **vsp, struct list *vidsrcl,
 	vs->alloch  = alloch;
 	vs->updateh = updateh;
 
-	info("vidsrc: %s\n", name);
+	info_bs("vidsrc: %s\n", name);
 
 	*vsp = vs;
 

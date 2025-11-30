@@ -31,7 +31,7 @@ static void signal_handler(int sig)
 
 	term = true;
 
-	info("terminated by signal %d\n", sig);
+	info_bs("terminated by signal %d\n", sig);
 
 	ua_stop_all(false);
 }
@@ -40,7 +40,7 @@ static void signal_handler(int sig)
 static void ua_exit_handler(void *arg)
 {
 	(void)arg;
-	debug("ua exited -- stopping main runloop\n");
+	debug_bs("ua exited -- stopping main runloop\n");
 
 	/* The main run-loop can be stopped now */
 	re_cancel();
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 
 		case 'e':
 			if (execmdc >= RE_ARRAY_SIZE(execmdv)) {
-				warning("max %zu commands\n",
+				warning_bs("max %zu commands\n",
 					RE_ARRAY_SIZE(execmdv));
 				err = EINVAL;
 				goto out;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 
 		case 'm':
 			if (modc >= RE_ARRAY_SIZE(modv)) {
-				warning("max %zu modules\n",
+				warning_bs("max %zu modules\n",
 					RE_ARRAY_SIZE(modv));
 				err = EINVAL;
 				goto out;
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
 	dbg_init(dbg_level, dbg_flags);
 	err = conf_configure();
 	if (err) {
-		warning("main: configure failed: %m\n", err);
+		warning_bs("main: configure failed: %m\n", err);
 		goto out;
 	}
 
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 	*/
 	err = baresip_init(conf_config());
 	if (err) {
-		warning("main: baresip init failed (%m)\n", err);
+		warning_bs("main: baresip init failed (%m)\n", err);
 		goto out;
 	}
 
@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
 		when the UA is available */
 	if (modc) {
 
-		info("pre-loading modules: %zu\n", modc);
+		info_bs("pre-loading modules: %zu\n", modc);
 
 		for (i=0; i<modc; i++) {
 
@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
 		log_enable_stdout(false);
 	}
 
-	info("baresip is ready.\n");
+	info_bs("baresip is ready.\n");
 
 	/* Execute any commands from input arguments */
 	for (i=0; i<execmdc; i++) {
@@ -346,7 +346,7 @@ int main(int argc, char *argv[])
 	/* NOTE: modules must be unloaded after all application
 	 *       activity has stopped.
 	 */
-	debug("main: unloading modules..\n");
+	debug_bs("main: unloading modules..\n");
 	mod_close();
 
 	re_thread_async_close();

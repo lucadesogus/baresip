@@ -125,7 +125,7 @@ int coreaudio_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 	status = AudioQueueNewOutput(&fmt, play_handler, st, NULL,
 				     kCFRunLoopCommonModes, 0, &st->queue);
 	if (status) {
-		warning("coreaudio: AudioQueueNewOutput error: %i\n", status);
+		warning_bs("coreaudio: AudioQueueNewOutput error: %i\n", status);
 		err = ENODEV;
 		goto out;
 	}
@@ -134,14 +134,14 @@ int coreaudio_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 
 		CFStringRef uid;
 
-		info("coreaudio: player: using device '%s'\n", device);
+		info_bs("coreaudio: player: using device '%s'\n", device);
 
 		err = coreaudio_enum_devices(device, NULL, &uid, false);
 		if (err)
 			goto out;
 
 		if (!uid) {
-			warning("coreaudio: player: device not found: '%s'\n",
+			warning_bs("coreaudio: player: device not found: '%s'\n",
 				device);
 			err = ENODEV;
 			goto out;
@@ -153,7 +153,7 @@ int coreaudio_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 				       sizeof(uid));
 		CFRelease(uid);
 		if (status) {
-			warning("coreaudio: player: failed to"
+			warning_bs("coreaudio: player: failed to"
 				" set current device (%i)\n", status);
 			err = ENODEV;
 			goto out;
@@ -182,7 +182,7 @@ int coreaudio_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 
 	status = AudioQueueStart(st->queue, NULL);
 	if (status)  {
-		warning("coreaudio: AudioQueueStart error %i\n", status);
+		warning_bs("coreaudio: AudioQueueStart error %i\n", status);
 		err = ENODEV;
 		goto out;
 	}

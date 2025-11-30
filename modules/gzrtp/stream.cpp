@@ -134,7 +134,7 @@ void SRTPStat::update(int ret_code, bool quiet)
 		err_msg = "replay check failed";
 		break;
 	default:
-		warning("zrtp: %s unprotect failed: %m\n",
+		warning_bs("zrtp: %s unprotect failed: %m\n",
 		        (m_control)? "SRTCP" : "SRTP", ret_code);
 		return;
 	}
@@ -144,7 +144,7 @@ void SRTPStat::update(int ret_code, bool quiet)
 		*burst = 0;
 
 		if (!quiet)
-			warning("zrtp: Stream <%s>: %s %s, %d packets\n",
+			warning_bs("zrtp: Stream <%s>: %s %s, %d packets\n",
 				m_stream->media_name(),
 				(m_control)? "SRTCP" : "SRTP",
 				err_msg,
@@ -211,7 +211,7 @@ Stream::Stream(int& err, const ZRTPConfig& config, Session *session,
 	ZIDCache* zf = getZidCacheInstance();
 	if (!zf->isOpen()) {
 		if (zf->open((char *)config.zid_filename) == -1) {
-			warning("zrtp: Couldn't open/create ZID file %s\n",
+			warning_bs("zrtp: Couldn't open/create ZID file %s\n",
 			        config.zid_filename);
 			err = ENOENT;
 			return;
@@ -264,7 +264,7 @@ int Stream::start(Stream *master)
 		m_zrtp->setMultiStrParams(params, zrtp_master);
 	}
 
-	debug("zrtp: Starting <%s> stream%s\n", media_name(),
+	debug_bs("zrtp: Starting <%s> stream%s\n", media_name(),
 	      (m_zrtp->isMultiStream())? " (multistream)" : "");
 
 	m_srtp_stat.reset();
@@ -293,14 +293,14 @@ void Stream::stop()
 	// of audio data
 	if (!m_zrtp->isMultiStream() && m_recv_srtp && m_srtp_stat.ok() < 20) {
 
-		debug("zrtp: Stream <%s>: received too few valid SRTP "
+		debug_bs("zrtp: Stream <%s>: received too few valid SRTP "
 		      "packets (%u), storing RS2\n",
 		       media_name(), m_srtp_stat.ok());
 
 		m_zrtp->setRs2Valid();
 	}
 
-	debug("zrtp: Stopping <%s> stream\n", media_name());
+	debug_bs("zrtp: Stopping <%s> stream\n", media_name());
 
 	m_zrtp->stopZrtp();
 
@@ -312,7 +312,7 @@ void Stream::stop()
 	delete m_recv_srtp;
 	m_recv_srtp = NULL;
 
-	debug("zrtp: Stream <%s> stopped\n", media_name());
+	debug_bs("zrtp: Stream <%s> stopped\n", media_name());
 }
 
 
@@ -371,7 +371,7 @@ bool Stream::udp_helper_send(int *err, struct sa *src, struct mbuf *mb)
 		goto out;
 
 	if (rerr) {
-		warning("zrtp: protect/protect_ctrl failed (len=%u): %m\n",
+		warning_bs("zrtp: protect/protect_ctrl failed (len=%u): %m\n",
 		        len, rerr);
 
 		if (rerr == ENOMEM)
@@ -452,7 +452,7 @@ bool Stream::recv_zrtp(struct mbuf *mb)
 	size_t size = mbuf_get_left(mb);
 
 	if (size < ZRTP_MIN_PACKET_LENGTH) {
-		warning("zrtp: incoming packet size (%d) is too small\n",
+		warning_bs("zrtp: incoming packet size (%d) is too small\n",
 		        size);
 		return false;
 	}
@@ -538,7 +538,7 @@ int32_t Stream::sendDataZRTP(const uint8_t* data, int32_t length)
 	mbuf_set_pos(mb, start_pos);
 	err = udp_send_helper(m_rtpsock, &m_raddr, mb, m_uh_rtp);
 	if (err)
-		warning("zrtp: udp_send_helper: %m\n", err);
+		warning_bs("zrtp: udp_send_helper: %m\n", err);
 
  out:
 	mem_deref(mb);
@@ -591,13 +591,13 @@ bool Stream::srtpSecretsReady(SrtpSecret_t* secrets, EnableSecurity part)
 	Srtp *s;
 	int err = 0;
 
-	debug("zrtp: Stream <%s>: secrets are ready for %s\n",
+	debug_bs("zrtp: Stream <%s>: secrets are ready for %s\n",
 	      media_name(),
 	      (part == ForSender)? "sender" : "receiver");
 
 	s = new Srtp(err, secrets, part);
 	if (!s || err) {
-		warning("zrtp: Stream <%s>: Srtp creation failed: %m\n",
+		warning_bs("zrtp: Stream <%s>: Srtp creation failed: %m\n",
 		        media_name(), err);
 		delete s;
 		return false;
@@ -619,7 +619,7 @@ bool Stream::srtpSecretsReady(SrtpSecret_t* secrets, EnableSecurity part)
 
 void Stream::srtpSecretsOff(EnableSecurity part)
 {
-	debug("zrtp: Stream <%s>: secrets are off for %s\n",
+	debug_bs("zrtp: Stream <%s>: secrets are off for %s\n",
 	      media_name(),
 	      (part == ForSender)? "sender" : "receiver");
 
@@ -644,16 +644,16 @@ void Stream::srtpSecretsOn(std::string c, std::string s, bool verified)
 	char buf[128] = "";
 
 	if (s.empty()) {
-		info("zrtp: Stream <%s> is encrypted (%s)\n",
+		info_bs("zrtp: Stream <%s> is encrypted (%s)\n",
 		     media_name(), c.c_str());
 	}
 	else {
-		info("zrtp: Stream <%s> is encrypted (%s), "
+		info_bs("zrtp: Stream <%s> is encrypted (%s), "
 		     "SAS is [%s] (%s)\n",
 		     media_name(), c.c_str(), s.c_str(),
 		     (verified)? "verified" : "NOT VERIFIED");
 		if (!verified) {
-			warning("zrtp: SAS is not verified, type "
+			warning_bs("zrtp: SAS is not verified, type "
 			        "'/zrtp_verify %d' to verify\n",
 			        m_session->id());
 			if (m_session->eventh) {
@@ -666,7 +666,7 @@ void Stream::srtpSecretsOn(std::string c, std::string s, bool verified)
 						 NULL,
 						 m_session->arg);
 				else
-					warning("zrtp: failed to print verify"
+					warning_bs("zrtp: failed to print verify"
 						" arguments\n");
 			}
 		}

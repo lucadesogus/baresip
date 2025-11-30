@@ -53,7 +53,7 @@ static int encode_update(struct aufilt_enc_st **stp, void **ctx,
 		return EINVAL;
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("augain: format not supported (%s)\n",
+		warning_bs("augain: format not supported (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}
@@ -117,12 +117,12 @@ static int cmd_augain(struct re_printf *pf, void *arg)
 		new_gain = strtod(carg->prm, NULL);
 
 	if (new_gain <= 0.0) {
-		warning("augain: invalid gain value %s\n", carg->prm);
+		warning_bs("augain: invalid gain value %s\n", carg->prm);
 		return EINVAL;
 	}
 
 	gain = new_gain;
-	info("augain: new gain is %.2f\n", gain);
+	info_bs("augain: new gain is %.2f\n", gain);
 
 	return 0;
 
@@ -139,7 +139,7 @@ static int module_init(void)
 
 	conf_get_float(conf_cur(), "augain", &gain);
 
-	info("augain: gaining by at most %.2f\n", gain);
+	info_bs("augain: gaining by at most %.2f\n", gain);
 
 	return cmd_register(baresip_commands(), cmdv, RE_ARRAY_SIZE(cmdv));
 }

@@ -67,7 +67,7 @@ static int mock_display(struct vidisp_st *st, const char *title,
 	height = frame->size.h;
 
 	if (!vidframe_isvalid(frame)) {
-		warning("mock_vidisp: got invalid frame\n");
+		warning_bs("mock_vidisp: got invalid frame\n");
 		return EPROTO;
 	}
 
@@ -84,7 +84,7 @@ static int mock_display(struct vidisp_st *st, const char *title,
 	++st->n_frame;
 
 	if (st->n_frame >= 10) {
-		info("mock_vidisp: got %u frames\n", st->n_frame);
+		info_bs("mock_vidisp: got %u frames\n", st->n_frame);
 
 		if (mock.disph)
 			mock.disph(frame, timestamp, title, mock.arg);

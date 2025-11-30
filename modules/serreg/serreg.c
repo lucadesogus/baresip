@@ -88,7 +88,7 @@ static bool check_registrations(void)
 			++r;
 	}
 
-	debug("serreg: %s:%d n=%u f=%u r=%u\n", __func__, __LINE__, n, f, r);
+	debug_bs("serreg: %s:%d n=%u f=%u r=%u\n", __func__, __LINE__, n, f, r);
 	if (n == f)
 		return true;
 
@@ -164,7 +164,7 @@ static int fallback_update(void)
 
 		err = ua_fallback(ua);
 		if (err)
-			warning("serreg: could not start fallback %s (%m)\n",
+			warning_bs("serreg: could not start fallback %s (%m)\n",
 				account_aor(acc), err);
 	}
 
@@ -212,7 +212,7 @@ static void next_account(struct ua *ua)
 			break;
 		}
 
-		info("serreg: Register %s fail -> prio %u.\n",
+		info_bs("serreg: Register %s fail -> prio %u.\n",
 		     account_aor(ua_account(ua)), sreg.prio);
 		if (!register_curprio())
 			break;
@@ -234,10 +234,10 @@ static void fallback_ok(struct ua *ua)
 	const struct account *acc = ua_account(ua);
 	uint32_t prio = account_prio(acc);
 
-	debug("serreg: fallback prio %u ok %s.\n", prio, account_aor(acc));
+	debug_bs("serreg: fallback prio %u ok %s.\n", prio, account_aor(acc));
 
 	if (prio <= sreg.prio) {
-		info("serreg: Fallback %s ok -> prio %u.\n",
+		info_bs("serreg: Fallback %s ok -> prio %u.\n",
 		     account_aor(acc), prio);
 		sreg.prio = prio;
 		sreg.ready = false;
@@ -267,7 +267,7 @@ static void restart(void *arg)
 		if (prio || fbregint)
 			continue;
 
-		debug("serreg: restart %s prio 0.\n", account_aor(acc));
+		debug_bs("serreg: restart %s prio 0.\n", account_aor(acc));
 		sreg.prio = 0;
 		err = ua_register(ua);
 		if (err) {
@@ -319,7 +319,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 	switch (ev) {
 
 	case BEVENT_FALLBACK_FAIL:
-		debug("serreg: fallback fail %s.\n",
+		debug_bs("serreg: fallback fail %s.\n",
 		      account_aor(ua_account(ua)));
 		break;
 

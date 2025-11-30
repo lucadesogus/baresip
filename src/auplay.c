@@ -45,7 +45,7 @@ int auplay_register(struct auplay **app, struct list *auplayl,
 	ap->name   = name;
 	ap->alloch = alloch;
 
-	info("auplay: %s\n", name);
+	info_bs("auplay: %s\n", name);
 
 	*app = ap;
 

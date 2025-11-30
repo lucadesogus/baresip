@@ -137,25 +137,25 @@ static bool verify_fingerprint(const struct sdp_session *sess,
 		sz_dtls = 32;
 	}
 	else {
-		warning("dtls_srtp: unknown fingerprint '%r'\n", &hash);
+		warning_bs("dtls_srtp: unknown fingerprint '%r'\n", &hash);
 		return false;
 	}
 
 	err = tls_peer_fingerprint(tc, type, md_dtls, sizeof(md_dtls));
 	if (err) {
-		warning("dtls_srtp: could not get DTLS fingerprint (%m)\n",
+		warning_bs("dtls_srtp: could not get DTLS fingerprint (%m)\n",
 			err);
 		return false;
 	}
 
 	if (sz_sdp != sz_dtls || 0 != memcmp(md_sdp, md_dtls, sz_sdp)) {
-		warning("dtls_srtp: %r fingerprint mismatch\n", &hash);
-		info("SDP:  %w\n", md_sdp, sz_sdp);
-		info("DTLS: %w\n", md_dtls, sz_dtls);
+		warning_bs("dtls_srtp: %r fingerprint mismatch\n", &hash);
+		info_bs("SDP:  %w\n", md_sdp, sz_sdp);
+		info_bs("DTLS: %w\n", md_dtls, sz_dtls);
 		return false;
 	}
 
-	info("dtls_srtp: verified %r fingerprint OK\n", &hash);
+	info_bs("dtls_srtp: verified %r fingerprint OK\n", &hash);
 
 	return true;
 }
@@ -227,11 +227,11 @@ static void dtls_estab_handler(void *arg)
 	size_t keylen;
 	int err;
 
-	debug("dtls_srtp: established: cipher=%s\n",
+	debug_bs("dtls_srtp: established: cipher=%s\n",
 	      tls_cipher_name(comp->tls_conn));
 
 	if (!verify_fingerprint(ds->sess->sdp, ds->sdpm, comp->tls_conn)) {
-		warning("dtls_srtp: could not verify remote fingerprint\n");
+		warning_bs("dtls_srtp: could not verify remote fingerprint\n");
 		if (ds->sess->errorh)
 			ds->sess->errorh(EPIPE, ds->sess->arg);
 		return;
@@ -241,13 +241,13 @@ static void dtls_estab_handler(void *arg)
 			       cli_key, sizeof(cli_key),
 			       srv_key, sizeof(srv_key));
 	if (err) {
-		warning("dtls_srtp: could not get SRTP keyinfo (%m)\n", err);
+		warning_bs("dtls_srtp: could not get SRTP keyinfo (%m)\n", err);
 		return;
 	}
 
 	comp->negotiated = true;
 
-	info("dtls_srtp: ---> DTLS-SRTP complete (%s/%s) Profile=%s\n",
+	info_bs("dtls_srtp: ---> DTLS-SRTP complete (%s/%s) Profile=%s\n",
 	     sdp_media_name(ds->sdpm),
 	     comp->is_rtp ? "RTP" : "RTCP", srtp_suite_name(suite));
 
@@ -262,7 +262,7 @@ static void dtls_estab_handler(void *arg)
 
 	err |= srtp_install(comp);
 	if (err) {
-		warning("dtls_srtp: srtp_install: %m\n", err);
+		warning_bs("dtls_srtp: srtp_install: %m\n", err);
 	}
 
 	if (ds->sess->eventh) {
@@ -273,7 +273,7 @@ static void dtls_estab_handler(void *arg)
 					 (struct stream *)ds->strm,
 					 ds->sess->arg);
 		else
-			warning("dtls_srtp: failed to print secure"
+			warning_bs("dtls_srtp: failed to print secure"
 				" event arguments\n");
 	}
 }
@@ -283,7 +283,7 @@ static void dtls_close_handler(int err, void *arg)
 {
 	struct comp *comp = arg;
 
-	info("dtls_srtp: dtls-connection closed (%m)\n", err);
+	info_bs("dtls_srtp: dtls-connection closed (%m)\n", err);
 
 	comp->tls_conn = mem_deref(comp->tls_conn);
 
@@ -300,16 +300,16 @@ static void dtls_conn_handler(const struct sa *peer, void *arg)
 	struct comp *comp = arg;
 	int err;
 
-	info("dtls_srtp: %s: incoming DTLS connect from %J\n",
+	info_bs("dtls_srtp: %s: incoming DTLS connect from %J\n",
 	     sdp_media_name(comp->ds->sdpm), peer);
 
 	if (comp->ds->active) {
-		warning("dtls_srtp: conn_handler: role is active\n");
+		warning_bs("dtls_srtp: conn_handler: role is active\n");
 		return;
 	}
 
 	if (comp->tls_conn) {
-		warning("dtls_srtp: '%s' dtls already accepted (peer = %J)\n",
+		warning_bs("dtls_srtp: '%s' dtls already accepted (peer = %J)\n",
 			sdp_media_name(comp->ds->sdpm),
 			dtls_peer(comp->tls_conn));
 
@@ -322,7 +322,7 @@ static void dtls_conn_handler(const struct sa *peer, void *arg)
 	err = dtls_accept(&comp->tls_conn, tls, comp->dtls_sock,
 			  dtls_estab_handler, NULL, dtls_close_handler, comp);
 	if (err) {
-		warning("dtls_srtp: dtls_accept failed (%m)\n", err);
+		warning_bs("dtls_srtp: dtls_accept failed (%m)\n", err);
 		return;
 	}
 }
@@ -332,7 +332,7 @@ static int component_start(struct comp *comp, const struct sa *raddr)
 {
 	int err = 0;
 
-	debug("dtls_srtp: component start: %s [raddr=%J]\n",
+	debug_bs("dtls_srtp: component start: %s [raddr=%J]\n",
 	      comp->is_rtp ? "RTP" : "RTCP", raddr);
 
 	if (!comp->app_sock || comp->negotiated || comp->dtls_sock)
@@ -342,7 +342,7 @@ static int component_start(struct comp *comp, const struct sa *raddr)
 			  comp->app_sock, 2, LAYER_DTLS,
 			  dtls_conn_handler, comp);
 	if (err) {
-		warning("dtls_srtp: dtls_listen failed (%m)\n", err);
+		warning_bs("dtls_srtp: dtls_listen failed (%m)\n", err);
 		return err;
 	}
 
@@ -353,7 +353,7 @@ static int component_start(struct comp *comp, const struct sa *raddr)
 
 		if (comp->ds->active && !comp->tls_conn) {
 
-			info("dtls_srtp: '%s,%s' dtls connect to %J\n",
+			info_bs("dtls_srtp: '%s,%s' dtls connect to %J\n",
 			     sdp_media_name(comp->ds->sdpm),
 			     comp->is_rtp ? "RTP" : "RTCP",
 			     raddr);
@@ -363,7 +363,7 @@ static int component_start(struct comp *comp, const struct sa *raddr)
 					   dtls_estab_handler, NULL,
 					   dtls_close_handler, comp);
 			if (err) {
-				warning("dtls_srtp: dtls_connect()"
+				warning_bs("dtls_srtp: dtls_connect()"
 					" failed (%m)\n", err);
 				return err;
 			}
@@ -383,7 +383,7 @@ static int media_start(struct dtls_srtp *st, struct sdp_media *sdpm,
 	if (st->started)
 		return 0;
 
-	info("dtls_srtp: media=%s -- start DTLS %s\n",
+	info_bs("dtls_srtp: media=%s -- start DTLS %s\n",
 	     sdp_media_name(sdpm), st->active ? "client" : "server");
 
 	if (!sdp_media_has_media(sdpm))
@@ -487,7 +487,7 @@ static int media_alloc(struct menc_media **mp, struct menc_sess *sess,
 						  tls);
 		}
 		else {
-			info("dtls_srtp: unsupported fingerprint hash `%r'\n",
+			info_bs("dtls_srtp: unsupported fingerprint hash `%r'\n",
 			     &hash);
 			return EPROTO;
 		}
@@ -515,18 +515,18 @@ static int module_init(void)
 
 	err = tls_alloc(&tls, TLS_METHOD_DTLSV1, NULL, NULL);
 	if (err) {
-		warning("dtls_srtp: failed to create DTLS context (%m)\n",
+		warning_bs("dtls_srtp: failed to create DTLS context (%m)\n",
 			err);
 		return err;
 	}
 
 	(void)conf_get_str(conf_cur(), "dtls_srtp_use_ec", ec, sizeof(ec));
 
-	info ("dtls_srtp: use %s for elliptic curve cryptography\n", ec);
+	info_bs("dtls_srtp: use %s for elliptic curve cryptography\n", ec);
 
 	err = tls_set_selfsigned_ec(tls, cn, ec);
 	if (err) {
-		warning("dtls_srtp: failed to self-sign "
+		warning_bs("dtls_srtp: failed to self-sign "
 			"ec-certificate (%m)\n", err);
 		return err;
 	}
@@ -535,14 +535,14 @@ static int module_init(void)
 
 	err = tls_set_srtp(tls, srtp_profiles);
 	if (err) {
-		warning("dtls_srtp: failed to enable SRTP profile (%m)\n",
+		warning_bs("dtls_srtp: failed to enable SRTP profile (%m)\n",
 			err);
 		return err;
 	}
 
 	menc_register(mencl, &dtls_srtp);
 
-	debug("DTLS-SRTP ready with profiles %s\n", srtp_profiles);
+	debug_bs("DTLS-SRTP ready with profiles %s\n", srtp_profiles);
 
 	return 0;
 }

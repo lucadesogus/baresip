@@ -50,7 +50,7 @@ int vidisp_register(struct vidisp **vp, struct list *vidispl, const char *name,
 	vd->disph   = disph;
 	vd->hideh   = hideh;
 
-	info("vidisp: %s\n", name);
+	info_bs("vidisp: %s\n", name);
 
 	*vp = vd;
 	return 0;

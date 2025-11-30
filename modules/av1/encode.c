@@ -102,7 +102,7 @@ static int open_encoder(struct videnc_state *ves, const struct vidsz *size)
 #endif
 
 	if (ves->ctxup) {
-		debug("av1: re-opening encoder\n");
+		debug_bs("av1: re-opening encoder\n");
 		aom_codec_destroy(&ves->ctx);
 		ves->ctxup = false;
 	}
@@ -110,7 +110,7 @@ static int open_encoder(struct videnc_state *ves, const struct vidsz *size)
 	res = aom_codec_enc_init(&ves->ctx, &aom_codec_av1_cx_algo, &cfg,
 				 0);
 	if (res) {
-		warning("av1: enc init: %s\n", aom_codec_err_to_string(res));
+		warning_bs("av1: enc init: %s\n", aom_codec_err_to_string(res));
 		return EPROTO;
 	}
 
@@ -118,7 +118,7 @@ static int open_encoder(struct videnc_state *ves, const struct vidsz *size)
 
 	res = aom_codec_control(&ves->ctx, AOME_SET_CPUUSED, 8);
 	if (res) {
-		warning("av1: codec ctrl C: %s\n",
+		warning_bs("av1: codec ctrl C: %s\n",
 			aom_codec_err_to_string(res));
 	}
 
@@ -161,7 +161,7 @@ int av1_encode_packet(struct videnc_state *ves, bool update,
 	}
 
 	if (update) {
-		debug("av1: picture update\n");
+		debug_bs("av1: picture update\n");
 		flags |= AOM_EFLAG_FORCE_KF;
 	}
 
@@ -170,7 +170,7 @@ int av1_encode_packet(struct videnc_state *ves, bool update,
 	img = aom_img_wrap(NULL, img_fmt, frame->size.w, frame->size.h,
 			   16, NULL);
 	if (!img) {
-		warning("av1: encoder: could not allocate image\n");
+		warning_bs("av1: encoder: could not allocate image\n");
 		err = ENOMEM;
 		goto out;
 	}
@@ -182,7 +182,7 @@ int av1_encode_packet(struct videnc_state *ves, bool update,
 
 	res = aom_codec_encode(&ves->ctx, img, timestamp, 1, flags);
 	if (res) {
-		warning("av1: enc error: %s\n", aom_codec_err_to_string(res));
+		warning_bs("av1: enc error: %s\n", aom_codec_err_to_string(res));
 		err = ENOMEM;
 		goto out;
 	}
@@ -201,7 +201,7 @@ int av1_encode_packet(struct videnc_state *ves, bool update,
 
 		if (pkt->data.frame.flags & AOM_FRAME_IS_KEY) {
 			keyframe = true;
-			debug("av1: encode: keyframe\n");
+			debug_bs("av1: encode: keyframe\n");
 		}
 
 		rtp_ts = video_calc_rtp_timestamp_fix(pkt->data.frame.pts);

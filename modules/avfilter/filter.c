@@ -54,7 +54,7 @@ int filter_init(struct avfilter_st *st, const char *filter_descr,
 		&st->buffersrc_ctx, buffersrc, "in", args, NULL,
 		st->filter_graph);
 	if (err < 0) {
-		warning("avfilter: cannot create buffer source\n");
+		warning_bs("avfilter: cannot create buffer source\n");
 		goto end;
 	}
 
@@ -63,7 +63,7 @@ int filter_init(struct avfilter_st *st, const char *filter_descr,
 		&st->buffersink_ctx, buffersink, "out", NULL, NULL,
 		st->filter_graph);
 	if (err < 0) {
-		warning("avfilter: cannot create buffer sink\n");
+		warning_bs("avfilter: cannot create buffer sink\n");
 		goto end;
 	}
 
@@ -71,7 +71,7 @@ int filter_init(struct avfilter_st *st, const char *filter_descr,
 			     (uint8_t *)&src_format, sizeof(src_format),
 			     AV_OPT_SEARCH_CHILDREN);
 	if (err < 0) {
-		warning("avfilter: cannot set output pixel format\n");
+		warning_bs("avfilter: cannot set output pixel format\n");
 		goto end;
 	}
 
@@ -88,14 +88,14 @@ int filter_init(struct avfilter_st *st, const char *filter_descr,
 	err = avfilter_graph_parse_ptr(st->filter_graph, filter_descr,
 				       &inputs, &outputs, NULL);
 	if (err < 0) {
-		warning("avfilter: error parsing filter description: %s\n",
+		warning_bs("avfilter: error parsing filter description: %s\n",
 			filter_descr);
 		goto end;
 	}
 
 	err = avfilter_graph_config(st->filter_graph, NULL);
 	if (err < 0) {
-		warning("avfilter: filter graph config failed\n");
+		warning_bs("avfilter: filter graph config failed\n");
 		goto end;
 	}
 
@@ -103,7 +103,7 @@ int filter_init(struct avfilter_st *st, const char *filter_descr,
 	st->format  = frame->fmt;
 	st->enabled = true;
 
-	info("avfilter: filter graph initialized for %s\n", filter_descr);
+	info_bs("avfilter: filter graph initialized for %s\n", filter_descr);
 
  end:
 	avfilter_inout_free(&inputs);
@@ -127,7 +127,7 @@ void filter_reset(struct avfilter_st *st)
 	if (st->vframe_out)
 		av_frame_free(&st->vframe_out);
 	st->enabled = false;
-	info("avfilter: filter graph reset\n");
+	info_bs("avfilter: filter graph reset\n");
 }
 
 
@@ -169,7 +169,7 @@ int filter_encode(struct avfilter_st *st, struct vidframe *frame,
 	err = av_buffersrc_add_frame_flags(
 		st->buffersrc_ctx, st->vframe_in, AV_BUFFERSRC_FLAG_KEEP_REF);
 	if (err < 0) {
-		warning("avfilter: error while feeding the filtergraph\n");
+		warning_bs("avfilter: error while feeding the filtergraph\n");
 		goto out;
 	}
 
@@ -179,7 +179,7 @@ int filter_encode(struct avfilter_st *st, struct vidframe *frame,
 	if (err == AVERROR(EAGAIN) || err == AVERROR_EOF)
 		goto out;
 	if (err < 0) {
-		warning("avfilter: error while getting"
+		warning_bs("avfilter: error while getting"
 			" filtered frame from the filtergraph\n");
 		goto out;
 	}

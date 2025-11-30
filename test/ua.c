@@ -71,7 +71,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 
 	if (ev == BEVENT_REGISTER_OK) {
 
-		info("event: Register OK!\n");
+		info_bs("event: Register OK!\n");
 
 		++t->got_register_ok;
 
@@ -96,7 +96,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 
  out:
 	if (err) {
-		warning("selftest: event handler error: %m\n", err);
+		warning_bs("selftest: event handler error: %m\n", err);
 		t->err = err;
 	}
 }
@@ -119,7 +119,7 @@ static int reg(enum sip_transp tp)
 
 	err = sip_server_alloc(&t.srvv[0], sip_server_exit_handler, NULL);
 	if (err) {
-		warning("failed to create sip server (%d/%m)\n", err, err);
+		warning_bs("failed to create sip server (%d/%m)\n", err, err);
 		goto out;
 	}
 
@@ -152,7 +152,7 @@ static int reg(enum sip_transp tp)
 
  out:
 	if (err) {
-		warning("selftest: ua_register test failed (%m)\n", err);
+		warning_bs("selftest: ua_register test failed (%m)\n", err);
 	}
 	bevent_unregister(event_handler);
 	test_reset(&t);
@@ -286,7 +286,7 @@ static int reg_dns(enum sip_transp tp)
 	err = dns_server_alloc(&dnssrv, true);
 	TEST_ERR(err);
 
-	info("| DNS-server on %J\n", &dnssrv->addr);
+	info_bs("| DNS-server on %J\n", &dnssrv->addr);
 
 	/* NOTE: must be done before ua_init() */
 	err = net_use_nameserver(net, &dnssrv->addr, 1);
@@ -300,7 +300,7 @@ static int reg_dns(enum sip_transp tp)
 		err = sip_server_alloc(&t.srvv[i],
 				       sip_server_exit_handler, NULL);
 		if (err) {
-			warning("failed to create sip server (%d/%m)\n",
+			warning_bs("failed to create sip server (%d/%m)\n",
 				err, err);
 			goto out;
 		}
@@ -312,7 +312,7 @@ static int reg_dns(enum sip_transp tp)
 		err = sip_transp_laddr(t.srvv[i]->sip, &sip_addr, tp, NULL);
 		TEST_ERR(err);
 
-		info("| SIP-server on %J\n", &sip_addr);
+		info_bs("| SIP-server on %J\n", &sip_addr);
 
 		re_snprintf(arec, sizeof(arec),
 			    "alpha%zu.%s", i+1, domain);
@@ -383,7 +383,7 @@ static int reg_dns(enum sip_transp tp)
 
  out:
 	if (err) {
-		warning("selftest: ua_register test failed (%m)\n", err);
+		warning_bs("selftest: ua_register test failed (%m)\n", err);
 	}
 	bevent_unregister(event_handler);
 
@@ -431,7 +431,7 @@ static int reg_auth(enum sip_transp tp)
 
 	err = sip_server_alloc(&t.srvv[0], sip_server_exit_handler, NULL);
 	if (err) {
-		warning("failed to create sip server (%d/%m)\n", err, err);
+		warning_bs("failed to create sip server (%d/%m)\n", err, err);
 		goto out;
 	}
 
@@ -488,7 +488,7 @@ static int reg_auth(enum sip_transp tp)
 
  out:
 	if (err) {
-		warning("selftest: ua_register test failed (%m)\n", err);
+		warning_bs("selftest: ua_register test failed (%m)\n", err);
 	}
 	bevent_unregister(event_handler);
 	test_reset(&t);
@@ -547,7 +547,7 @@ static int reg_auth_dns(enum sip_transp tp)
 	err = dns_server_alloc(&dnssrv, true);
 	TEST_ERR(err);
 
-	info("| DNS-server on %J\n", &dnssrv->addr);
+	info_bs("| DNS-server on %J\n", &dnssrv->addr);
 
 	/* NOTE: must be done before ua_init() */
 	err = net_use_nameserver(net, &dnssrv->addr, 1);
@@ -561,7 +561,7 @@ static int reg_auth_dns(enum sip_transp tp)
 		err = sip_server_alloc(&t.srvv[i],
 				       sip_server_exit_handler, NULL);
 		if (err) {
-			warning("failed to create sip server (%d/%m)\n",
+			warning_bs("failed to create sip server (%d/%m)\n",
 				err, err);
 			goto out;
 		}
@@ -587,7 +587,7 @@ static int reg_auth_dns(enum sip_transp tp)
 		err = sip_transp_laddr(t.srvv[i]->sip, &sip_addr, tp, NULL);
 		TEST_ERR(err);
 
-		info("| SIP-server on %J\n", &sip_addr);
+		info_bs("| SIP-server on %J\n", &sip_addr);
 
 		re_snprintf(arec, sizeof(arec),
 			    "alpha%u.%s", i+1, domain);
@@ -669,7 +669,7 @@ static int reg_auth_dns(enum sip_transp tp)
 
  out:
 	if (err) {
-		warning("selftest: ua_register test failed (%m)\n", err);
+		warning_bs("selftest: ua_register test failed (%m)\n", err);
 	}
 	bevent_unregister(event_handler);
 

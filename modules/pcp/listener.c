@@ -42,7 +42,7 @@ static void udp_recv(const struct sa *src, struct mbuf *mb, void *arg)
 
 #if 0
 	if (!sa_cmp(src, &pl->srv, SA_ADDR)) {
-		debug("pcp: listener: ignore %zu bytes from non-server %J\n",
+		debug_bs("pcp: listener: ignore %zu bytes from non-server %J\n",
 		      mb->end, src);
 		return;
 	}
@@ -54,7 +54,7 @@ static void udp_recv(const struct sa *src, struct mbuf *mb, void *arg)
 
 	/* Validate PCP request */
 	if (!msg->hdr.resp) {
-		info("pcp: listener: ignore request from %J\n", src);
+		info_bs("pcp: listener: ignore request from %J\n", src);
 		goto out;
 	}
 

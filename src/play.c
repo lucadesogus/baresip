@@ -56,7 +56,7 @@ static int start_auplay(struct play *play);
 static void tmr_stop(void *arg)
 {
 	struct play *play = arg;
-	debug("play: player complete.\n");
+	debug_bs("play: player complete.\n");
 	mem_deref(play);
 }
 
@@ -249,7 +249,7 @@ static int aufile_load(struct mbuf *mb, const char *filename,
 	}
 
 	if (err)
-		warning("play: could not load %s (%m)\n",
+		warning_bs("play: could not load %s (%m)\n",
 			filename ? filename : "null", err);
 
 	return err;
@@ -307,7 +307,7 @@ int play_tone(struct play **playp, struct player *player,
 			   play_mod, &wprm,
 			   play_dev, write_handler, play);
 	if (err) {
-		warning("play: could not start auplay %s/%s (%m)\n",
+		warning_bs("play: could not start auplay %s/%s (%m)\n",
 			play_mod ? play_mod : "-", play_dev ? play_dev : "-",
 			err);
 		goto out;
@@ -340,7 +340,7 @@ static void ausrc_read_handler(struct auframe *af, void *arg)
 
 	err = aubuf_write_auframe(play->aubuf, af);
 	if (err)
-		warning("play: aubuf_write (%m)\n", err);
+		warning_bs("play: aubuf_write (%m)\n", err);
 }
 
 
@@ -388,7 +388,7 @@ static int start_ausrc(struct play *play)
 			play->filename,
 			ausrc_read_handler, ausrc_error_handler, play);
 	if (err)
-		warning("play: could not start ausrc for %s (%m)\n",
+		warning_bs("play: could not start ausrc for %s (%m)\n",
 			play->filename ? play->filename : "-", err);
 
 	return err;
@@ -409,7 +409,7 @@ static int start_auplay(struct play *play)
 			   play->mod, &wprm,
 			   play->dev, aubuf_write_handler, play);
 	if (err)
-		warning("play: could not start auplay %s/%s (%m)\n",
+		warning_bs("play: could not start auplay %s/%s (%m)\n",
 			play->mod ? play->mod : "-",
 			play->dev ? play->dev : "-", err);
 

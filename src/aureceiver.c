@@ -135,7 +135,7 @@ static int aurecv_alloc_aubuf(struct audio_recv *ar, const struct auframe *af)
 	min_sz = sz * au_calc_nsamp(af->srate, af->ch, cfg->buffer.min);
 	max_sz = sz * au_calc_nsamp(af->srate, af->ch, cfg->buffer.max);
 
-	debug("audio_recv: create audio buffer"
+	debug_bs("audio_recv: create audio buffer"
 	      " [%u - %u ms]"
 	      " [%zu - %zu bytes]\n",
 	      (unsigned) cfg->buffer.min, (unsigned) cfg->buffer.max,
@@ -144,7 +144,7 @@ static int aurecv_alloc_aubuf(struct audio_recv *ar, const struct auframe *af)
 	mtx_lock(ar->aubuf_mtx);
 	err = aubuf_alloc(&ar->aubuf, min_sz, max_sz);
 	if (err) {
-		warning("audio_recv: aubuf alloc error (%m)\n", err);
+		warning_bs("audio_recv: aubuf alloc error (%m)\n", err);
 		goto out;
 	}
 
@@ -232,7 +232,7 @@ static int aurecv_stream_decode(struct audio_recv *ar,
 				   ar->fmt, ar->sampv, &sampc,
 				   mbuf_buf(mb), mbuf_get_left(mb));
 		if (err) {
-			warning("audio_recv: %s codec decode %zu bytes: %m\n",
+			warning_bs("audio_recv: %s codec decode %zu bytes: %m\n",
 				ac->name, mbuf_get_left(mb), err);
 			goto out;
 		}
@@ -243,7 +243,7 @@ static int aurecv_stream_decode(struct audio_recv *ar,
 				   ar->fmt, ar->sampv, &sampc,
 				   marker, mbuf_buf(mb), mbuf_get_left(mb));
 		if (err) {
-			warning("audio_recv: %s codec decode %zu bytes: %m\n",
+			warning_bs("audio_recv: %s codec decode %zu bytes: %m\n",
 				ac->name, mbuf_get_left(mb), err);
 			goto out;
 		}
@@ -322,7 +322,7 @@ void aurecv_receive(struct audio_recv *ar, const struct rtp_header *hdr,
 	switch (wrap) {
 
 	case -1:
-		warning("audio_recv: rtp timestamp wraps backwards"
+		warning_bs("audio_recv: rtp timestamp wraps backwards"
 			" (delta = %d) -- discard\n",
 			(int32_t)(ar->ts_recv.last - hdr->ts));
 		discard = true;
@@ -462,7 +462,7 @@ int aurecv_decoder_set(struct audio_recv *ar,
 	if (!ar || !ac)
 		return EINVAL;
 
-	info("audio_recv: Set audio decoder: %s %uHz %dch\n",
+	info_bs("audio_recv: Set audio decoder: %s %uHz %dch\n",
 	     ac->name, ac->srate, ac->ch);
 
 	mtx_lock(ar->mtx);
@@ -474,7 +474,7 @@ int aurecv_decoder_set(struct audio_recv *ar,
 	if (ac->decupdh) {
 		err = ac->decupdh(&ar->dec, ac, params);
 		if (err) {
-			warning("audio_recv: alloc decoder: %m\n", err);
+			warning_bs("audio_recv: alloc decoder: %m\n", err);
 			goto out;
 		}
 	}
@@ -604,14 +604,14 @@ static void check_plframe(struct auframe *af1, struct auframe *af2)
 {
 	if ((af1->srate && af1->srate != af2->srate) ||
 	    (af1->ch    && af1->ch    != af2->ch   )) {
-		warning("audio_recv: srate/ch of frame %u/%u vs "
+		warning_bs("audio_recv: srate/ch of frame %u/%u vs "
 			"player %u/%u. Use module auresamp!\n",
 			af1->srate, af1->ch,
 			af2->srate, af2->ch);
 	}
 
 	if (af1->fmt != af2->fmt) {
-		warning("audio_recv: invalid sample formats (%s -> %s). "
+		warning_bs("audio_recv: invalid sample formats (%s -> %s). "
 			"%s\n",
 			aufmt_name(af1->fmt), aufmt_name(af2->fmt),
 			af1->fmt == AUFMT_S16LE ?
@@ -688,7 +688,7 @@ int aurecv_start_player(struct audio_recv *ar, struct list *auplayl)
 				   &prm, ar->device,
 				   auplay_write_handler, ar);
 		if (err) {
-			warning("audio_recv: start_player failed (%s.%s): "
+			warning_bs("audio_recv: start_player failed (%s.%s): "
 				"%m\n",
 				ar->module, ar->device, err);
 			goto out;
@@ -696,7 +696,7 @@ int aurecv_start_player(struct audio_recv *ar, struct list *auplayl)
 
 		ar->ap = auplay_find(auplayl, ar->module);
 
-		info("audio_recv: player started with sample format %s\n",
+		info_bs("audio_recv: player started with sample format %s\n",
 		     aufmt_name(ar->play_fmt));
 	}
 

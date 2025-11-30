@@ -33,7 +33,7 @@ void ui_register(struct ui_sub *uis, struct ui *ui)
 
 	list_append(&uis->uil, &ui->le, ui);
 
-	debug("ui: %s\n", ui->name);
+	debug_bs("ui: %s\n", ui->name);
 }
 
 

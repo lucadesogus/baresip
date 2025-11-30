@@ -17,7 +17,7 @@
 #define MAGIC_INIT(s) (s)->magic = MAGIC
 #define MAGIC_CHECK(s) \
 	if (MAGIC != s->magic) {					\
-		warning("%s: wrong magic struct=%p (magic=0x%08x)\n",	\
+		warning_bs("%s: wrong magic struct=%p (magic=0x%08x)\n",	\
 			__func__, s, s->magic);			\
 		re_assert(false);					\
 	}

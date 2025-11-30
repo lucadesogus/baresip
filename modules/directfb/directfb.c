@@ -75,7 +75,7 @@ static int display(struct vidisp_st *st, const char *title,
 
 	if (!vidsz_cmp(&st->size, &frame->size)) {
 		if (st->size.w && st->size.h) {
-			info("directfb: reset: %u x %u ---> %u x %u\n",
+			info_bs("directfb: reset: %u x %u ---> %u x %u\n",
 			     st->size.w, st->size.h,
 			     frame->size.w, frame->size.h);
 		}

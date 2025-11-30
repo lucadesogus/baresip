@@ -152,15 +152,15 @@ static int module_init(void)
 	audiounit_comp_io = AudioComponentFindNext(NULL, &desc);
 	if (!audiounit_comp_io) {
 #if TARGET_OS_IPHONE
-		warning("audiounit: Voice Processing I/O not found\n");
+		warning_bs("audiounit: Voice Processing I/O not found\n");
 #else
-		warning("audiounit: AUHAL not found\n");
+		warning_bs("audiounit: AUHAL not found\n");
 #endif
 		return ENOENT;
 	}
 
 	if (0 == AudioComponentCopyName(audiounit_comp_io, &name)) {
-		debug("audiounit: using component '%s'\n",
+		debug_bs("audiounit: using component '%s'\n",
 		      CFStringGetCStringPtr(name, kCFStringEncodingUTF8));
 	}
 
@@ -172,12 +172,12 @@ static int module_init(void)
 
 	audiounit_comp_conv = AudioComponentFindNext(NULL, &desc);
 	if (!audiounit_comp_conv) {
-		warning("audiounit: AU Converter not found\n");
+		warning_bs("audiounit: AU Converter not found\n");
 		return ENOENT;
 	}
 
 	if (0 == AudioComponentCopyName(audiounit_comp_conv, &name)) {
-		debug("audiounit: using component '%s'\n",
+		debug_bs("audiounit: using component '%s'\n",
 		      CFStringGetCStringPtr(name, kCFStringEncodingUTF8));
 	}
 

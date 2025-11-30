@@ -149,7 +149,7 @@ static void natpmp_resp_handler(int err, const struct natpmp_resp *resp,
 	struct sa map_addr;
 
 	if (err) {
-		warning("natpmp: response error: %m\n", err);
+		warning_bs("natpmp: response error: %m\n", err);
 		complete(m->sess, err);
 		return;
 	}
@@ -157,19 +157,19 @@ static void natpmp_resp_handler(int err, const struct natpmp_resp *resp,
 	if (resp->op != NATPMP_OP_MAPPING_UDP)
 		return;
 	if (resp->result != NATPMP_SUCCESS) {
-		warning("natpmp: request failed with result code: %d\n",
+		warning_bs("natpmp: request failed with result code: %d\n",
 			resp->result);
 		complete(m->sess, EPROTO);
 		return;
 	}
 
 	if (resp->u.map.int_port != comp->int_port) {
-		info("natpmp: ignoring response for internal_port=%u\n",
+		info_bs("natpmp: ignoring response for internal_port=%u\n",
 		     resp->u.map.int_port);
 		return;
 	}
 
-	info("natpmp: mapping granted for comp %u:"
+	info_bs("natpmp: mapping granted for comp %u:"
 	     " internal_port=%u, external_port=%u, lifetime=%u\n",
 	     comp->id,
 	     resp->u.map.int_port, resp->u.map.ext_port,
@@ -237,7 +237,7 @@ static int comp_alloc(struct comp *comp, void *sock)
 
 	comp->int_port = sa_port(&laddr);
 
-	info("natpmp: `%s' stream comp %u local UDP port is %u\n",
+	info_bs("natpmp: `%s' stream comp %u local UDP port is %u\n",
 	     sdp_media_name(comp->media->sdpm), comp->id, comp->int_port);
 
 	err = natpmp_mapping_request(&comp->natpmp, &natpmp_srv,
@@ -307,12 +307,12 @@ static void extaddr_handler(int err, const struct natpmp_resp *resp, void *arg)
 	(void)arg;
 
 	if (err) {
-		warning("natpmp: external address ERROR: %m\n", err);
+		warning_bs("natpmp: external address ERROR: %m\n", err);
 		return;
 	}
 
 	if (resp->result != NATPMP_SUCCESS) {
-		warning("natpmp: external address failed"
+		warning_bs("natpmp: external address failed"
 			" with result code: %d\n", resp->result);
 		return;
 	}
@@ -322,7 +322,7 @@ static void extaddr_handler(int err, const struct natpmp_resp *resp, void *arg)
 
 	sa_set_in(&natpmp_extaddr, resp->u.ext_addr, 0);
 
-	info("natpmp: discovered External address: %j\n", &natpmp_extaddr);
+	info_bs("natpmp: discovered External address: %j\n", &natpmp_extaddr);
 }
 
 
@@ -338,7 +338,7 @@ static bool net_rt_handler(const char *ifname, const struct sa *dst,
 	if (sa_in(dst) == 0) {
 		natpmp_srv = *gw;
 		sa_set_port(&natpmp_srv, NATPMP_PORT);
-		info("natpmp: found default gateway %j on interface '%s'\n",
+		info_bs("natpmp: found default gateway %j on interface '%s'\n",
 		     gw, ifname);
 		return true;
 	}
@@ -365,7 +365,7 @@ static int module_init(void)
 
 	conf_get_sa(conf_cur(), "natpmp_server", &natpmp_srv);
 
-	info("natpmp: using NAT-PMP server at %J\n", &natpmp_srv);
+	info_bs("natpmp: using NAT-PMP server at %J\n", &natpmp_srv);
 
 	err = natpmp_external_request(&natpmp_ext, &natpmp_srv,
 				      extaddr_handler, NULL);

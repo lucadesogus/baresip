@@ -288,7 +288,7 @@ static int encode(struct aufilt_enc_st *aufilt_enc_st, struct auframe *af)
 		err = auresamp_setup(&enc->resamp, mix->prm.srate, mix->prm.ch,
 				     enc->prm.srate, enc->prm.ch);
 		if (err) {
-			warning("mixminus/auresamp_setup error (%m)\n", err);
+			warning_bs("mixminus/auresamp_setup error (%m)\n", err);
 			goto out;
 		}
 
@@ -316,11 +316,11 @@ static int encode(struct aufilt_enc_st *aufilt_enc_st, struct auframe *af)
 			err = auresamp(&enc->resamp, sampv_mix, &outc,
 				       enc->sampv, inc);
 			if (err) {
-				warning("mixminus/auresamp error (%m)\n", err);
+				warning_bs("mixminus/auresamp error (%m)\n", err);
 				goto out;
 			}
 			if (outc != af->sampc) {
-				warning("mixminus/auresamp sample count "
+				warning_bs("mixminus/auresamp sample count "
 					"error\n");
 				err = EINVAL;
 				goto out;
@@ -410,7 +410,7 @@ static int enable_conference(struct re_printf *pf, void *arg)
 
 		for (lec = list_head(ua_calls(ua)); lec; lec = lec->next) {
 			call = lec->data;
-			info("conference with %s\n", call_peeruri(call));
+			info_bs("conference with %s\n", call_peeruri(call));
 			call_hold(call, false);
 			au = call_audio(call);
 			audio_set_conference(au, true);
@@ -434,7 +434,7 @@ static int debug_conference(struct re_printf *pf, void *arg)
 		if (!enc)
 			continue;
 
-		info("mixminus/enc au %p:"
+		info_bs("mixminus/enc au %p:"
 		     "ch %d srate %d fmt %s, is_conference (%s)\n",
 		     enc->au, enc->prm.ch, enc->prm.srate,
 		     aufmt_name(enc->prm.fmt),
@@ -443,7 +443,7 @@ static int debug_conference(struct re_printf *pf, void *arg)
 		for (lem = list_head(&enc->mixers); lem; lem = lem->next) {
 			mix = lem->data;
 
-			info("\tmix au %p: ch %d srate %d %H\n", mix->au,
+			info_bs("\tmix au %p: ch %d srate %d %H\n", mix->au,
 			     mix->prm.ch, mix->prm.srate, aubuf_debug,
 			     mix->ab);
 		}

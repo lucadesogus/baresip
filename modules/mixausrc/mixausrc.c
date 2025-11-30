@@ -141,7 +141,7 @@ static int init_aubuf(struct mixstatus *st)
 
 	err = aubuf_alloc(&st->aubuf, wishsz, maxsz);
 	if (err) {
-		warning("mixausrc: Could not allocate aubuf. wishsz=%lu, "
+		warning_bs("mixausrc: Could not allocate aubuf. wishsz=%lu, "
 				"maxsz=%lu (%m)\n", wishsz, maxsz, err);
 		goto out;
 	}
@@ -152,7 +152,7 @@ static int init_aubuf(struct mixstatus *st)
 
 	st->rbuf = mem_zalloc(st->nbytes_strm, NULL);
 	if (!st->rbuf) {
-		warning("mixausrc: Could not allocate rbuf.\n");
+		warning_bs("mixausrc: Could not allocate rbuf.\n");
 		goto out;
 	}
 
@@ -165,20 +165,20 @@ static int process_resamp(struct mixstatus *st, const struct auframe *afsrc)
 {
 	int err = 0;
 	if (afsrc->fmt != AUFMT_S16LE) {
-		warning("mixausrc: sample format %s not supported\n",
+		warning_bs("mixausrc: sample format %s not supported\n",
 			aufmt_name(afsrc->fmt));
 		return EINVAL;
 	}
 
 	if (!st->resamp.resample) {
-		debug("mixausrc: resample ausrc %u/%u -> %u/%u\n",
+		debug_bs("mixausrc: resample ausrc %u/%u -> %u/%u\n",
 				st->ausrc_prm.srate, st->ausrc_prm.ch,
 				st->prm.srate, st->prm.ch);
 		err = auresamp_setup(&st->resamp,
 				st->ausrc_prm.srate, st->ausrc_prm.ch,
 				st->prm.srate, st->prm.ch);
 		if (err) {
-			warning("mixausrc: could not initialize a "
+			warning_bs("mixausrc: could not initialize a "
 					"resampler (%m)\n", err);
 			return err;
 		}
@@ -186,7 +186,7 @@ static int process_resamp(struct mixstatus *st, const struct auframe *afsrc)
 		st->sampvrs = mem_deref(st->sampvrs);
 		st->sampvrs = mem_zalloc(st->nbytes_max, NULL);
 		if (!st->sampvrs) {
-			warning("mixausrc: could not alloc resample buffer\n");
+			warning_bs("mixausrc: could not alloc resample buffer\n");
 			return ENOMEM;
 		}
 	}
@@ -197,7 +197,7 @@ static int process_resamp(struct mixstatus *st, const struct auframe *afsrc)
 			       afsrc->sampv, afsrc->sampc);
 
 		if (sampc != st->sampc_strm) {
-			warning("mixausrc: unexpected sample count "
+			warning_bs("mixausrc: unexpected sample count "
 					"%u vs. %u\n", sampc, st->sampc_strm);
 			st->sampc_strm = sampc;
 			st->nbytes_strm = aufmt_sample_size(afsrc->fmt)*sampc;
@@ -205,7 +205,7 @@ static int process_resamp(struct mixstatus *st, const struct auframe *afsrc)
 	}
 
 	if (err)
-		warning("mixausrc: could not resample frame (%m)\n", err);
+		warning_bs("mixausrc: could not resample frame (%m)\n", err);
 
 	return err;
 }
@@ -290,7 +290,7 @@ static int start_ausrc(struct mixstatus *st)
 			  ausrc_error_handler, st);
 
 	if (!st->ausrc) {
-		warning("mixausrc: Could not start audio source %s with "
+		warning_bs("mixausrc: Could not start audio source %s with "
 				"data %s.\n", st->module, st->param);
 		err = EINVAL;
 		st->mode = FM_FADEIN;
@@ -380,7 +380,7 @@ static int encode_update(struct aufilt_enc_st **stp, void **ctx,
 		return EINVAL;
 
 	if (prm->ch!=1) {
-		warning("mixausrc: Only mono is supported.\n");
+		warning_bs("mixausrc: Only mono is supported.\n");
 		return EINVAL;
 	}
 
@@ -556,7 +556,7 @@ static int process(struct mixstatus *st, struct auframe *af)
 		st->ptime = ptime;
 	}
 	else if (st->ptime != ptime) {
-		warning("mixausrc: ptime changed %u --> %u.\n",
+		warning_bs("mixausrc: ptime changed %u --> %u.\n",
 			st->ptime, ptime);
 		stop_ausrc(st);
 		st->ptime = 0;
@@ -579,7 +579,7 @@ static int process(struct mixstatus *st, struct auframe *af)
 		/* a command was invoked */
 		/* process nextmode */
 		if (st->mode != st->nextmode) {
-			debug("mixausrc: mode %s --> %s\n",
+			debug_bs("mixausrc: mode %s --> %s\n",
 					str_mixmode(st->mode),
 					str_mixmode(st->nextmode));
 			if (st->mode == FM_MIX)
@@ -663,7 +663,7 @@ static float conv_volume(const struct pl *pl)
 
 static void print_usage(const char *name)
 {
-	info("mixausrc: Missing parameters. Usage:\n"
+	info_bs("mixausrc: Missing parameters. Usage:\n"
 			"%s <module> <param> [minvol] [ausvol]\n"
 			"module  The audio source module.\n"
 			"param   The audio source parameter. If this is an"
@@ -689,7 +689,7 @@ static int start_process(struct mixstatus* st, const char *name,
 	}
 
 	if (st->mode != FM_IDLE && st->mode != FM_FADEIN) {
-		warning("mixausrc: %s is not possible while mode is %s\n",
+		warning_bs("mixausrc: %s is not possible while mode is %s\n",
 				name, str_mixmode(st->mode));
 		return EINVAL;
 	}
@@ -774,13 +774,13 @@ static int enc_mix_start(struct re_printf *pf, void *arg)
 	(void)pf;
 
 	if (!list_count(&encs)) {
-		warning("mixausrc: no active call\n");
+		warning_bs("mixausrc: no active call\n");
 		return EINVAL;
 	}
 
 	st = encs.head->data;
 
-	debug("mixausrc: %s\n", __func__);
+	debug_bs("mixausrc: %s\n", __func__);
 	return start_process(&st->st, cmdv[0].name, carg);
 }
 
@@ -800,13 +800,13 @@ static int dec_mix_start(struct re_printf *pf, void *arg)
 	(void)pf;
 
 	if (!list_count(&decs)) {
-		warning("mixausrc: no active call\n");
+		warning_bs("mixausrc: no active call\n");
 		return EINVAL;
 	}
 
 	dec = decs.head->data;
 
-	debug("mixausrc: %s\n", __func__);
+	debug_bs("mixausrc: %s\n", __func__);
 	return start_process(&dec->st, cmdv[1].name, carg);
 }
 
@@ -838,7 +838,7 @@ static int enc_mix_stop(struct re_printf *pf, void *unused)
 
 	enc = encs.head->data;
 
-	debug("mixausrc: %s\n", __func__);
+	debug_bs("mixausrc: %s\n", __func__);
 	return stop_process(&enc->st);
 }
 
@@ -862,7 +862,7 @@ static int dec_mix_stop(struct re_printf *pf, void *unused)
 
 	dec = decs.head->data;
 
-	debug("mixausrc: %s\n", __func__);
+	debug_bs("mixausrc: %s\n", __func__);
 	return stop_process(&dec->st);
 }
 

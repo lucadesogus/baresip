@@ -78,7 +78,7 @@ static int process_handler(jack_nframes_t nframes, void *arg)
 
 				if (!st->sampv_rs) {
 
-					warning("jack: could not "
+					warning_bs("jack: could not "
 						"alloc memory\n");
 					return 0;
 				}
@@ -97,7 +97,7 @@ static int process_handler(jack_nframes_t nframes, void *arg)
 				st->sampv_rs, sampc_rs);
 
 			if (err) {
-				info("jack: auresamp err: %d\n", err);
+				info_bs("jack: auresamp err: %d\n", err);
 				return 0;
 			}
 		}
@@ -156,7 +156,7 @@ static void auplay_destructor(void *arg)
 {
 	struct auplay_st *st = arg;
 
-	info("jack: destroy\n");
+	info_bs("jack: destroy\n");
 
 	if (st->client)
 		jack_client_close(st->client);
@@ -205,26 +205,26 @@ static int start_jack(struct auplay_st *st)
 	mem_deref(conf_name);
 
 	if (st->client == NULL) {
-		warning("jack: jack_client_open() failed, "
+		warning_bs("jack: jack_client_open() failed, "
 			"status = 0x%2.0x\n", status);
 
 		if (status & JackServerFailed) {
-			warning("jack: Unable to connect to JACK server\n");
+			warning_bs("jack: Unable to connect to JACK server\n");
 		}
 		return ENODEV;
 	}
 	if (status & JackServerStarted) {
-		info("jack: JACK server started\n");
+		info_bs("jack: JACK server started\n");
 	}
 	client_name = jack_get_client_name(st->client);
-	info("jack: source unique name `%s' assigned\n", client_name);
+	info_bs("jack: source unique name `%s' assigned\n", client_name);
 
 	jack_set_process_callback(st->client, process_handler, st);
 
 	engine_srate = jack_get_sample_rate(st->client);
 	st->nframes  = jack_get_buffer_size(st->client);
 
-	info("jack: engine sample rate: %" PRIu32 " max_frames=%u\n",
+	info_bs("jack: engine sample rate: %" PRIu32 " max_frames=%u\n",
 	     engine_srate, st->nframes);
 
 	/* currently the application must use the same sample-rate
@@ -234,7 +234,7 @@ static int start_jack(struct auplay_st *st)
 		if (st->prm.fmt == AUFMT_S16LE) {
 			int err;
 
-			info("jack: enable resampler:"
+			info_bs("jack: enable resampler:"
 					" %uHz/%uch --> %uHz/%uch\n",
 	    			st->prm.srate, st->prm.ch,
 					engine_srate, st->prm.ch);
@@ -249,7 +249,7 @@ static int start_jack(struct auplay_st *st)
                                      engine_srate, st->prm.ch);
 
 			if (err) {
-				warning("jack: could not setup resampler"
+				warning_bs("jack: could not setup resampler"
                         	        " (%m)\n", err);
 				return EINVAL;
 			}
@@ -258,7 +258,7 @@ static int start_jack(struct auplay_st *st)
 
 		}
 		else {
-			warning("jack: samplerate %uHz expected\n",
+			warning_bs("jack: samplerate %uHz expected\n",
 				engine_srate);
 			return EINVAL;
 		}
@@ -306,7 +306,7 @@ static int start_jack(struct auplay_st *st)
 						    JACK_DEFAULT_AUDIO_TYPE,
 						    JackPortIsOutput, 0);
 		if ( st->portv[ch] == NULL) {
-			warning("jack: no more JACK ports available\n");
+			warning_bs("jack: no more JACK ports available\n");
 			return ENODEV;
 		}
 	}
@@ -315,7 +315,7 @@ static int start_jack(struct auplay_st *st)
 	 * process() callback will start running now. */
 
 	if (jack_activate (st->client)) {
-		warning("jack: cannot activate client");
+		warning_bs("jack: cannot activate client");
 		return ENODEV;
 	}
 
@@ -336,19 +336,19 @@ static int start_jack(struct auplay_st *st)
 		 * physical ports. */
 
 		if (st->device) {
-			info("jack: connect input ports matching regexp %s\n",
+			info_bs("jack: connect input ports matching regexp %s\n",
 				st->device);
 			ports = jack_get_ports (st->client, st->device, NULL,
 				JackPortIsInput);
 		}
 		else {
-			info("jack: connect physical input ports\n");
+			info_bs("jack: connect physical input ports\n");
 			ports = jack_get_ports (st->client, NULL, NULL,
 				JackPortIsInput | JackPortIsPhysical);
 		}
 
 		if (ports == NULL) {
-			warning("jack: no input ports found\n");
+			warning_bs("jack: no input ports found\n");
 			return ENODEV;
 		}
 
@@ -361,7 +361,7 @@ static int start_jack(struct auplay_st *st)
 			if (jack_connect (st->client,
 					jack_port_name (st->portv[ch]),
 						ports[i])) {
-				warning("jack: cannot connect input ports\n");
+				warning_bs("jack: cannot connect input ports\n");
 			}
 
 			++ch;
@@ -387,16 +387,16 @@ int jack_play_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (!stp || !ap || !prm || !wh)
 		return EINVAL;
 
-	info("jack: play %uHz,%uch\n", prm->srate, prm->ch);
+	info_bs("jack: play %uHz,%uch\n", prm->srate, prm->ch);
 
 	if (prm->fmt != AUFMT_FLOAT) {
 		if (prm->fmt == AUFMT_S16LE) {
-			info("jack: NOTE: source sample conversion"
+			info_bs("jack: NOTE: source sample conversion"
 				" needed: %s  -->  %s\n",
 				aufmt_name(prm->fmt), aufmt_name(AUFMT_FLOAT));
 		}
 		else {
-			warning("jack: playback: unsupported "
+			warning_bs("jack: playback: unsupported "
 				"sample format (%s)\n",
 				aufmt_name(prm->fmt));
 			return ENOTSUP;
@@ -425,7 +425,7 @@ int jack_play_alloc(struct auplay_st **stp, const struct auplay *ap,
 		goto out;
 
 
-	info("jack: sampc=%zu\n", st->sampc);
+	info_bs("jack: sampc=%zu\n", st->sampc);
 
  out:
 	if (err)

@@ -65,11 +65,11 @@ static int set_hwframe_ctx(AVCodecContext *ctx, AVBufferRef *device_ctx,
 	AVHWFramesContext *frames_ctx = NULL;
 	int err = 0;
 
-	info("avcodec: encode: create hardware frames.. (%d x %d)\n",
+	info_bs("avcodec: encode: create hardware frames.. (%d x %d)\n",
 	     width, height);
 
 	if (!(hw_frames_ref = av_hwframe_ctx_alloc(device_ctx))) {
-		warning("avcodec: encode: Failed to create hardware"
+		warning_bs("avcodec: encode: Failed to create hardware"
 			" frame context.\n");
 		return ENOMEM;
 	}
@@ -82,7 +82,7 @@ static int set_hwframe_ctx(AVCodecContext *ctx, AVBufferRef *device_ctx,
 	frames_ctx->initial_pool_size = 20;
 
 	if ((err = av_hwframe_ctx_init(hw_frames_ref)) < 0) {
-		warning("avcodec: encode:"
+		warning_bs("avcodec: encode:"
 			" Failed to initialize hardware frame context."
 			"Error code: %s\n",av_err2str(err));
 		av_buffer_unref(&hw_frames_ref);
@@ -122,7 +122,7 @@ static int init_encoder(struct videnc_state *st, const char *name)
 
 		st->codec = avcodec_h264enc;
 
-		info("avcodec: h264 encoder activated\n");
+		info_bs("avcodec: h264 encoder activated\n");
 
 		return 0;
 	}
@@ -131,7 +131,7 @@ static int init_encoder(struct videnc_state *st, const char *name)
 
 		st->codec = avcodec_h265enc;
 
-		info("avcodec: h265 encoder activated\n");
+		info_bs("avcodec: h265 encoder activated\n");
 
 		return 0;
 	}
@@ -216,21 +216,21 @@ static int open_encoder(struct videnc_state *st,
 			err = av_opt_set(st->ctx->priv_data,
 					 "preset", "llhp", 0);
 			if (err < 0) {
-				debug("avcodec: h264 nvenc setting preset "
+				debug_bs("avcodec: h264 nvenc setting preset "
 				      "\"llhp\" failed; error: %u\n", err);
 			}
 			else {
-				debug("avcodec: h264 nvenc preset "
+				debug_bs("avcodec: h264 nvenc preset "
 				      "\"llhp\" selected\n");
 			}
 			err = av_opt_set_int(st->ctx->priv_data,
 					     "2pass", 1, 0);
 			if (err < 0) {
-				debug("avcodec: h264 nvenc option "
+				debug_bs("avcodec: h264 nvenc option "
 				      "\"2pass\" failed; error: %u\n", err);
 			}
 			else {
-				debug("avcodec: h264 nvenc option "
+				debug_bs("avcodec: h264 nvenc option "
 				      "\"2pass\" selected\n");
 			}
 		}
@@ -251,7 +251,7 @@ static int open_encoder(struct videnc_state *st,
 				      size->w, size->h);
 		if (err < 0) {
 
-			warning("avcodec: encode: Failed to set"
+			warning_bs("avcodec: encode: Failed to set"
 				" hwframe context.\n");
 			goto out;
 		}
@@ -282,7 +282,7 @@ static int decode_sdpparam_h264(struct videnc_state *st, const struct pl *name,
 
 		if (st->u.h264.packetization_mode != 0 &&
 		    st->u.h264.packetization_mode != 1 ) {
-			warning("avcodec: illegal packetization-mode %u\n",
+			warning_bs("avcodec: illegal packetization-mode %u\n",
 				st->u.h264.packetization_mode);
 			return EPROTO;
 		}
@@ -290,7 +290,7 @@ static int decode_sdpparam_h264(struct videnc_state *st, const struct pl *name,
 	else if (0 == pl_strcasecmp(name, "profile-level-id")) {
 		struct pl prof = *val;
 		if (prof.l != 6) {
-			warning("avcodec: invalid profile-level-id (%r)\n",
+			warning_bs("avcodec: invalid profile-level-id (%r)\n",
 				val);
 			return EPROTO;
 		}
@@ -345,7 +345,7 @@ int avcodec_encode_update(struct videnc_state **vesp,
 
 	st->codec_id = avcodec_resolve_codecid(vc->name);
 	if (st->codec_id == AV_CODEC_ID_NONE) {
-		warning("avcodec: unknown encoder (%s)\n", vc->name);
+		warning_bs("avcodec: unknown encoder (%s)\n", vc->name);
 		err = EINVAL;
 		goto out;
 	}
@@ -360,7 +360,7 @@ int avcodec_encode_update(struct videnc_state **vesp,
 
 	err = init_encoder(st, vc->name);
 	if (err) {
-		warning("avcodec: %s: could not init encoder\n", vc->name);
+		warning_bs("avcodec: %s: could not init encoder\n", vc->name);
 		goto out;
 	}
 
@@ -372,7 +372,7 @@ int avcodec_encode_update(struct videnc_state **vesp,
 		fmt_param_apply(&sdp_fmtp, param_handler, st);
 	}
 
-	debug("avcodec: video encoder %s: %.2f fps, %d bit/s, pktsize=%u\n",
+	debug_bs("avcodec: video encoder %s: %.2f fps, %d bit/s, pktsize=%u\n",
 	      vc->name, prm->fps, prm->bitrate, prm->pktsize);
 
  out:
@@ -404,14 +404,14 @@ int avcodec_encode(struct videnc_state *st, bool update,
 
 		pix_fmt = vidfmt_to_avpixfmt(frame->fmt);
 		if (pix_fmt == AV_PIX_FMT_NONE) {
-			warning("avcodec: pixel format not supported (%s)\n",
+			warning_bs("avcodec: pixel format not supported (%s)\n",
 				vidfmt_name(frame->fmt));
 			return ENOTSUP;
 		}
 
 		err = open_encoder(st, &st->encprm, &frame->size, pix_fmt);
 		if (err) {
-			warning("avcodec: open_encoder: %m\n", err);
+			warning_bs("avcodec: open_encoder: %m\n", err);
 			return err;
 		}
 
@@ -443,7 +443,7 @@ int avcodec_encode(struct videnc_state *st, bool update,
 	}
 
 	if (update) {
-		debug("avcodec: encoder picture update\n");
+		debug_bs("avcodec: encoder picture update\n");
 #if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(58, 29, 100)
 		pict->flags |= AV_FRAME_FLAG_KEY;
 #else
@@ -458,7 +458,7 @@ int avcodec_encode(struct videnc_state *st, bool update,
 
 		if ((err = av_hwframe_get_buffer(st->ctx->hw_frames_ctx,
 						 hw_frame, 0)) < 0) {
-			warning("avcodec: encode: Error code: %s.\n",
+			warning_bs("avcodec: encode: Error code: %s.\n",
 				av_err2str(err));
 			goto out;
 		}
@@ -469,7 +469,7 @@ int avcodec_encode(struct videnc_state *st, bool update,
 		}
 
 		if ((err = av_hwframe_transfer_data(hw_frame, pict, 0)) < 0) {
-			warning("avcodec: encode: Error while transferring"
+			warning_bs("avcodec: encode: Error while transferring"
 				" frame data to surface."
 				"Error code: %s.\n", av_err2str(err));
 			goto out;

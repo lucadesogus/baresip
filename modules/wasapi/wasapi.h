@@ -8,7 +8,7 @@
 #define REF_PER_MS 10000LL
 #define CHECK_HR(hr, msg)                                                     \
 	if (FAILED((hr))) {                                                   \
-		warning("%s: 0x%08x\n", (msg), (hr));                         \
+		warning_bs("%s: 0x%08x\n", (msg), (hr));                         \
 		err = ENODATA;                                                \
 		goto out;                                                     \
 	}

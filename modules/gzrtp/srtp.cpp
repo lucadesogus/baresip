@@ -219,7 +219,7 @@ int Srtp::protect_int(struct mbuf *mb, bool control)
 
 	if (extra == 0) {
 		if (mbuf_resize(mb, mb->size + 64)) {
-			warning("zrtp: protect: mbuf resizing failed\n");
+			warning_bs("zrtp: protect: mbuf resizing failed\n");
 			return ENOMEM;
 		}
 		len = mbuf_get_left(mb);
@@ -259,7 +259,7 @@ int Srtp::protect_int(struct mbuf *mb, bool control)
 
 	if (len > mbuf_get_space(mb)) {
 		// this should never happen
-		warning("zrtp: protect: length > space (%u > %u)\n",
+		warning_bs("zrtp: protect: length > space (%u > %u)\n",
 			len, mbuf_get_space(mb));
 		abort();
 	}

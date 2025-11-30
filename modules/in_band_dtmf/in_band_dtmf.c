@@ -121,7 +121,7 @@ static int encode(struct aufilt_enc_st *aufilt_enc_st, struct auframe *af)
 	if (mbuf_get_left(st->mb)) {
 
 		if (af->fmt != AUFMT_S16LE) {
-			warning("in_band_dtmf: sample format %s not"
+			warning_bs("in_band_dtmf: sample format %s not"
 					" supported\n",
 					aufmt_name(af->fmt));
 			return EINVAL;
@@ -176,7 +176,7 @@ static int decode(struct aufilt_dec_st *st, struct auframe *af)
 		return EINVAL;
 
 	if (af->fmt != AUFMT_S16LE) {
-		warning("in_band_dtmf: sample format %s not supported\n",
+		warning_bs("in_band_dtmf: sample format %s not supported\n",
 				aufmt_name(af->fmt));
 		return EINVAL;
 	}
@@ -188,7 +188,7 @@ static int decode(struct aufilt_dec_st *st, struct auframe *af)
 
 static void print_usage(void)
 {
-	info("in_band_dtmf: Missing parameter. Usage:\n"
+	info_bs("in_band_dtmf: Missing parameter. Usage:\n"
 			"in_band_dtmf_send <sequence>\n"
 			"sequence Sequence of DTMF tones to encode.\n");
 }
@@ -215,7 +215,7 @@ static int in_band_dtmf_send(struct re_printf *pf, void *arg)
 	(void)pf;
 
 	if (list_isempty(&encs)) {
-		warning("in_band_dtmf: no active call\n");
+		warning_bs("in_band_dtmf: no active call\n");
 		return EINVAL;
 	}
 
@@ -246,7 +246,7 @@ static int in_band_dtmf_send(struct re_printf *pf, void *arg)
 			mbuf_fill(st->mb, 0, bytes_count);
 			break;
 
-		default: warning("in_band_dtmf: skip unsupported DTMF "
+		default: warning_bs("in_band_dtmf: skip unsupported DTMF "
 				"character: %c\n", digit);
 			break;
 		}

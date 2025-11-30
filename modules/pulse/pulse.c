@@ -188,7 +188,7 @@ static int paconn_start(struct paconn_st **ppaconn)
 		err = EINVAL;
 
 	pa_threaded_mainloop_unlock(c->mainloop);
-	info ("pulse: initialized (%m)\n", err);
+	info_bs("pulse: initialized (%m)\n", err);
 
   out:
 	if (err)

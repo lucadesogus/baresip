@@ -35,7 +35,7 @@ static void peerconnection_gather_handler(void *arg)
 		break;
 
 	case SS_HAVE_LOCAL_OFFER:
-		warning("demo: illegal state HAVE_LOCAL_OFFER\n");
+		warning_bs("demo: illegal state HAVE_LOCAL_OFFER\n");
 		type = SDP_OFFER;
 		break;
 
@@ -44,7 +44,7 @@ static void peerconnection_gather_handler(void *arg)
 		break;
 	}
 
-	info("demo: session gathered -- send sdp '%s'\n", sdptype_name(type));
+	info_bs("demo: session gathered -- send sdp '%s'\n", sdptype_name(type));
 
 	if (type == SDP_OFFER)
 		err = peerconnection_create_offer(sess->pc, &mb_sdp);
@@ -59,7 +59,7 @@ static void peerconnection_gather_handler(void *arg)
 
 	err = http_reply_json(sess->conn_pending, sess->id, od);
 	if (err) {
-		warning("demo: reply error: %m\n", err);
+		warning_bs("demo: reply error: %m\n", err);
 		goto out;
 	}
 
@@ -67,7 +67,7 @@ static void peerconnection_gather_handler(void *arg)
 
 		err = peerconnection_start_ice(sess->pc);
 		if (err) {
-			warning("demo: failed to start ice (%m)\n", err);
+			warning_bs("demo: failed to start ice (%m)\n", err);
 			goto out;
 		}
 	}
@@ -86,7 +86,7 @@ static void peerconnection_estab_handler(struct media_track *media, void *arg)
 	struct session *sess = arg;
 	int err = 0;
 
-	info("demo: stream established: '%s'\n",
+	info_bs("demo: stream established: '%s'\n",
 	     media_kind_name(mediatrack_kind(media)));
 
 	switch (mediatrack_kind(media)) {
@@ -95,14 +95,14 @@ static void peerconnection_estab_handler(struct media_track *media, void *arg)
 		err = mediatrack_start_audio(media, baresip_ausrcl(),
 					     baresip_aufiltl());
 		if (err) {
-			warning("demo: could not start audio (%m)\n", err);
+			warning_bs("demo: could not start audio (%m)\n", err);
 		}
 		break;
 
 	case MEDIA_KIND_VIDEO:
 		err = mediatrack_start_video(media);
 		if (err) {
-			warning("demo: could not start video (%m)\n", err);
+			warning_bs("demo: could not start video (%m)\n", err);
 		}
 		break;
 
@@ -123,7 +123,7 @@ static void peerconnection_close_handler(int err, void *arg)
 {
 	struct session *sess = arg;
 
-	warning("demo: session closed (%m)\n", err);
+	warning_bs("demo: session closed (%m)\n", err);
 
 	session_close(sess, err);
 }
@@ -147,21 +147,21 @@ int session_start(struct session *sess,
 				 peerconnection_estab_handler,
 				 peerconnection_close_handler, sess);
 	if (err) {
-		warning("demo: session alloc failed (%m)\n", err);
+		warning_bs("demo: session alloc failed (%m)\n", err);
 		return err;
 	}
 
 	err = peerconnection_add_audio_track(sess->pc, config,
 					     baresip_aucodecl(), SDP_SENDRECV);
 	if (err) {
-		warning("demo: add_audio failed (%m)\n", err);
+		warning_bs("demo: add_audio failed (%m)\n", err);
 		return err;
 	}
 
 	err = peerconnection_add_video_track(
 		sess->pc, config, baresip_vidcodecl(), SDP_SENDRECV);
 	if (err) {
-		warning("demo: add_video failed (%m)\n", err);
+		warning_bs("demo: add_video failed (%m)\n", err);
 		return err;
 	}
 
@@ -173,7 +173,7 @@ int session_new(struct list *sessl, struct session **sessp)
 {
 	struct session *sess;
 
-	info("demo: create session\n");
+	info_bs("demo: create session\n");
 
 	sess = mem_zalloc(sizeof(*sess), destructor);
 	if (!sess)
@@ -198,7 +198,7 @@ struct session *session_lookup(const struct list *sessl,
 
 	hdr = http_msg_xhdr(msg, "Session-ID");
 	if (!hdr) {
-		warning("demo: no Session-ID header\n");
+		warning_bs("demo: no Session-ID header\n");
 		return NULL;
 	}
 
@@ -210,7 +210,7 @@ struct session *session_lookup(const struct list *sessl,
 			return sess;
 	}
 
-	warning("demo: session not found (%r)\n", &hdr->val);
+	warning_bs("demo: session not found (%r)\n", &hdr->val);
 
 	return NULL;
 }
@@ -229,7 +229,7 @@ int session_handle_ice_candidate(struct session *sess, const struct odict *od)
 	cand = odict_string(od, "candidate");
 	mid  = odict_string(od, "sdpMid");
 	if (!cand || !mid) {
-		warning("demo: candidate: missing 'candidate' or 'mid'\n");
+		warning_bs("demo: candidate: missing 'candidate' or 'mid'\n");
 		return EPROTO;
 	}
 
@@ -253,9 +253,9 @@ void session_close(struct session *sess, int err)
 		return;
 
 	if (err)
-		warning("demo: session '%s' closed (%m)\n", sess->id, err);
+		warning_bs("demo: session '%s' closed (%m)\n", sess->id, err);
 	else
-		info("demo: session '%s' closed\n", sess->id);
+		info_bs("demo: session '%s' closed\n", sess->id);
 
 	sess->pc = mem_deref(sess->pc);
 

@@ -134,14 +134,14 @@ static int read_stream_open(struct ausrc_st *st, const struct ausrc_prm *prm,
 	err = Pa_OpenStream(&st->stream_rd, &prm_in, NULL, prm->srate,
 			    frames_per_buffer, paNoFlag, read_callback, st);
 	if (paNoError != err) {
-		warning("portaudio: read: Pa_OpenStream: %s\n",
+		warning_bs("portaudio: read: Pa_OpenStream: %s\n",
 			Pa_GetErrorText(err));
 		return EINVAL;
 	}
 
 	err = Pa_StartStream(st->stream_rd);
 	if (paNoError != err) {
-		warning("portaudio: read: Pa_StartStream: %s\n",
+		warning_bs("portaudio: read: Pa_StartStream: %s\n",
 			Pa_GetErrorText(err));
 		return EINVAL;
 	}
@@ -167,14 +167,14 @@ static int write_stream_open(struct auplay_st *st,
 	err = Pa_OpenStream(&st->stream_wr, NULL, &prm_out, prm->srate,
 			    frames_per_buffer, paNoFlag, write_callback, st);
 	if (paNoError != err) {
-		warning("portaudio: write: Pa_OpenStream: %s\n",
+		warning_bs("portaudio: write: Pa_OpenStream: %s\n",
 			Pa_GetErrorText(err));
 		return EINVAL;
 	}
 
 	err = Pa_StartStream(st->stream_wr);
 	if (paNoError != err) {
-		warning("portaudio: write: Pa_StartStream: %s\n",
+		warning_bs("portaudio: write: Pa_StartStream: %s\n",
 			Pa_GetErrorText(err));
 		return EINVAL;
 	}
@@ -326,7 +326,7 @@ static int pa_init(void)
 		fs_stdio_restore();
 	}
 	if (paNoError != paerr) {
-		warning("portaudio: init: %s\n", Pa_GetErrorText(paerr));
+		warning_bs("portaudio: init: %s\n", Pa_GetErrorText(paerr));
 		return ENODEV;
 	}
 
@@ -343,7 +343,7 @@ static int pa_init(void)
 
 	int n = Pa_GetDeviceCount();
 
-	info("portaudio: device count is %d\n", n);
+	info_bs("portaudio: device count is %d\n", n);
 
 	for (int i = 0; i < n; i++) {
 		struct mediadev *dev;
@@ -361,12 +361,12 @@ static int pa_init(void)
 		re_snprintf(devname, sizeof(devname), "%s: %s", apiinfo->name,
 			    devinfo->name);
 
-		debug("portaudio: device %d: %s\n", i, devname);
+		debug_bs("portaudio: device %d: %s\n", i, devname);
 
 		if (devinfo->maxInputChannels > 0) {
 			err = mediadev_add(&ausrc->dev_list, devname);
 			if (err) {
-				warning("portaudio: mediadev err %m\n", err);
+				warning_bs("portaudio: mediadev err %m\n", err);
 				return err;
 			}
 
@@ -384,7 +384,7 @@ static int pa_init(void)
 		if (devinfo->maxOutputChannels > 0) {
 			err = mediadev_add(&auplay->dev_list, devname);
 			if (err) {
-				warning("portaudio: mediadev err %m\n", err);
+				warning_bs("portaudio: mediadev err %m\n", err);
 				return err;
 			}
 

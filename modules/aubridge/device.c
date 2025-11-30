@@ -58,7 +58,7 @@ static int device_thread(void *arg)
 	size_t sampc;
 	size_t sampsz;
 
-	info("aubridge: thread start: %u Hz, %u channels, format=%s\n",
+	info_bs("aubridge: thread start: %u Hz, %u channels, format=%s\n",
 	     dev->auplay->prm.srate, dev->auplay->prm.ch,
 	     aufmt_name(dev->auplay->prm.fmt));
 
@@ -143,7 +143,7 @@ int aubridge_device_connect(struct device **devp, const char *device,
 
 		*devp = dev;
 
-		info("aubridge: created device '%s'\n", device);
+		info_bs("aubridge: created device '%s'\n", device);
 	}
 
 	if (auplay)
@@ -157,7 +157,7 @@ int aubridge_device_connect(struct device **devp, const char *device,
 		    dev->auplay->prm.ch != dev->ausrc->prm.ch ||
 		    dev->auplay->prm.fmt != dev->ausrc->prm.fmt) {
 
-			warning("aubridge: incompatible ausrc/auplay "
+			warning_bs("aubridge: incompatible ausrc/auplay "
 				"parameters\n");
 			return EINVAL;
 		}

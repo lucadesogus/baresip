@@ -236,7 +236,7 @@ void _loglv(bool safe, enum log_level level, const char *fmt, ...)
  * @param fmt   Formatted message
  * @param ...   Variable arguments
  */
-void _debug(bool safe, const char *fmt, ...)
+void _debug_bs(bool safe, const char *fmt, ...)
 {
 	va_list ap;
 
@@ -253,7 +253,7 @@ void _debug(bool safe, const char *fmt, ...)
  * @param fmt   Formatted message
  * @param ...   Variable arguments
  */
-void _info(bool safe, const char *fmt, ...)
+void _info_bs(bool safe, const char *fmt, ...)
 {
 	va_list ap;
 
@@ -270,7 +270,7 @@ void _info(bool safe, const char *fmt, ...)
  * @param fmt   Formatted message
  * @param ...   Variable arguments
  */
-void _warning(bool safe, const char *fmt, ...)
+void _warning_bs(bool safe, const char *fmt, ...)
 {
 	va_list ap;
 

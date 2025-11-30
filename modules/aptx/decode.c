@@ -47,7 +47,7 @@ int aptx_decode_update(struct audec_state **adsp, const struct aucodec *ac,
 
 	ads->dec = aptx_init(APTX_VARIANT);
 	if (!ads->dec) {
-		warning("aptx: Cannot initialize decoder.\n");
+		warning_bs("aptx: Cannot initialize decoder.\n");
 		err = ENOMEM;
 		goto out;
 	}
@@ -83,7 +83,7 @@ int aptx_decode_frm(struct audec_state *ads, int fmt, void *sampv,
 		return 0;
 
 	if (processed != len)
-		warning("aptx: Decoding stopped in the middle of the sample, "
+		warning_bs("aptx: Decoding stopped in the middle of the sample, "
 		        "dropped %u bytes\n",
 		        (unsigned int)(len - processed));
 

@@ -43,7 +43,7 @@ int webrtc_aec_decode_update(struct aufilt_dec_st **stp, void **ctx,
 		break;
 
 	default:
-		warning("webrtc_aec: dec: unsupported sample format (%s)\n",
+		warning_bs("webrtc_aec: dec: unsupported sample format (%s)\n",
 			aufmt_name((enum aufmt)prm->fmt));
 		return ENOTSUP;
 	}
@@ -90,7 +90,7 @@ static int decode_float(struct aec_dec *dec, float *sampv, size_t sampc)
 		r = aec->inst->ProcessReverseStream(&src, config, config,
 						    &dest);
 		if (r != 0) {
-			warning("webrtc_aec: decode: ProcessReverseStream"
+			warning_bs("webrtc_aec: decode: ProcessReverseStream"
 				" error (%d)\n", r);
 			err = EPROTO;
 			goto out;

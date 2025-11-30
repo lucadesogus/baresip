@@ -28,7 +28,7 @@ static void auplay_destructor(void *arg)
 {
 	struct auplay_st *st = arg;
 
-	info("aaudio: player: closing stream\n");
+	info_bs("aaudio: player: closing stream\n");
 	aaudio_close_stream(st->playerStream);
 
 	st->wh = NULL;
@@ -63,15 +63,15 @@ static void* restart_player_stream(void* data) {
 
 	result = open_player_stream(st);
 	if (result != AAUDIO_OK) {
-		warning("aaudio: failed to open player stream\n");
+		warning_bs("aaudio: failed to open player stream\n");
 		return NULL;
 	}
 
 	result = AAudioStream_requestStart(st->playerStream);
 	if (result != AAUDIO_OK)
-		warning("aaudio: player: failed to start stream\n");
+		warning_bs("aaudio: player: failed to start stream\n");
 	else
-		info("aaudio: player: stream started\n");
+		info_bs("aaudio: player: stream started\n");
 
 	pthread_exit(NULL);
 }
@@ -86,15 +86,15 @@ static void errorCallback(AAudioStream *stream, void *userData,
 
 	aaudio_stream_state_t streamState = AAudioStream_getState(stream);
 	if (streamState == AAUDIO_STREAM_STATE_DISCONNECTED) {
-		info("aaudio: player: stream disconnected\n");
+		info_bs("aaudio: player: stream disconnected\n");
 		res = pthread_create(&thread_id, NULL, restart_player_stream,
 				     (void *)st);
 		if (res) {
-			warning("aaudio: player: error creating thread: %d\n",
+			warning_bs("aaudio: player: error creating thread: %d\n",
 				res);
 			return;
 		}
-		info("aaudio: player: created new thread (%u)\n", thread_id);
+		info_bs("aaudio: player: created new thread (%u)\n", thread_id);
 	}
 }
 
@@ -106,7 +106,7 @@ static int open_player_stream(struct auplay_st *st) {
 
 	result = AAudio_createStreamBuilder(&builder);
 	if (result != AAUDIO_OK) {
-		warning("aaudio: player: failed to create stream builder: "
+		warning_bs("aaudio: player: failed to create stream builder: "
 			"error %s\n", AAudio_convertResultToText(result));
 		return result;
 	}
@@ -127,12 +127,12 @@ static int open_player_stream(struct auplay_st *st) {
 
 	result = AAudioStreamBuilder_openStream(builder, &st->playerStream);
 	if (result != AAUDIO_OK) {
-		warning("aaudio: player: failed to open stream: error %s\n",
+		warning_bs("aaudio: player: failed to open stream: error %s\n",
 			AAudio_convertResultToText(result));
 		return result;
 	}
 
-	info("aaudio: player: opened stream with direction %d, "
+	info_bs("aaudio: player: opened stream with direction %d, "
 	     "sharing mode %d, sample rate %d, format %d, sessionId %d, "
 	     "usage %d, performance mode %d\n",
 	     AAudioStream_getDirection(st->playerStream),
@@ -161,17 +161,17 @@ int aaudio_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (!stp || !ap || !prm || !wh)
 		return EINVAL;
 
-	info ("aadio: opening player (%u Hz, %d channels, device %s, "
+	info_bs("aadio: opening player (%u Hz, %d channels, device %s, "
 		"ptime %u)\n", prm->srate, prm->ch, dev, prm->ptime);
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("aaudio: player: unsupported sample format (%s)\n",
+		warning_bs("aaudio: player: unsupported sample format (%s)\n",
 			aufmt_name((enum aufmt)prm->fmt));
 		return ENOTSUP;
 	}
 
 	if (prm->ch != 1) {
-		warning("aaudio: player: unsupported channel count (%u)\n",
+		warning_bs("aaudio: player: unsupported channel count (%u)\n",
 			prm->ch);
 		return ENOTSUP;
 	}
@@ -191,14 +191,14 @@ int aaudio_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 
 	result = AAudioStream_requestStart(st->playerStream);
 	if (result != AAUDIO_OK) {
-		warning("aaudio: player: failed to start stream\n");
+		warning_bs("aaudio: player: failed to start stream\n");
 		goto out;
 	}
 
 	module_event("aaudio", "player sessionid", NULL, NULL, "%d",
 		     AAudioStream_getSessionId(st->playerStream));
 
-	info ("aaudio: player: stream started\n");
+	info_bs("aaudio: player: stream started\n");
 
   out:
 	if (result != AAUDIO_OK) {

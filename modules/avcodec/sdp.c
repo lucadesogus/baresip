@@ -52,7 +52,7 @@ int avcodec_h264_fmtp_enc(struct mbuf *mb, const struct sdp_format *fmt,
 
 		pl_set_str(&prof, profile_level_id);
 		if (prof.l != 6) {
-			warning("avcodec: invalid profile_level_id"
+			warning_bs("avcodec: invalid profile_level_id"
 				" (%r) using default\n",
 				profile_level_id);
 			goto out;

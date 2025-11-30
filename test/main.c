@@ -118,7 +118,7 @@ static int run_one_test(const struct test *test)
 
 	err = test->exec();
 	if (err) {
-		warning("%s (rx %s): test failed (%m)\n",
+		warning_bs("%s (rx %s): test failed (%m)\n",
 			test->name, rtp_receive_mode_str(rxmode), err);
 		return err;
 	}
@@ -170,7 +170,7 @@ static int run_tests(void)
 
 		err = tests[i].exec();
 		if (err) {
-			warning("%s (rx %s): test failed (%m)\n",
+			warning_bs("%s (rx %s): test failed (%m)\n",
 				tests[i].name, rtp_receive_mode_str(rxmode),
 				err);
 			return err;
@@ -247,7 +247,7 @@ static void ua_exit_handler(void *arg)
 {
 	(void)arg;
 
-	debug("ua exited -- stopping main runloop\n");
+	debug_bs("ua exited -- stopping main runloop\n");
 	re_cancel();
 }
 
@@ -342,7 +342,7 @@ int main(int argc, char *argv[])
 
 	err = conf_configure_buf((uint8_t *)modconfig, str_len(modconfig));
 	if (err) {
-		warning("main: configure failed: %m\n", err);
+		warning_bs("main: configure failed: %m\n", err);
 		goto out;
 	}
 
@@ -406,7 +406,7 @@ int main(int argc, char *argv[])
 
  out:
 	if (err) {
-		warning("test failed (%m)\n", err);
+		warning_bs("test failed (%m)\n", err);
 		re_printf("%H\n", re_debug, NULL);
 	}
 	ua_stop_all(true);

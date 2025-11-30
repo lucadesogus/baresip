@@ -226,7 +226,7 @@ static void tcp_estab_handler(void *arg)
 	struct mnat_media *m = comp->m;
 	int err;
 
-	info("turn: [%u] %s established for '%s'\n", comp->ix,
+	info_bs("turn: [%u] %s established for '%s'\n", comp->ix,
 	     m->sess->secure ? "TLS" : "TCP",
 	     sdp_media_name(m->sdpm));
 	err = turnc_alloc(&comp->turnc, NULL, IPPROTO_TCP, comp->tc, 0,
@@ -352,7 +352,7 @@ static int session_alloc(struct mnat_sess **sessp,
 	if (!sessp || !dnsc || !srv || !user || !pass || !ss || !estabh)
 		return EINVAL;
 
-	debug("turn: session: %H\n", stunuri_print, srv);
+	debug_bs("turn: session: %H\n", stunuri_print, srv);
 
 	switch (srv->scheme) {
 

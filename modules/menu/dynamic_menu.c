@@ -262,14 +262,14 @@ static int attended_xfer(struct re_printf *pf, void *arg)
 	(void)pf;
 
 	if (!str_len(carg->prm)) {
-		info ("menu: no transfer target specified\n");
+		info_bs("menu: no transfer target specified\n");
 		goto out;
 	}
 
 	menu->xfer_call = ua_call(ua);
 
 	if (!call_supported(menu->xfer_call, REPLACES)) {
-		info ("menu: peer does not support Replaces header\n");
+		info_bs("menu: peer does not support Replaces header\n");
 		goto out;
 	}
 
@@ -306,7 +306,7 @@ static int exec_att_xfer(struct re_printf *pf, void *arg)
 		err = call_replace_transfer(menu->xfer_call, ua_call(ua));
 	}
 	else {
-		info ("menu: no pending attended call transfer available\n");
+		info_bs("menu: no pending attended call transfer available\n");
 		err = ECANCELED;
 	}
 

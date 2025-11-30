@@ -149,7 +149,7 @@ int audiounit_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 				   kAudioUnitScope_Output, outputBus,
 				   &enable, sizeof(enable));
 	if (ret) {
-		warning("audiounit: EnableIO failed (%d)\n", ret);
+		warning_bs("audiounit: EnableIO failed (%d)\n", ret);
 		goto out;
 	}
 
@@ -201,12 +201,12 @@ int audiounit_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (ret)
 		goto out;
 
-	debug("audiounit: player hardware sample rate is now at %f Hz\n",
+	debug_bs("audiounit: player hardware sample rate is now at %f Hz\n",
 	      hw_srate);
 
  out:
 	if (ret) {
-		warning("audiounit: player failed: %d (%c%c%c%c)\n", ret,
+		warning_bs("audiounit: player failed: %d (%c%c%c%c)\n", ret,
 			ret>>24, ret>>16, ret>>8, ret);
 		err = ENODEV;
 	}

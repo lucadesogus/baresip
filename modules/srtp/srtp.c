@@ -180,7 +180,7 @@ static int start_srtp(struct menc_st *st, const char *suite_name)
 	if (!st->srtp_tx) {
 		err = srtp_alloc(&st->srtp_tx, suite, st->key_tx, len, 0);
 		if (err) {
-			warning("srtp: srtp_alloc TX failed (%m)\n", err);
+			warning_bs("srtp: srtp_alloc TX failed (%m)\n", err);
 			mtx_unlock(st->mtx_tx);
 			return err;
 		}
@@ -191,7 +191,7 @@ static int start_srtp(struct menc_st *st, const char *suite_name)
 	if (!st->srtp_rx) {
 		err = srtp_alloc(&st->srtp_rx, suite, st->key_rx, len, 0);
 		if (err) {
-			warning("srtp: srtp_alloc RX failed (%m)\n", err);
+			warning_bs("srtp: srtp_alloc RX failed (%m)\n", err);
 			mtx_unlock(st->mtx_rx);
 			return err;
 		}
@@ -221,7 +221,7 @@ static bool send_handler(int *err, struct sa *dst, struct mbuf *mb, void *arg)
 
 	if (!st->srtp_tx) {
 		lerr = EBUSY;
-		warning("srtp: srtp_tx not ready\n");
+		warning_bs("srtp: srtp_tx not ready\n");
 		goto unlock_out;
 	}
 
@@ -236,7 +236,7 @@ unlock_out:
 	mtx_unlock(st->mtx_tx);
 out:
 	if (lerr) {
-		warning("srtp: failed to encrypt %s-packet"
+		warning_bs("srtp: failed to encrypt %s-packet"
 			      " with %zu bytes (%m)\n",
 			      is_rtcp_packet(mb) ? "RTCP" : "RTP",
 			      len, lerr);
@@ -267,7 +267,7 @@ static bool recv_handler(struct sa *src, struct mbuf *mb, void *arg)
 
 	if (!st->srtp_rx) {
 		err = EBUSY;
-		warning("srtp: srtp_rx not ready (%m)\n", err);
+		warning_bs("srtp: srtp_rx not ready (%m)\n", err);
 		mtx_unlock(st->mtx_rx);
 		goto out;
 	}
@@ -275,14 +275,14 @@ static bool recv_handler(struct sa *src, struct mbuf *mb, void *arg)
 	if (is_rtcp_packet(mb)) {
 		err = srtcp_decrypt(st->srtp_rx, mb);
 		if (err) {
-			warning("srtp: failed to decrypt RTCP packet"
+			warning_bs("srtp: failed to decrypt RTCP packet"
 				" with %zu bytes (%m)\n", len, err);
 		}
 	}
 	else {
 		err = srtp_decrypt(st->srtp_rx, mb);
 		if (err) {
-			warning("srtp: failed to decrypt RTP packet"
+			warning_bs("srtp: failed to decrypt RTP packet"
 				" with %zu bytes (%m)\n", len, err);
 		}
 	}
@@ -334,14 +334,14 @@ static int start_crypto(struct menc_st *st, const struct pl *key_info)
 	}
 
 	if (len != olen) {
-		warning("srtp: %s: %s: srtp keylen is %u (should be %zu)\n",
+		warning_bs("srtp: %s: %s: srtp keylen is %u (should be %zu)\n",
 			stream_name(st->strm), st->crypto_suite, olen, len);
 		mem_deref(new_key);
 		return err;
 	}
 
 	if (olen > sizeof(st->key_rx)) {
-		warning("srtp: %s: received key exceeds max key length\n",
+		warning_bs("srtp: %s: received key exceeds max key length\n",
 			stream_name(st->strm));
 		mem_deref(new_key);
 		return ERANGE;
@@ -350,7 +350,7 @@ static int start_crypto(struct menc_st *st, const struct pl *key_info)
 	/* receiving key-info changed -> reset srtp_rx */
 	if (st->srtp_rx && mem_seccmp(st->key_rx, new_key,
 		sizeof(st->key_rx) > olen ? olen : sizeof(st->key_rx))) {
-		info("srtp: %s: re-keying in progress\n",
+		info_bs("srtp: %s: re-keying in progress\n",
 			stream_name(st->strm));
 		mtx_lock(st->mtx_rx);
 		st->srtp_rx = mem_deref(st->srtp_rx);
@@ -365,7 +365,7 @@ static int start_crypto(struct menc_st *st, const struct pl *key_info)
 	if (err)
 		return err;
 
-	info("srtp: %s: SRTP is Enabled (cryptosuite=%s)\n",
+	info_bs("srtp: %s: SRTP is Enabled (cryptosuite=%s)\n",
 	     sdp_media_name(st->sdpm), st->crypto_suite);
 
 	if (st->sess->eventh) {
@@ -376,7 +376,7 @@ static int start_crypto(struct menc_st *st, const struct pl *key_info)
 					 (struct stream *)st->strm,
 					 st->sess->arg);
 		else
-			warning("srtp: failed to print secure"
+			warning_bs("srtp: failed to print secure"
 				" event arguments\n");
 	}
 
@@ -401,7 +401,7 @@ static bool sdp_attr_handler(const char *name, const char *value, void *arg)
 
 	/* receiving crypto-suite changed -> reset srtp_rx */
 	if (st->srtp_rx && pl_strcmp(&c.suite, st->crypto_suite)) {
-		info ("srtp (%s-rx): cipher suite changed from %s to %r\n",
+		info_bs("srtp (%s-rx): cipher suite changed from %s to %r\n",
 			stream_name(st->strm), st->crypto_suite, &c.suite);
 		mtx_lock(st->mtx_rx);
 		st->srtp_rx = mem_deref(st->srtp_rx);
@@ -440,7 +440,7 @@ static int media_txrekey(struct menc_media *m)
 		rattr = sdp_media_rattr_apply(st->sdpm, "crypto",
 					      sdp_attr_handler, st);
 		if (!rattr) {
-			warning("srtp: no valid a=crypto attribute from"
+			warning_bs("srtp: no valid a=crypto attribute from"
 				" remote peer\n");
 		}
 	}
@@ -554,7 +554,7 @@ static int media_alloc(struct menc_media **stp, struct menc_sess *sess,
 		rattr = sdp_media_rattr_apply(st->sdpm, "crypto",
 					      sdp_attr_handler, st);
 		if (!rattr) {
-			warning("srtp: no valid a=crypto attribute from"
+			warning_bs("srtp: no valid a=crypto attribute from"
 				" remote peer\n");
 		}
 	}

@@ -482,7 +482,7 @@ static inline void send_gnack(struct jbuf *jb, uint16_t last_seq,
 		blp |= (1 << i);
 	}
 
-	debug("jbuf: RTCP_GNACK missing: %u diff: %d blp: %02X\n", pid,
+	debug_bs("jbuf: RTCP_GNACK missing: %u diff: %d blp: %02X\n", pid,
 		seq_diff, blp);
 
 	rtcp_send_gnack(jb->gnack_rtp, jb->ssrc, pid, blp);

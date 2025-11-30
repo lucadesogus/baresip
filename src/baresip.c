@@ -112,7 +112,7 @@ int baresip_init(struct config *cfg)
 	/* Initialise Network */
 	err = net_alloc(&baresip.net, &cfg->net);
 	if (err) {
-		warning("baresip: network init failed: %m\n", err);
+		warning_bs("baresip: network init failed: %m\n", err);
 		return err;
 	}
 
@@ -130,7 +130,7 @@ int baresip_init(struct config *cfg)
 
 	err = message_init(&baresip.message);
 	if (err) {
-		warning("baresip: message init failed: %m\n", err);
+		warning_bs("baresip: message init failed: %m\n", err);
 		return err;
 	}
 

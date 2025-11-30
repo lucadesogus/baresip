@@ -59,7 +59,7 @@ int avformat_audio_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if (!stp || !as || !prm || !readh)
 		return EINVAL;
 
-	info("avformat: audio: loading input file '%s'\n", dev);
+	info_bs("avformat: audio: loading input file '%s'\n", dev);
 
 	st = mem_zalloc(sizeof(*st), audio_destructor);
 	if (!st)
@@ -84,7 +84,7 @@ int avformat_audio_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	sh = st->shared;
 
 	if (st->shared->au.idx < 0 || !st->shared->au.ctx) {
-		info("avformat: audio: media file has no audio stream\n");
+		info_bs("avformat: audio: media file has no audio stream\n");
 		err = ENOENT;
 		goto out;
 	}
@@ -103,7 +103,7 @@ int avformat_audio_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	int channels = sh->au.ctx->channels;
 #endif
 
-	info("avformat: audio: converting %d/%d %s -> %u/%u %s\n",
+	info_bs("avformat: audio: converting %d/%d %s -> %u/%u %s\n",
 	     sh->au.ctx->sample_rate, channels,
 	     av_get_sample_fmt_name(sh->au.ctx->sample_fmt),
 	     prm->srate, prm->ch, aufmt_name(prm->fmt));
@@ -164,7 +164,7 @@ void avformat_audio_decode(struct shared *st, AVPacket *pkt)
 
 		ret = swr_convert_frame(st->ausrc_st->swr, &frame2, &frame);
 		if (ret) {
-			warning("avformat: swr_convert_frame failed (%d)\n",
+			warning_bs("avformat: swr_convert_frame failed (%d)\n",
 				ret);
 			goto unlock;
 		}

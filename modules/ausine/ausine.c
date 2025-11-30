@@ -60,7 +60,7 @@ static void destructor(void *arg)
 	struct ausrc_st *st = arg;
 	/* Wait for termination of other thread */
 	if (re_atomic_rlx(&st->run)) {
-		debug("ausine: stopping play thread\n");
+		debug_bs("ausine: stopping play thread\n");
 		re_atomic_rlx_set(&st->run, false);
 		thrd_join(st->thread, NULL);
 	}
@@ -215,7 +215,7 @@ static int alloc_handler(struct ausrc_st **stp, const struct ausrc *as,
 		return EINVAL;
 
 	if (prm->fmt != AUFMT_S16LE && prm->fmt != AUFMT_FLOAT) {
-		warning("ausine: unsupported sample format (%s)\n",
+		warning_bs("ausine: unsupported sample format (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}
@@ -238,19 +238,19 @@ static int alloc_handler(struct ausrc_st **stp, const struct ausrc *as,
 	}
 
 	if (st->freq < 10 || st->freq > 20000) {
-		warning("ausine: frequency must be between 10 and 20000 Hz\n");
+		warning_bs("ausine: frequency must be between 10 and 20000 Hz\n");
 		err = ENOTSUP;
 		goto out;
 	}
 
-	info("ausine: %u Hz, %d channels, frequency %d Hz CH_MODE: %d\n",
+	info_bs("ausine: %u Hz, %d channels, frequency %d Hz CH_MODE: %d\n",
 					prm->srate, prm->ch, st->freq, st->ch);
 
 	st->sampc = prm->srate * prm->ch * prm->ptime / 1000;
 
 	st->ptime = prm->ptime;
 
-	info("ausine: audio ptime=%u sampc=%zu\n",
+	info_bs("ausine: audio ptime=%u sampc=%zu\n",
 	     st->ptime, st->sampc);
 
 	re_atomic_rlx_set(&st->run, true);

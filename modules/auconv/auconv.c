@@ -107,7 +107,7 @@ static int process_frame(void *buf, enum aufmt target_fmt,
 		break;
 
 	default:
-		warning("auconv: format not supported (%s)\n",
+		warning_bs("auconv: format not supported (%s)\n",
 			aufmt_name(target_fmt));
 		return ENOTSUP;
 	}

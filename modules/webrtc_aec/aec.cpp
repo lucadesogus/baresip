@@ -54,7 +54,7 @@ int webrtc_aec_alloc(struct aec **stp, void **ctx, struct aufilt_prm *prm)
 		return EINVAL;
 
 	if (prm->ch > MAX_CHANNELS) {
-		warning("webrtc_aec: unsupported channels (%u > %u)\n",
+		warning_bs("webrtc_aec: unsupported channels (%u > %u)\n",
 			prm->ch, MAX_CHANNELS);
 		return ENOTSUP;
 	}
@@ -64,7 +64,7 @@ int webrtc_aec_alloc(struct aec **stp, void **ctx, struct aufilt_prm *prm)
 
 		if (prm->srate != aec->srate) {
 
-			warning("webrtc_aec: srate mismatch\n");
+			warning_bs("webrtc_aec: srate mismatch\n");
 			return ENOTSUP;
 		}
 
@@ -88,7 +88,7 @@ int webrtc_aec_alloc(struct aec **stp, void **ctx, struct aufilt_prm *prm)
 	// NOTE: excluding channel count
 	aec->blocksize  = prm->srate * BLOCKSIZE / 1000;
 
-	info("webrtc_aec: creating shared state:"
+	info_bs("webrtc_aec: creating shared state:"
 	     " [%u Hz, %u channels, blocksize %u samples]\n",
 	     prm->srate, prm->ch, aec->blocksize);
 

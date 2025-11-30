@@ -49,7 +49,7 @@ int opus_decode_update(struct audec_state **adsp, const struct aucodec *ac,
 
 	ads->dec = opus_decoder_create(ac->srate, ac->ch, &opuserr);
 	if (!ads->dec) {
-		warning("opus: decoder create: %s\n", opus_strerror(opuserr));
+		warning_bs("opus: decoder create: %s\n", opus_strerror(opuserr));
 		err = ENOMEM;
 		goto out;
 	}
@@ -80,7 +80,7 @@ int opus_decode_frm(struct audec_state *ads,
 		n = opus_decode(ads->dec, buf, (opus_int32)len,
 				sampv, (int)(*sampc/ads->ch), 0);
 		if (n < 0) {
-			warning("opus: decode error: %s\n", opus_strerror(n));
+			warning_bs("opus: decode error: %s\n", opus_strerror(n));
 			return EPROTO;
 		}
 		break;
@@ -89,7 +89,7 @@ int opus_decode_frm(struct audec_state *ads,
 		n = opus_decode_float(ads->dec, buf, (opus_int32)len,
 				      sampv, (int)(*sampc/ads->ch), 0);
 		if (n < 0) {
-			warning("opus: float decode error: %s\n",
+			warning_bs("opus: float decode error: %s\n",
 				opus_strerror(n));
 			return EPROTO;
 		}
@@ -133,7 +133,7 @@ int opus_decode_pkloss(struct audec_state *ads,
 				fec ? (opus_int32)len : 0,
 				sampv, (int)(frame_size), fec);
 		if (n < 0) {
-			warning("opus: decode error: %s\n", opus_strerror(n));
+			warning_bs("opus: decode error: %s\n", opus_strerror(n));
 			return EPROTO;
 		}
 		break;
@@ -144,7 +144,7 @@ int opus_decode_pkloss(struct audec_state *ads,
 				      fec ? (opus_int32)len : 0,
 				      sampv, (int)(frame_size), fec);
 		if (n < 0) {
-			warning("opus: decode error: %s\n", opus_strerror(n));
+			warning_bs("opus: decode error: %s\n", opus_strerror(n));
 			return EPROTO;
 		}
 
@@ -157,7 +157,7 @@ int opus_decode_pkloss(struct audec_state *ads,
 	nsamp = (n * ads->ch);
 
 	if (nsamp > *sampc) {
-		warning("opus: pkloss: buffer too small.\n");
+		warning_bs("opus: pkloss: buffer too small.\n");
 		return ENOMEM;
 	}
 

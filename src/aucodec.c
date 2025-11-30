@@ -22,7 +22,7 @@ void aucodec_register(struct list *aucodecl, struct aucodec *ac)
 
 	list_append(aucodecl, &ac->le, ac);
 
-	info("aucodec: %s/%u/%u\n", ac->name, ac->srate, ac->ch);
+	info_bs("aucodec: %s/%u/%u\n", ac->name, ac->srate, ac->ch);
 }
 
 

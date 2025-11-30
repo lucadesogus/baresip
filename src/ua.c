@@ -78,7 +78,7 @@ void ua_printf(const struct ua *ua, const char *fmt, ...)
 		return;
 
 	va_start(ap, fmt);
-	info("%r@%r: %v", &ua->acc->luri.user, &ua->acc->luri.host, fmt, &ap);
+	info_bs("%r@%r: %v", &ua->acc->luri.user, &ua->acc->luri.host, fmt, &ap);
 	va_end(ap);
 }
 
@@ -88,7 +88,7 @@ void ua_add_extension(struct ua *ua, const char *extension)
 	struct pl e;
 
 	if (ua->extensionc >= RE_ARRAY_SIZE(ua->extensionv)) {
-		warning("ua: maximum %zu number of SIP extensions\n",
+		warning_bs("ua: maximum %zu number of SIP extensions\n",
 			RE_ARRAY_SIZE(ua->extensionv));
 		return;
 	}
@@ -135,7 +135,7 @@ static int create_register_clients(struct ua *ua)
 
 		if (!str_isset(uag_cfg()->uuid)) {
 
-			warning("ua: outbound requires valid UUID!\n");
+			warning_bs("ua: outbound requires valid UUID!\n");
 			err = ENOSYS;
 			goto out;
 		}
@@ -232,7 +232,7 @@ static int start_register(struct ua *ua, bool fallback)
 				   fallback ? 0 : acc->regint,
 				   acc->outboundv[i]);
 		if (err) {
-			warning("ua: SIP%s register failed: %m\n",
+			warning_bs("ua: SIP%s register failed: %m\n",
 					fallback ? " fallback" : "", err);
 
 			bevent_ua_emit(fallback ?
@@ -262,7 +262,7 @@ int ua_register(struct ua *ua)
 	if (!ua)
 		return EINVAL;
 
-	debug("ua: ua_register %s\n", account_aor(ua->acc));
+	debug_bs("ua: ua_register %s\n", account_aor(ua->acc));
 
 	return start_register(ua, false);
 }
@@ -284,7 +284,7 @@ int ua_fallback(struct ua *ua)
 	if (!ua || !ua_account(ua)->fbregint)
 		return 0;
 
-	debug("ua: ua_fallback %s\n", account_aor(ua->acc));
+	debug_bs("ua: ua_fallback %s\n", account_aor(ua->acc));
 
 	return start_register(ua, true);
 }
@@ -539,7 +539,7 @@ static void call_event_handler(struct call *call, enum call_event ev,
 		if (contact_block_access(baresip_contacts(),
 					 peeruri)) {
 
-			info("ua: blocked access: \"%s\"\n", peeruri);
+			info_bs("ua: blocked access: \"%s\"\n", peeruri);
 
 			bevent_call_emit(BEVENT_CALL_CLOSED, call,
 					 "%s", str);
@@ -557,7 +557,7 @@ static void call_event_handler(struct call *call, enum call_event ev,
 
 		case ANSWERMODE_EARLY_VIDEO:
 			if (!call_early_video_available(call)) {
-				info ("ua: peer is not capable of early "
+				info_bs("ua: peer is not capable of early "
 					"video. proceed as normal call\n");
 				break;
 			}
@@ -714,20 +714,20 @@ void sipsess_conn_handler(const struct sip_msg *msg, void *arg)
 
 	(void)arg;
 
-	debug("ua: sipsess connect via %s %J --> %J\n",
+	debug_bs("ua: sipsess connect via %s %J --> %J\n",
 	      sip_transp_name(msg->tp),
 	      &msg->src, &msg->dst);
 
 	if (pl_strncmp(&msg->via.branch, magic_branch, sizeof(magic_branch)-1)
 	    != 0) {
-		info("ua: received INVITE with incorrect Via branch.\n");
+		info_bs("ua: received INVITE with incorrect Via branch.\n");
 		(void)sip_treply(NULL, uag_sip(), msg, 606, "Not Acceptable");
 		return;
 	}
 
 	ua = uag_find_msg(msg);
 	if (!ua) {
-		info("ua: %r: UA not found: %H\n",
+		info_bs("ua: %r: UA not found: %H\n",
 		     &msg->from.auri, uri_encode, &msg->uri);
 		(void)sip_treply(NULL, uag_sip(), msg, 404, "Not Found");
 		return;
@@ -742,7 +742,7 @@ void sipsess_conn_handler(const struct sip_msg *msg, void *arg)
 	if (config->call.max_calls &&
 	    uag_call_count() + 1 > config->call.max_calls) {
 
-		info("ua: rejected call from %r (maximum %d calls)\n",
+		info_bs("ua: rejected call from %r (maximum %d calls)\n",
 		     &msg->from.auri, config->call.max_calls);
 		(void)sip_treply(NULL, uag_sip(), msg, 486, "Max Calls");
 		return;
@@ -752,7 +752,7 @@ void sipsess_conn_handler(const struct sip_msg *msg, void *arg)
 	hdr = sip_msg_hdr_apply(msg, true, SIP_HDR_REQUIRE,
 				require_handler, ua);
 	if (hdr) {
-		info("ua: call from %r rejected with 420"
+		info_bs("ua: call from %r rejected with 420"
 			     " -- option-tag '%r' not supported\n",
 			     &msg->from.auri, &hdr->val);
 
@@ -768,7 +768,7 @@ void sipsess_conn_handler(const struct sip_msg *msg, void *arg)
 	    !(sip_msg_hdr_has_value(msg, SIP_HDR_SUPPORTED, "100rel") ||
 	      sip_msg_hdr_has_value(msg, SIP_HDR_REQUIRE, "100rel"))) {
 
-		info("ua: call from %r rejected with 421"
+		info_bs("ua: call from %r rejected with 421"
 			     " -- option-tag '%s' not supported by remote\n",
 			     &msg->from.auri, "100rel");
 		(void)sip_treplyf(NULL, NULL, uag_sip(), msg, false,
@@ -803,7 +803,7 @@ int ua_accept(struct ua *ua, const struct sip_msg *msg)
 		return EINVAL;
 
 	if (ua_find_call_msg(ua, msg)) {
-		warning("ua: call was already created\n");
+		warning_bs("ua: call was already created\n");
 		return EINVAL;
 	}
 
@@ -813,7 +813,7 @@ int ua_accept(struct ua *ua, const struct sip_msg *msg)
 
 	err = ua_call_alloc(&call, ua, VIDMODE_ON, msg, NULL, to_uri, true);
 	if (err) {
-		warning("ua: call_alloc: %m\n", err);
+		warning_bs("ua: call_alloc: %m\n", err);
 		goto error;
 	}
 
@@ -905,7 +905,7 @@ int ua_call_alloc(struct call **callp, struct ua *ua,
 
 	sa_init(&dst, AF_UNSPEC);
 	if (msg && !sdp_connection(msg->mb, &af, &dst)) {
-		info("ua: using connection-address %j of SDP offer\n", &dst);
+		info_bs("ua: using connection-address %j of SDP offer\n", &dst);
 		sa_cpy(&ua->dst, &dst);
 	}
 	else if (sa_isset(&ua->dst, SA_ADDR)) {
@@ -921,7 +921,7 @@ int ua_call_alloc(struct call **callp, struct ua *ua,
 	}
 
 	if (af != AF_UNSPEC && !net_af_enabled(net, af)) {
-		warning("ua: address family %s not supported\n",
+		warning_bs("ua: address family %s not supported\n",
 				net_af2name(af));
 		(void)sip_treply(NULL, uag_sip(), msg, 488,
 				 "Not Acceptable Here");
@@ -936,7 +936,7 @@ int ua_call_alloc(struct call **callp, struct ua *ua,
 	else if (sa_isset(&ua->dst, SA_ADDR)) {
 		laddr = net_laddr_for(net, &ua->dst);
 		if (!sa_isset(laddr, SA_ADDR)) {
-			warning("ua: no laddr for %j\n", &ua->dst);
+			warning_bs("ua: no laddr for %j\n", &ua->dst);
 			sa_init(&ua->dst, AF_UNSPEC);
 			return EINVAL;
 		}
@@ -977,7 +977,7 @@ void ua_handle_options(struct ua *ua, const struct sip_msg *msg)
 	bool accept_sdp = true;
 	int err;
 
-	debug("ua: incoming OPTIONS message from %r (%J)\n",
+	debug_bs("ua: incoming OPTIONS message from %r (%J)\n",
 	      &msg->from.auri, &msg->src);
 
 	/* application/sdp is the default if the
@@ -1025,7 +1025,7 @@ void ua_handle_options(struct ua *ua, const struct sip_msg *msg)
 			  desc ? mbuf_buf(desc) : NULL,
 			  desc ? mbuf_get_left(desc) : (size_t)0);
 	if (err) {
-		warning("ua: reply to OPTIONS failed (%m)\n", err);
+		warning_bs("ua: reply to OPTIONS failed (%m)\n", err);
 	}
 
  out:
@@ -1074,7 +1074,7 @@ int uas_req_auth(struct ua *ua, const struct sip_msg *msg)
 	case EAUTH: {
 		int err2;
 		struct sip_uas_auth *auth2;
-		debug("ua: %r Unauthorized for %s\n", &msg->met, auth.realm);
+		debug_bs("ua: %r Unauthorized for %s\n", &msg->met, auth.realm);
 		err2 = sip_uas_auth_gen(&auth2, msg, auth.realm);
 		if (err2)
 			return err2;
@@ -1088,7 +1088,7 @@ int uas_req_auth(struct ua *ua, const struct sip_msg *msg)
 
 	break;
 	default:
-		info("ua: %r forbidden for %s\n", &msg->met, auth.realm);
+		info_bs("ua: %r forbidden for %s\n", &msg->met, auth.realm);
 		(void)sip_reply(uag_sip(), msg, 403, "Forbidden");
 	break;
 	}
@@ -1104,7 +1104,7 @@ bool ua_handle_refer(struct ua *ua, const struct sip_msg *msg)
 	bool sub = true;
 	int err;
 
-	debug("ua: incoming REFER message from %r (%J)\n",
+	debug_bs("ua: incoming REFER message from %r (%J)\n",
 	      &msg->from.auri, &msg->src);
 
 	/* application/sdp is the default if the
@@ -1114,7 +1114,7 @@ bool ua_handle_refer(struct ua *ua, const struct sip_msg *msg)
 		pl_bool(&sub, &hdr->val);
 
 	if (sub) {
-		debug("ua: out of dialog REFER with subscription not "
+		debug_bs("ua: out of dialog REFER with subscription not "
 			"supported by %s\n", __func__);
 		return false;
 	}
@@ -1122,7 +1122,7 @@ bool ua_handle_refer(struct ua *ua, const struct sip_msg *msg)
 	/* get the transfer target */
 	hdr = sip_msg_hdr(msg, SIP_HDR_REFER_TO);
 	if (!hdr) {
-		warning("call: bad REFER request from %r\n", &msg->from.auri);
+		warning_bs("call: bad REFER request from %r\n", &msg->from.auri);
 		(void)sip_reply(uag_sip(), msg, 400,
 				"Missing Refer-To header");
 		return true;
@@ -1141,11 +1141,11 @@ bool ua_handle_refer(struct ua *ua, const struct sip_msg *msg)
 			  "\r\n",
 			  sip_contact_print, &contact);
 	if (err ) {
-		warning("ua: reply to REFER failed (%m)\n", err);
+		warning_bs("ua: reply to REFER failed (%m)\n", err);
 		goto out;
 	}
 
-	debug("ua: REFER to %r\n", &hdr->val);
+	debug_bs("ua: REFER to %r\n", &hdr->val);
 	bevent_ua_emit(BEVENT_REFER, ua, "%r", &hdr->val);
 
 out:
@@ -1194,7 +1194,7 @@ static int ua_cuser_gen(struct ua *ua)
 		err = pl_strdup(&ua->cuser, &ua->acc->luri.user);
 	}
 
-	debug("ua: contact user %s\n", ua->cuser);
+	debug_bs("ua: contact user %s\n", ua->cuser);
 	return err;
 }
 
@@ -1263,7 +1263,7 @@ int ua_alloc(struct ua **uap, const char *aor)
 		err = sip_transp_add_ccert(uag_sip(),
 			&ua->acc->laddr.uri, ua->acc->cert);
 		if (err) {
-			warning("ua: SIP/TLS add client "
+			warning_bs("ua: SIP/TLS add client "
 				"certificate %s failed: %m\n",
 				ua->acc->cert, err);
 			return err;
@@ -1278,7 +1278,7 @@ int ua_alloc(struct ua **uap, const char *aor)
 
 		err = tls_add_certf(uag_tls(), ua->acc->cert, host);
 		if (err) {
-			warning("ua: SIP/TLS add server "
+			warning_bs("ua: SIP/TLS add server "
 				"certificate %s failed: %m\n",
 				ua->acc->cert, err);
 			goto out;
@@ -1404,7 +1404,7 @@ int ua_connect_dir(struct ua *ua, struct call **callp,
 		return EINVAL;
 
 	if (uag_nodial()) {
-		info ("ua: currently no outgoing calls are allowed\n");
+		info_bs("ua: currently no outgoing calls are allowed\n");
 		return EACCES;
 	}
 
@@ -1638,7 +1638,7 @@ int ua_options_send(struct ua *ua, const char *uri,
 			   "Content-Length: 0\r\n"
 			   "\r\n");
 	if (err) {
-		warning("ua: send options: (%m)\n", err);
+		warning_bs("ua: send options: (%m)\n", err);
 	}
 
 	return err;
@@ -1675,7 +1675,7 @@ int ua_refer_send(struct ua *ua, const char *uri, const char *referto,
 			   ua_print_supported, ua,
 			   referto);
 	if (err) {
-		warning("ua: send refer: (%m)\n", err);
+		warning_bs("ua: send refer: (%m)\n", err);
 	}
 
 	return err;
@@ -1805,7 +1805,7 @@ int ua_state_json_api(struct odict *od, const struct ua *ua)
 	/* account info */
 	err |= account_json_api(od, cfg, ua->acc);
 	if (err)
-		warning("ua: failed to encode json account (%m)\n", err);
+		warning_bs("ua: failed to encode json account (%m)\n", err);
 
 	/* registration info */
 	for (le = list_head(&ua->regl); le; le = le->next) {
@@ -1814,20 +1814,20 @@ int ua_state_json_api(struct odict *od, const struct ua *ua)
 		++i;
 	}
 	if (i > 1)
-		warning("ua: multiple registrations for one account");
+		warning_bs("ua: multiple registrations for one account");
 
 	err |= odict_entry_add(reg, "interval", ODICT_INT,
 			(int64_t) ua->acc->regint);
 	err |= odict_entry_add(reg, "q_value", ODICT_DOUBLE, ua->acc->regq);
 
 	if (err)
-		warning("ua: failed to encode json registration (%m)\n", err);
+		warning_bs("ua: failed to encode json registration (%m)\n", err);
 
 	/* package */
 	err |= odict_entry_add(od, "settings", ODICT_OBJECT, cfg);
 	err |= odict_entry_add(od, "registration", ODICT_OBJECT, reg);
 	if (err)
-		warning("ua: failed to encode json package (%m)\n", err);
+		warning_bs("ua: failed to encode json package (%m)\n", err);
 
 	mem_deref(cfg);
 	mem_deref(reg);

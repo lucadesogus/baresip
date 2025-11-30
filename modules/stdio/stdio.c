@@ -138,7 +138,7 @@ static int ui_alloc(struct ui_st **stp)
 
 	err = term_setup(st);
 	if (err) {
-		info("stdio: could not setup terminal: %m\n", err);
+		info_bs("stdio: could not setup terminal: %m\n", err);
 		err = 0;
 	}
 

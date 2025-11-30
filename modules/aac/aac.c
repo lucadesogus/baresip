@@ -139,7 +139,7 @@ int aac_fmtp_enc(struct mbuf *mb, const struct sdp_format *fmt, bool offer,
 
 void aac_mirror_params(const char *x)
 {
-	debug("aac: mirror parameters: \"%s\"\n", x);
+	debug_bs("aac: mirror parameters: \"%s\"\n", x);
 
 	str_ncpy(fmtp_mirror, x, sizeof(fmtp_mirror));
 }
@@ -251,7 +251,7 @@ static int module_init(void)
 		}
 		break;
 	default:
-		warning("AAC Audio object types 2 (AAC-LC), 5 "
+		warning_bs("AAC Audio object types 2 (AAC-LC), 5 "
 			"(HE-AAC), 29 (HE-AAC v2), 23 (AAC-LD) "
 			"and 39 (AAC-ELD) are allowed.\n");
 		return EINVAL;
@@ -259,7 +259,7 @@ static int module_init(void)
 
 	error = aacEncOpen(&enc, 0, 0);
 	if (error != AACENC_OK) {
-		warning("aac: Unable to open the encoder (0x%x)\n",
+		warning_bs("aac: Unable to open the encoder (0x%x)\n",
 			error);
 		return ENOMEM;
 	}
@@ -283,7 +283,7 @@ static int module_init(void)
 	prm.bitrate = aacEncoder_GetParam(enc, AACENC_BITRATE);
 	prm.profile_level_id = aac_profile;
 
-	debug("aac: Encoder configuration: conf=%w, "
+	debug_bs("aac: Encoder configuration: conf=%w, "
 	     "frameLength=%u, inputChannels=%u\n",
 	     enc_info.confBuf, (size_t)enc_info.confSize,
 	     enc_info.frameLength, enc_info.inputChannels);
@@ -295,7 +295,7 @@ static int module_init(void)
 
 	aac_encode_fmtp(&prm);
 
-	debug("aac: fmtp=\"%s\"\n", fmtp_local);
+	debug_bs("aac: fmtp=\"%s\"\n", fmtp_local);
 
 	aucodec_register(baresip_aucodecl(), &aac);
 

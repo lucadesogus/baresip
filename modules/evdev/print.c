@@ -31,7 +31,7 @@ void print_name(int fd)
 		perror("evdev ioctl");
 	}
 
-	info("evdev: device name: %s\n", name);
+	info_bs("evdev: device name: %s\n", name);
 }
 
 
@@ -47,7 +47,7 @@ void print_events(int fd)
 
 	memset(evbitmask, 0, sizeof(evbitmask));
 	if (ioctl(fd, EVIOCGBIT(0, sizeof(evbitmask)), evbitmask) < 0) {
-		warning("evdev: ioctl EVIOCGBIT (%m)\n", errno);
+		warning_bs("evdev: ioctl EVIOCGBIT (%m)\n", errno);
 		return;
 	}
 

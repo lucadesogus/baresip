@@ -21,7 +21,7 @@ void vidcodec_register(struct list *vidcodecl, struct vidcodec *vc)
 
 	list_append(vidcodecl, &vc->le, vc);
 
-	info("vidcodec: %s\n", vc->name);
+	info_bs("vidcodec: %s\n", vc->name);
 }
 
 

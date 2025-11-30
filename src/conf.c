@@ -44,7 +44,7 @@ static struct conf *conf_obj = NULL;
 
 static void print_populated(const char *what, uint32_t n)
 {
-	info("Populated %u %s%s\n", n, what, 1==n ? "" : "s");
+	info_bs("Populated %u %s%s\n", n, what, 1==n ? "" : "s");
 }
 
 
@@ -203,7 +203,7 @@ int conf_get_range(const struct conf *conf, const char *name,
 		/* fallback to non-range numeric value */
 		err = conf_get_u32(conf, name, &v);
 		if (err) {
-			warning("conf: %s: could not parse range: (%r)\n",
+			warning_bs("conf: %s: could not parse range: (%r)\n",
 				name, &r);
 			return err;
 		}
@@ -217,7 +217,7 @@ int conf_get_range(const struct conf *conf, const char *name,
 	rng->max = pl_u32(&max);
 
 	if (rng->min > rng->max) {
-		warning("conf: %s: invalid range (%u - %u)\n",
+		warning_bs("conf: %s: invalid range (%u - %u)\n",
 			name, rng->min, rng->max);
 		return EINVAL;
 	}
@@ -282,7 +282,7 @@ int conf_get_vidsz(const struct conf *conf, const char *name, struct vidsz *sz)
 
 	/* check resolution */
 	if (sz->w & 0x1 || sz->h & 0x1) {
-		warning("conf: %s: should be multiple of 2 (%u x %u)\n",
+		warning_bs("conf: %s: should be multiple of 2 (%u x %u)\n",
 			name, sz->w, sz->h);
 		return EINVAL;
 	}
@@ -322,7 +322,7 @@ enum jbuf_type conf_get_jbuf_type(const struct pl *pl)
 	if (0 == pl_strcasecmp(pl, "fixed"))    return JBUF_FIXED;
 	if (0 == pl_strcasecmp(pl, "adaptive")) return JBUF_ADAPTIVE;
 
-	warning("unsupported jitter buffer type (%r)\n", pl);
+	warning_bs("unsupported jitter buffer type (%r)\n", pl);
 	return JBUF_FIXED;
 }
 
@@ -332,7 +332,7 @@ bool conf_aubuf_adaptive(const struct pl *pl)
 	if (0 == pl_strcasecmp(pl, "fixed"))    return false;
 	if (0 == pl_strcasecmp(pl, "adaptive")) return true;
 
-	warning("unsupported audio buffer mode (%r)\n", pl);
+	warning_bs("unsupported audio buffer mode (%r)\n", pl);
 	return false;
 }
 
@@ -353,7 +353,7 @@ int conf_configure(void)
 
 	err = conf_path_get(path, sizeof(path));
 	if (err) {
-		warning("conf: could not get config path: %m\n", err);
+		warning_bs("conf: could not get config path: %m\n", err);
 		return err;
 	}
 
@@ -425,7 +425,7 @@ int conf_modules(void)
 
 	err = module_init(conf_obj);
 	if (err) {
-		warning("conf: configure module parse error (%m)\n", err);
+		warning_bs("conf: configure module parse error (%m)\n", err);
 		goto out;
 	}
 
@@ -449,7 +449,7 @@ int conf_modules(void)
 struct conf *conf_cur(void)
 {
 	if (!conf_obj) {
-		warning("conf: no config object\n");
+		warning_bs("conf: no config object\n");
 	}
 	return conf_obj;
 }

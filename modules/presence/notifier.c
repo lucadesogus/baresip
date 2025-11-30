@@ -67,7 +67,7 @@ static int notify(struct notifier *not, enum presence_status status)
 
 	err = sipevent_notify(not->not, mb, SIPEVENT_ACTIVE, 0, 0);
 	if (err) {
-		warning("presence: notify to %s failed (%m)\n", aor, err);
+		warning_bs("presence: notify to %s failed (%m)\n", aor, err);
 	}
 
  out:
@@ -82,10 +82,10 @@ static void sipnot_close_handler(int err, const struct sip_msg *msg,
 	struct notifier *not = arg;
 
 	if (err) {
-		info("presence: notifier closed (%m)\n", err);
+		info_bs("presence: notifier closed (%m)\n", err);
 	}
 	else if (msg) {
-		info("presence: notifier closed (%u %r)\n",
+		info_bs("presence: notifier closed (%u %r)\n",
 		     msg->scode, &msg->reason);
 	}
 
@@ -133,7 +133,7 @@ static int notifier_alloc(struct notifier **notp,
 			      auth_handler, ua_account(not->ua), true,
 			      sipnot_close_handler, not, NULL);
 	if (err) {
-		warning("presence: sipevent_accept failed: %m\n", err);
+		warning_bs("presence: sipevent_accept failed: %m\n", err);
 		goto out;
 	}
 
@@ -165,7 +165,7 @@ static int notifier_add(const struct sip_msg *msg, struct ua *ua)
 		return err;
 
 	if (pl_strcasecmp(&se.event, "presence")) {
-		info("presence: unexpected event '%r'\n", &se.event);
+		info_bs("presence: unexpected event '%r'\n", &se.event);
 		return EPROTO;
 	}
 

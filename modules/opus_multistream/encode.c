@@ -84,7 +84,7 @@ int opus_multistream_encode_update(struct auenc_state **aesp,
 	if (!aesp || !ac || !ac->ch)
 		return EINVAL;
 
-	debug("opus_multistream: encoder fmtp (%s)\n", fmtp);
+	debug_bs("opus_multistream: encoder fmtp (%s)\n", fmtp);
 
 	/* Save the incoming OPUS parameters from SDP offer */
 	if (str_isset(fmtp)) {
@@ -94,7 +94,7 @@ int opus_multistream_encode_update(struct auenc_state **aesp,
 	/* create one mapping per channel */
 	for (ch=0; ch<ac->ch; ch++) {
 		if (ch >= 256) {
-			warning("opus: Exceeding the acceptable"
+			warning_bs("opus: Exceeding the acceptable"
 				" 255 channel-mappings");
 			return EINVAL;
 		}
@@ -123,7 +123,7 @@ int opus_multistream_encode_update(struct auenc_state **aesp,
 							   opus_ms_application,
 							   &opuserr);
 		if (!aes->enc) {
-			warning("opus_multistream: encoder create: %s\n",
+			warning_bs("opus_multistream: encoder create: %s\n",
 				opus_strerror(opuserr));
 			mem_deref(aes);
 			return ENOMEM;
@@ -192,7 +192,7 @@ int opus_multistream_encode_update(struct auenc_state **aesp,
 	(void)opus_multistream_encoder_ctl(aes->enc,
 					   OPUS_GET_COMPLEXITY(&complex));
 
-	debug("opus_multistream: encode bw=%s bitrate=%i fch=%s "
+	debug_bs("opus_multistream: encode bw=%s bitrate=%i fch=%s "
 	      "vbr=%i fec=%i dtx=%i complex=%i\n",
 	      bwname(bw), prm.bitrate, chname(fch),
 	      vbr, prm.inband_fec, prm.dtx, complex);
@@ -220,7 +220,7 @@ int opus_multistream_encode_frm(struct auenc_state *aes,
 					    sampv, (int)(sampc/aes->ch),
 				buf, (opus_int32)(*len));
 		if (n < 0) {
-			warning("opus_multistream: encode error: %s\n",
+			warning_bs("opus_multistream: encode error: %s\n",
 				opus_strerror((int)n));
 			return EPROTO;
 		}
@@ -231,7 +231,7 @@ int opus_multistream_encode_frm(struct auenc_state *aes,
 						  sampv, (int)(sampc/aes->ch),
 				      buf, (opus_int32)(*len));
 		if (n < 0) {
-			warning("opus_multistream: float encode error: %s\n",
+			warning_bs("opus_multistream: float encode error: %s\n",
 				opus_strerror((int)n));
 			return EPROTO;
 		}

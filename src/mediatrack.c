@@ -52,17 +52,17 @@ int mediatrack_start_audio(struct media_track *media,
 	au = media->u.au;
 
 	if (!media->ice_conn || !media->dtls_ok) {
-		warning("mediatrack: start_audio: ice or dtls not ready\n");
+		warning_bs("mediatrack: start_audio: ice or dtls not ready\n");
 		return EPROTO;
 	}
 
-	info("mediatrack: start audio\n");
+	info_bs("mediatrack: start audio\n");
 
 	struct sdp_media *sdpm = stream_sdpmedia(audio_strm(au));
 	fmt = sdp_media_rformat(sdpm, NULL);
 
 	if (!fmt || sdp_media_dir(sdpm) == SDP_INACTIVE) {
-		info("mediatrack: audio stream is disabled..\n");
+		info_bs("mediatrack: audio stream is disabled..\n");
 		return 0;
 	}
 
@@ -71,7 +71,7 @@ int mediatrack_start_audio(struct media_track *media,
 
 		err = audio_decoder_set(au, ac, fmt->pt, fmt->params);
 		if (err) {
-			warning("mediatrack: start:"
+			warning_bs("mediatrack: start:"
 				" audio_decoder_set error: %m\n", err);
 			return err;
 		}
@@ -82,14 +82,14 @@ int mediatrack_start_audio(struct media_track *media,
 
 		err = audio_encoder_set(au, ac, fmt->pt, fmt->params);
 		if (err) {
-			warning("mediatrack: start:"
+			warning_bs("mediatrack: start:"
 				" audio_encoder_set error: %m\n", err);
 			return err;
 		}
 
 		err = audio_start_source(au, ausrcl, aufiltl);
 		if (err) {
-			warning("mediatrack: start:"
+			warning_bs("mediatrack: start:"
 				" audio_start_source error: %m\n", err);
 			return err;
 		}
@@ -111,18 +111,18 @@ int mediatrack_start_video(struct media_track *media)
 	vid = media->u.vid;
 
 	if (!media->ice_conn || !media->dtls_ok) {
-		warning("mediatrack: start_video: ice or dtls not ready\n");
+		warning_bs("mediatrack: start_video: ice or dtls not ready\n");
 		return EPROTO;
 	}
 
-	info("mediatrack: start video\n");
+	info_bs("mediatrack: start video\n");
 
 	struct sdp_media *sdpm = stream_sdpmedia(video_strm(vid));
 	enum sdp_dir dir = sdp_media_dir(sdpm);
 
 	fmt = sdp_media_rformat(sdpm, NULL);
 	if (!fmt) {
-		info("mediatrack: video stream is disabled..\n");
+		info_bs("mediatrack: video stream is disabled..\n");
 		return 0;
 	}
 
@@ -131,7 +131,7 @@ int mediatrack_start_video(struct media_track *media)
 	if (dir & SDP_SENDONLY) {
 		err = video_encoder_set(vid, vc, fmt->pt, fmt->params);
 		if (err) {
-			warning("mediatrack: start:"
+			warning_bs("mediatrack: start:"
 				" video_encoder_set error: %m\n",
 				err);
 			return err;
@@ -139,23 +139,23 @@ int mediatrack_start_video(struct media_track *media)
 
 		err = video_start_source(vid);
 		if (err) {
-			warning("mediatrack: start:"
+			warning_bs("mediatrack: start:"
 				" video_start_source error: %m\n",
 				err);
 			return err;
 		}
-		info("mediatrack: video source started\n");
+		info_bs("mediatrack: video source started\n");
 	}
 
 	if (dir & SDP_RECVONLY) {
 		err = video_start_display(vid, "webrtc");
 		if (err) {
-			warning("mediatrack: start:"
+			warning_bs("mediatrack: start:"
 				" video_start_display error: %m\n",
 				err);
 			return err;
 		}
-		info("mediatrack: video display started\n");
+		info_bs("mediatrack: video display started\n");
 	}
 
 	stream_set_rtcp_interval(video_strm(vid), 1000);
@@ -255,11 +255,11 @@ void mediatrack_summary(const struct media_track *media)
 	if (!media || !media->u.p)
 		return;
 
-	info(".. ice_conn: %d\n", media->ice_conn);
-	info(".. dtls:     %d\n", media->dtls_ok);
-	info(".. rtp:      %d\n", media->rtp);
-	info(".. rtcp:     %d\n", media->rtcp);
-	info("\n");
+	info_bs(".. ice_conn: %d\n", media->ice_conn);
+	info_bs(".. dtls:     %d\n", media->dtls_ok);
+	info_bs(".. rtp:      %d\n", media->rtp);
+	info_bs(".. rtcp:     %d\n", media->rtcp);
+	info_bs("\n");
 }
 
 
@@ -268,7 +268,7 @@ static void mnatconn_handler(struct stream *strm, void *arg)
 	struct media_track *media = arg;
 	int err;
 
-	info("mediatrack: ice connected (%s)\n", stream_name(strm));
+	info_bs("mediatrack: ice connected (%s)\n", stream_name(strm));
 
 	media->ice_conn = true;
 
@@ -283,7 +283,7 @@ static void rtpestab_handler(struct stream *strm, void *arg)
 {
 	struct media_track *media = arg;
 
-	info("mediatrack: rtp established (%s)\n", stream_name(strm));
+	info_bs("mediatrack: rtp established (%s)\n", stream_name(strm));
 
 	media->rtp = true;
 }
@@ -304,7 +304,7 @@ static void stream_error_handler(struct stream *strm, int err, void *arg)
 {
 	struct media_track *media = arg;
 
-	warning("mediatrack: '%s' stream error (%m)\n",
+	warning_bs("mediatrack: '%s' stream error (%m)\n",
 		stream_name(strm), err);
 
 	media->closeh(err, media->arg);

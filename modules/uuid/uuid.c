@@ -102,17 +102,17 @@ static int uuid_init(const char *file)
 	f = fopen(file, "w");
 	if (!f) {
 		err = errno;
-		warning("uuid: fopen() %s (%m)\n", file, err);
+		warning_bs("uuid: fopen() %s (%m)\n", file, err);
 		goto out;
 	}
 
 	err = generate_random_uuid(f);
 	if (err) {
-		warning("uuid: generate random UUID failed (%m)\n", err);
+		warning_bs("uuid: generate random UUID failed (%m)\n", err);
 		goto out;
 	}
 
-	info("uuid: generated new UUID in %s\n", file);
+	info_bs("uuid: generated new UUID in %s\n", file);
 
  out:
 	if (f)
@@ -136,7 +136,7 @@ static int uuid_load(const char *file, char *uuid, size_t sz)
 
 	(void)fclose(f);
 
-	debug("uuid: loaded UUID %s from file %s\n", uuid, file);
+	debug_bs("uuid: loaded UUID %s from file %s\n", uuid, file);
 
 	return err;
 }

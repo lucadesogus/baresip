@@ -34,7 +34,7 @@ static void auplay_destructor(void *arg)
 
 	/* Wait for termination of other thread */
 	if (re_atomic_rlx(&st->run)) {
-		debug("alsa: stopping playback thread (%s)\n", st->device);
+		debug_bs("alsa: stopping playback thread (%s)\n", st->device);
 		re_atomic_rlx_set(&st->run, false);
 		thrd_join(st->thread, NULL);
 	}
@@ -74,17 +74,17 @@ static int write_thread(void *arg)
 
 			n = snd_pcm_writei(st->write, sampv, samples);
 			if (n < 0) {
-				warning("alsa: write error: %s\n",
+				warning_bs("alsa: write error: %s\n",
 					snd_strerror((int) n));
 			}
 		}
 		else if (n < 0) {
 			if (re_atomic_rlx(&st->run))
-				warning("alsa: write error: %s\n",
+				warning_bs("alsa: write error: %s\n",
 					snd_strerror((int) n));
 		}
 		else if (n != samples) {
-			warning("alsa: write: wrote %d of %d samples\n",
+			warning_bs("alsa: write: wrote %d of %d samples\n",
 				(int) n, samples);
 		}
 	}
@@ -133,15 +133,15 @@ int alsa_play_alloc(struct auplay_st **stp, const struct auplay *ap,
 
 	err = snd_pcm_open(&st->write, st->device, SND_PCM_STREAM_PLAYBACK, 0);
 	if (err < 0) {
-		warning("alsa: could not open auplay device '%s' (%s)\n",
+		warning_bs("alsa: could not open auplay device '%s' (%s)\n",
 			st->device, snd_strerror(err));
-		info("consider using dmix as your default alsa device\n");
+		info_bs("consider using dmix as your default alsa device\n");
 		goto out;
 	}
 
 	pcmfmt = aufmt_to_alsaformat(prm->fmt);
 	if (pcmfmt == SND_PCM_FORMAT_UNKNOWN) {
-		warning("alsa: unknown sample format '%s'\n",
+		warning_bs("alsa: unknown sample format '%s'\n",
 			aufmt_name(prm->fmt));
 		err = EINVAL;
 		goto out;
@@ -150,7 +150,7 @@ int alsa_play_alloc(struct auplay_st **stp, const struct auplay *ap,
 	err = alsa_reset(st->write, st->prm.srate, st->prm.ch, num_frames,
 			 pcmfmt);
 	if (err) {
-		warning("alsa: could not reset player '%s' (%s)\n",
+		warning_bs("alsa: could not reset player '%s' (%s)\n",
 			st->device, snd_strerror(err));
 		goto out;
 	}
@@ -162,7 +162,7 @@ int alsa_play_alloc(struct auplay_st **stp, const struct auplay *ap,
 		goto out;
 	}
 
-	debug("alsa: playback started (%s)\n", st->device);
+	debug_bs("alsa: playback started (%s)\n", st->device);
 
  out:
 	if (err)

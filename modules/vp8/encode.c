@@ -124,7 +124,7 @@ static int open_encoder(struct videnc_state *ves, const struct vidsz *size)
 	cfg.kf_max_dist		= ves->fps * KEYFRAME_INTERVAL;
 
 	if (ves->ctxup) {
-		debug("vp8: re-opening encoder\n");
+		debug_bs("vp8: re-opening encoder\n");
 		vpx_codec_destroy(&ves->ctx);
 		ves->ctxup = false;
 	}
@@ -136,7 +136,7 @@ static int open_encoder(struct videnc_state *ves, const struct vidsz *size)
 	res = vpx_codec_enc_init(&ves->ctx, &vpx_codec_vp8_cx_algo, &cfg,
 				 flags);
 	if (res) {
-		warning("vp8: enc init: %s\n", vpx_codec_err_to_string(res));
+		warning_bs("vp8: enc init: %s\n", vpx_codec_err_to_string(res));
 		return EPROTO;
 	}
 
@@ -144,12 +144,12 @@ static int open_encoder(struct videnc_state *ves, const struct vidsz *size)
 
 	res = vpx_codec_control(&ves->ctx, VP8E_SET_CPUUSED, cpuused);
 	if (res) {
-		warning("vp8: codec ctrl: %s\n", vpx_codec_err_to_string(res));
+		warning_bs("vp8: codec ctrl: %s\n", vpx_codec_err_to_string(res));
 	}
 
 	res = vpx_codec_control(&ves->ctx, VP8E_SET_NOISE_SENSITIVITY, 0);
 	if (res) {
-		warning("vp8: codec ctrl: %s\n", vpx_codec_err_to_string(res));
+		warning_bs("vp8: codec ctrl: %s\n", vpx_codec_err_to_string(res));
 	}
 
 	return 0;
@@ -219,7 +219,7 @@ int vp8_encode(struct videnc_state *ves, bool update,
 	}
 
 	if (update) {
-		/* debug("vp8: picture update\n"); */
+		/* debug_bs("vp8: picture update\n"); */
 		flags |= VPX_EFLAG_FORCE_KF;
 	}
 
@@ -237,7 +237,7 @@ int vp8_encode(struct videnc_state *ves, bool update,
 	res = vpx_codec_encode(&ves->ctx, &img, timestamp, 1,
 			       flags, VPX_DL_REALTIME);
 	if (res) {
-		warning("vp8: enc error: %s\n", vpx_codec_err_to_string(res));
+		warning_bs("vp8: enc error: %s\n", vpx_codec_err_to_string(res));
 		return ENOMEM;
 	}
 
@@ -296,7 +296,7 @@ static int peek_vp8_bitstream(bool *key_frame,
 	uint8_t profile    = (buf[0] >> 1) & 7;
 
 	if (profile > 3) {
-		warning("vp8: Invalid profile %u.\n", profile);
+		warning_bs("vp8: Invalid profile %u.\n", profile);
 		return EPROTO;
 	}
 
@@ -309,7 +309,7 @@ static int peek_vp8_bitstream(bool *key_frame,
 
 		if (c[0] != 0x9d || c[1] != 0x01 || c[2] != 0x2a) {
 
-			warning("vp8: Invalid sync code %w.\n", c, 3);
+			warning_bs("vp8: Invalid sync code %w.\n", c, 3);
 			return EPROTO;
 		}
 	}

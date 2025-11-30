@@ -96,7 +96,7 @@ static int cmd_dial_contact(struct re_printf *pf, void *arg)
 
 	err = ua_connect(uag_find_requri(uri), NULL, NULL, uri, VIDMODE_ON);
 	if (err) {
-		warning("contact: ua_connect(%s) failed: %m\n",
+		warning_bs("contact: ua_connect(%s) failed: %m\n",
 			uri, err);
 	}
 
@@ -159,7 +159,7 @@ static int load_current_contact(struct contacts *contacts, const char *path)
 
 		cnt = contact_find(contacts, buf);
 		if (!cnt) {
-			info("contact from disk not found (%s)\n", buf);
+			info_bs("contact from disk not found (%s)\n", buf);
 		}
 	}
 
@@ -213,7 +213,7 @@ static int cycle_current(struct re_printf *pf, bool next)
 
 	err = save_current(cnt);
 	if (err) {
-		warning("contact: failed to save"
+		warning_bs("contact: failed to save"
 			" current contact (%m)\n", err);
 	}
 
@@ -275,7 +275,7 @@ static int cmd_rm_contact(struct re_printf *pf, void *arg)
 	pl_set_str(&pl, carg->prm);
 	int err = sip_addr_decode(&addr, &pl);
 	if (err) {
-		warning("contact: could not decode '%r'\n", &pl);
+		warning_bs("contact: could not decode '%r'\n", &pl);
 		return err;
 	}
 
@@ -306,7 +306,7 @@ static int write_template(const char *file)
 {
 	FILE *f = NULL;
 
-	info("contact: creating contacts template %s\n", file);
+	info_bs("contact: creating contacts template %s\n", file);
 
 	f = fopen(file, "w");
 	if (!f)
@@ -373,7 +373,7 @@ static int module_init(void)
 	if (err)
 		return err;
 
-	info("Populated %u contacts\n",
+	info_bs("Populated %u contacts\n",
 	     list_count(contact_list(contacts)));
 
 	/* Load current contact after list was populated */
@@ -381,7 +381,7 @@ static int module_init(void)
 
 		err = load_current_contact(contacts, path);
 		if (err) {
-			warning("could not load current contact (%m)\n", err);
+			warning_bs("could not load current contact (%m)\n", err);
 			err = 0;
 		}
 	}

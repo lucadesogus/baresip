@@ -114,7 +114,7 @@ static void register_handler(int err, const struct sip_msg *msg, void *arg)
 
 	if (err) {
 		if (reg->regint)
-			warning("reg: %s (prio %u): Register: %m\n",
+			warning_bs("reg: %s (prio %u): Register: %m\n",
 				account_aor(acc), prio, err);
 
 		reg->scode = 999;
@@ -167,7 +167,7 @@ static void register_handler(int err, const struct sip_msg *msg, void *arg)
 	}
 	else if (msg->scode >= 300) {
 
-		warning("reg: %s (prio %u): %u %r (%s)\n", account_aor(acc),
+		warning_bs("reg: %s (prio %u): %u %r (%s)\n", account_aor(acc),
 				prio, msg->scode, &msg->reason, reg->srv);
 
 		reg->scode = msg->scode;

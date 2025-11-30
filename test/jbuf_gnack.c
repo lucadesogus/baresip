@@ -83,7 +83,7 @@ static void rtcp_recv_handler(const struct sa *src, struct rtcp_msg *msg,
 		break;
 
 	default:
-		warning("unexpected RTCP message: %H\n", rtcp_msg_print, msg);
+		warning_bs("unexpected RTCP message: %H\n", rtcp_msg_print, msg);
 		err = EPROTO;
 		break;
 	}

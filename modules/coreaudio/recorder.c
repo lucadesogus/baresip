@@ -140,7 +140,7 @@ int coreaudio_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	status = AudioQueueNewInput(&fmt, record_handler, st, NULL,
 				     kCFRunLoopCommonModes, 0, &st->queue);
 	if (status) {
-		warning("coreaudio: AudioQueueNewInput error: %i\n", status);
+		warning_bs("coreaudio: AudioQueueNewInput error: %i\n", status);
 		err = ENODEV;
 		goto out;
 	}
@@ -149,14 +149,14 @@ int coreaudio_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 
 		CFStringRef uid;
 
-		info("coreaudio: recorder: using device '%s'\n", device);
+		info_bs("coreaudio: recorder: using device '%s'\n", device);
 
 		err = coreaudio_enum_devices(device, NULL, &uid, true);
 		if (err)
 			goto out;
 
 		if (!uid) {
-			warning("coreaudio: recorder: device not found:"
+			warning_bs("coreaudio: recorder: device not found:"
 				" '%s'\n", device);
 			err = ENODEV;
 			goto out;
@@ -168,7 +168,7 @@ int coreaudio_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 				       sizeof(uid));
 		CFRelease(uid);
 		if (status) {
-			warning("coreaudio: recorder: failed to"
+			warning_bs("coreaudio: recorder: failed to"
 				" set current device (%i)\n", status);
 			err = ENODEV;
 			goto out;
@@ -189,7 +189,7 @@ int coreaudio_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 
 	status = AudioQueueStart(st->queue, NULL);
 	if (status)  {
-		warning("coreaudio: AudioQueueStart error %i\n", status);
+		warning_bs("coreaudio: AudioQueueStart error %i\n", status);
 		err = ENODEV;
 		goto out;
 	}

@@ -51,7 +51,7 @@ static int menu_set_incall(bool incall)
 		err = dial_menu_register();
 	}
 	if (err) {
-		warning("menu: set_incall: cmd_register failed (%m)\n", err);
+		warning_bs("menu: set_incall: cmd_register failed (%m)\n", err);
 	}
 
 	return err;
@@ -374,7 +374,7 @@ static void play_ringback(const struct call *call)
 	menu_stop_play();
 
 	if (menu.ringback_disabled) {
-		info("menu: ringback disabled\n");
+		info_bs("menu: ringback disabled\n");
 	}
 	else {
 		menu_play(call, "ringback_aufile", "ringback.wav", -1,
@@ -455,18 +455,18 @@ static void redial_handler(void *arg)
 	int err;
 	(void)arg;
 
-	info("menu: redialing now. current_attempts=%u, max_attempts=%u\n",
+	info_bs("menu: redialing now. current_attempts=%u, max_attempts=%u\n",
 	     menu.current_attempts,
 	     menu.redial_attempts);
 
 	if (menu.current_attempts > menu.redial_attempts) {
 
-		info("menu: redial: too many attempts -- giving up\n");
+		info_bs("menu: redial: too many attempts -- giving up\n");
 		return;
 	}
 
 	if (menu.dialbuf->end == 0) {
-		warning("menu: redial: dialbuf is empty\n");
+		warning_bs("menu: redial: dialbuf is empty\n");
 		return;
 	}
 
@@ -478,7 +478,7 @@ static void redial_handler(void *arg)
 	err = ua_connect(uag_find_aor(menu.redial_aor), NULL, NULL,
 			 uri, VIDMODE_ON);
 	if (err) {
-		warning("menu: redial: ua_connect failed (%m)\n", err);
+		warning_bs("menu: redial: ua_connect failed (%m)\n", err);
 	}
 
 	mem_deref(uri);
@@ -497,7 +497,7 @@ static void invite_handler(void *arg)
 	int err;
 	err = ua_connect(uag_find_requri(uri), NULL, NULL, uri, VIDMODE_ON);
 	if (err)
-		warning("menu: call to %s failed (%m)\n", menu.invite_uri,
+		warning_bs("menu: call to %s failed (%m)\n", menu.invite_uri,
 			err);
 
 	menu.invite_uri = mem_deref(menu.invite_uri);
@@ -509,7 +509,7 @@ static void menu_invite(const char *prm)
 	menu.invite_uri = mem_deref(menu.invite_uri);
 	int err = str_dup(&menu.invite_uri, prm);
 	if (err) {
-		warning("menu: call to %s failed (%m)\n", prm, err);
+		warning_bs("menu: call to %s failed (%m)\n", prm, err);
 		return;
 	}
 
@@ -683,7 +683,7 @@ static void apply_contact_mediadir(struct call *call)
 	if (audir == estaudir && viddir == estviddir)
 		return;
 
-	debug("menu: apply contact media direction audio=%s video=%s\n",
+	debug_bs("menu: apply contact media direction audio=%s video=%s\n",
 	      sdp_dir_name(audir), sdp_dir_name(viddir));
 	call_set_media_direction(call, audir, viddir);
 }
@@ -707,7 +707,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 	(void)arg;
 
 #if 0
-	debug("menu: [ ua=%s call=%s ] event: %s (%s)\n",
+	debug_bs("menu: [ ua=%s call=%s ] event: %s (%s)\n",
 	      account_aor(acc), call_id(call), bevent_str(ev), prm);
 #endif
 
@@ -726,7 +726,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 
 			(void)sip_treply(NULL, uag_sip(), msg, scode, reason);
 
-			info("menu: incoming call from %r <%r> rejected: "
+			info_bs("menu: incoming call from %r <%r> rejected: "
 			     "%u %s\n",
 			     &msg->from.dname, &msg->from.auri, scode, reason);
 			bevent_sip_msg_emit(BEVENT_MODULE, msg,
@@ -738,7 +738,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 		ua = uag_find_msg(msg);
 		err = ua_accept(ua, msg);
 		if (err) {
-			warning("menu: could not accept incoming call (%m)\n",
+			warning_bs("menu: could not accept incoming call (%m)\n",
 				err);
 			return;
 		}
@@ -768,7 +768,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 		if (!call_has_video(call))
 			vrdir = SDP_INACTIVE;
 
-		info("menu: %s: Incoming call from: %s %s - audio-video: %s-%s"
+		info_bs("menu: %s: Incoming call from: %s %s - audio-video: %s-%s"
 		     " - (press 'a' to accept)\n",
 		     account_aor(acc), call_peername(call), call_peeruri(call),
 		     sdp_dir_name(ardir), sdp_dir_name(vrdir));
@@ -839,7 +839,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 			    (call_is_outgoing(call) &&
 			     call_scode(call) == 701)) {
 
-				info("menu: call closed"
+				info_bs("menu: call closed"
 				     " -- redialing in %u seconds\n",
 				     menu.redial_delay);
 
@@ -853,7 +853,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 					  redial_handler, NULL);
 			}
 			else {
-				info("menu: call closed -- not redialing\n");
+				info_bs("menu: call closed -- not redialing\n");
 			}
 		}
 
@@ -904,7 +904,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 		 *       transfer target
 		 */
 
-		info("menu: transferring call %s to '%s'\n",
+		info_bs("menu: transferring call %s to '%s'\n",
 		     call_id(call), prm);
 
 		err = ua_call_alloc(&call2, ua, VIDMODE_ON, NULL, call,
@@ -916,7 +916,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 			pl_set_str(&pl, prm);
 			err = call_connect(call2, &pl);
 			if (err) {
-				warning("menu: transfer: connect error: %m\n",
+				warning_bs("menu: transfer: connect error: %m\n",
 					err);
 			}
 			else {
@@ -932,7 +932,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 		break;
 
 	case BEVENT_CALL_TRANSFER_FAILED:
-		info("menu: transfer failure: %s\n", prm);
+		info_bs("menu: transfer failure: %s\n", prm);
 		menu_stop_play();
 		call_hold(call, false);
 		menu_selcall(call);
@@ -945,11 +945,11 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 
 		++uri;
 		if (account_sip_autoredirect(ua_account(ua))) {
-			info("menu: redirecting call to %s\n", uri);
+			info_bs("menu: redirecting call to %s\n", uri);
 			menu_invite(uri);
 		}
 		else {
-			info("menu: redirect call to %s\n", uri);
+			info_bs("menu: redirect call to %s\n", uri);
 		}
 		break;
 
@@ -960,7 +960,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 
 		(void)cparam_decode(prm, "method", &val);
 		if (!pl_strcmp(&val, "invite")) {
-			info("menu: incoming REFER to %s\n", prm);
+			info_bs("menu: incoming REFER to %s\n", prm);
 			menu_invite(prm);
 		}
 
@@ -974,12 +974,12 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 		return;
 
 	case BEVENT_MWI_NOTIFY:
-		info("menu: ----- MWI for %s -----\n", account_aor(acc));
-		info("%s\n", prm);
+		info_bs("menu: ----- MWI for %s -----\n", account_aor(acc));
+		info_bs("%s\n", prm);
 		break;
 
 	case BEVENT_AUDIO_ERROR:
-		info("menu: audio error (%s)\n", prm);
+		info_bs("menu: audio error (%s)\n", prm);
 		break;
 
 	case BEVENT_MODULE:
@@ -1152,7 +1152,7 @@ struct ua   *menu_ua_carg(struct re_printf *pf, const struct cmd_arg *carg,
 
 	if (le) {
 		ua = le->data;
-		info("menu: %s: selected for request\n",
+		info_bs("menu: %s: selected for request\n",
 				account_aor(ua_account(ua)));
 	}
 	else {
@@ -1270,7 +1270,7 @@ static int module_init(void)
 	conf_get_u32(conf_cur(), "redial_delay", &menu.redial_delay);
 
 	if (menu.redial_attempts) {
-		info("menu: redial enabled with %u attempts and"
+		info_bs("menu: redial enabled with %u attempts and"
 		     " %u seconds delay\n",
 		     menu.redial_attempts,
 		     menu.redial_delay);
@@ -1310,7 +1310,7 @@ static int module_init(void)
 
 static int module_close(void)
 {
-	debug("menu: close (redial current_attempts=%d)\n",
+	debug_bs("menu: close (redial current_attempts=%d)\n",
 	      menu.current_attempts);
 
 	message_unlisten(baresip_message(), message_handler);

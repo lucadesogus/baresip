@@ -80,7 +80,7 @@ int opus_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 	if (!aesp || !ac || !ac->ch)
 		return EINVAL;
 
-	debug("opus: encoder fmtp (%s)\n", fmtp);
+	debug_bs("opus: encoder fmtp (%s)\n", fmtp);
 
 	/* Save the incoming OPUS parameters from SDP offer */
 	if (str_isset(fmtp)) {
@@ -103,7 +103,7 @@ int opus_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 					       opus_application,
 					       &opuserr);
 		if (!aes->enc) {
-			warning("opus: encoder create: %s\n",
+			warning_bs("opus: encoder create: %s\n",
 				opus_strerror(opuserr));
 			mem_deref(aes);
 			return ENOMEM;
@@ -163,7 +163,7 @@ int opus_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 	(void)opus_encoder_ctl(aes->enc, OPUS_GET_DTX(&prm.dtx));
 	(void)opus_encoder_ctl(aes->enc, OPUS_GET_COMPLEXITY(&complex));
 
-	debug("opus: encode bw=%s bitrate=%i fch=%s "
+	debug_bs("opus: encode bw=%s bitrate=%i fch=%s "
 	      "vbr=%i fec=%i dtx=%i complex=%i\n",
 	      bwname(bw), prm.bitrate, chname(fch),
 	      vbr, prm.inband_fec, prm.dtx, complex);
@@ -190,7 +190,7 @@ int opus_encode_frm(struct auenc_state *aes,
 		n = opus_encode(aes->enc, sampv, (int)(sampc/aes->ch),
 				buf, (opus_int32)(*len));
 		if (n < 0) {
-			warning("opus: encode error: %s\n",
+			warning_bs("opus: encode error: %s\n",
 				opus_strerror((int)n));
 			return EPROTO;
 		}
@@ -200,7 +200,7 @@ int opus_encode_frm(struct auenc_state *aes,
 		n = opus_encode_float(aes->enc, sampv, (int)(sampc/aes->ch),
 				      buf, (opus_int32)(*len));
 		if (n < 0) {
-			warning("opus: float encode error: %s\n",
+			warning_bs("opus: float encode error: %s\n",
 				opus_strerror((int)n));
 			return EPROTO;
 		}

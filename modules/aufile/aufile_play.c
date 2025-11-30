@@ -30,7 +30,7 @@ static void destructor(void *arg)
 	struct auplay_st *st = arg;
 	/* Wait for termination of other thread */
 	if (re_atomic_rlx(&st->run)) {
-		debug("aufile: stopping playback thread\n");
+		debug_bs("aufile: stopping playback thread\n");
 		re_atomic_rlx_set(&st->run, false);
 		thrd_join(st->thread, NULL);
 	}
@@ -104,7 +104,7 @@ int aufile_play_alloc(struct auplay_st **stp, const struct auplay *ap,
 	aufprm.fmt      = prm->fmt;
 	err = aufile_open(&st->auf, &aufprm, file, AUFILE_WRITE);
 	if (err) {
-		warning("aufile: could not open %s for writing\n", file);
+		warning_bs("aufile: could not open %s for writing\n", file);
 		return err;
 	}
 
@@ -117,7 +117,7 @@ int aufile_play_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (!st->sampv)
 		return ENOMEM;
 
-	info("aufile: writing speaker audio to %s\n", file);
+	info_bs("aufile: writing speaker audio to %s\n", file);
 	re_atomic_rlx_set(&st->run, true);
 	err = thread_create_name(&st->thread, "aufile_play", write_thread, st);
 	if (err) {

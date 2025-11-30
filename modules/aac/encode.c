@@ -82,7 +82,7 @@ int aac_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 	if (!aesp || !ac || !ac->ch)
 		return EINVAL;
 
-	debug("aac: encoder fmtp (%s)\n", fmtp);
+	debug_bs("aac: encoder fmtp (%s)\n", fmtp);
 
 	if (str_isset(fmtp)) {
 		aac_mirror_params(fmtp);
@@ -103,7 +103,7 @@ int aac_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 
 		error = aacEncOpen(&aes->enc, 0, 0);
 		if (error != AACENC_OK) {
-			warning("aac: Unable to open the encoder (0x%x)\n",
+			warning_bs("aac: Unable to open the encoder (0x%x)\n",
 			        error);
 			err = ENOMEM;
 			goto out;
@@ -113,20 +113,20 @@ int aac_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 		    prm.profile_level_id <= 21) ||
 		    (prm.profile_level_id >= 40 &&
 		    prm.profile_level_id <= 43)) {
-			info("aac: Encoder Profile AAC-LC\n");
+			info_bs("aac: Encoder Profile AAC-LC\n");
 			enc_aot = AOT_AAC_LC; /* AAC-LC */
 			enc_ratio = 1;
 		}
 		else if (prm.profile_level_id == 52 ||
 		         (prm.profile_level_id >= 22 &&
 		          prm.profile_level_id <= 29)) {
-			info("aac: Encoder Profile AAC-LD\n");
+			info_bs("aac: Encoder Profile AAC-LD\n");
 			enc_aot = AOT_ER_AAC_LD; /* AAC-LD */
 			enc_ratio = 1;
 		}
 		else if (prm.profile_level_id >= 76 &&
 		         prm.profile_level_id <= 77) {
-			info("aac: Encoder Profile AAC-ELD\n");
+			info_bs("aac: Encoder Profile AAC-ELD\n");
 			enc_aot = AOT_ER_AAC_ELD; /* AAC-ELD */
 			enc_ratio = 1;
 			switch (ac->ch) {
@@ -140,14 +140,14 @@ int aac_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 		}
 		else if (prm.profile_level_id >= 44 &&
 		         prm.profile_level_id <= 47) {
-			info("aac: Encoder Profile HE-AAC\n");
+			info_bs("aac: Encoder Profile HE-AAC\n");
 			enc_aot = AOT_SBR; /* HE-AAC */
 			enc_ratio = 2; /* SBR */
 		}
 		else if (prm.profile_level_id >= 48 &&
 		         prm.profile_level_id <= 51 &&
 			 ac->ch == MODE_2) {
-			info("aac: Encoder Profile HE-AAC v2\n");
+			info_bs("aac: Encoder Profile HE-AAC v2\n");
 			enc_aot = AOT_PS; /* HE-AAC v2 */
 			enc_ratio = 2; /* SBR */
 		}
@@ -156,7 +156,7 @@ int aac_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 			goto out;
 		}
 
-		debug("srate: %u, crate: %u, ch: %u, pch: %u, ptime: %u\n",
+		debug_bs("srate: %u, crate: %u, ch: %u, pch: %u, ptime: %u\n",
 		      ac->srate, ac->crate, ac->ch, ac->pch, ac->ptime);
 
 		/* set mandatory encoder params: */
@@ -185,7 +185,7 @@ int aac_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 
 		error = aacEncEncode(aes->enc, NULL, NULL, NULL, NULL);
 		if (error != AACENC_OK) {
-			warning(
+			warning_bs(
 			    "aac: Unable to initialize the encoder (0x%x)\n",
 			    error);
 			err = EINVAL;
@@ -194,7 +194,7 @@ int aac_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 
 		error = aacEncInfo(aes->enc, &enc_info);
 		if (error != AACENC_OK) {
-			warning(
+			warning_bs(
 			    "aac: Failed to get AAC encoder info (0x%x)\n",
 			    error);
 			err = EINVAL;
@@ -207,13 +207,13 @@ int aac_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 		prm.constantduration = enc_info.frameLength;
 		prm.bitrate = aacEncoder_GetParam(aes->enc, AACENC_BITRATE);
 
-		debug("aac: Encoder configuration: conf=%w, "
+		debug_bs("aac: Encoder configuration: conf=%w, "
 		     "frameLength=%u, inputChannels=%u\n",
 		     enc_info.confBuf, enc_info.confSize,
 		     enc_info.frameLength, enc_info.inputChannels
 		     );
 
-		debug("aac: encoder setup:\n"
+		debug_bs("aac: encoder setup:\n"
 		      "\tAOT=%u\n"
 		      "\tBITRATE=%u\n"
 		      "\tBITRATEMODE=%u\n"
@@ -266,7 +266,7 @@ out:
 int aac_encode_frm(struct auenc_state *aes, bool *marker, uint8_t *buf,
                    size_t *len, int fmt, const void *sampv, size_t sampc)
 {
-	/*warning("aac_encode_frm()\n");*/
+	/*warning_bs("aac_encode_frm()\n");*/
 	AACENC_BufDesc in_buf, out_buf;
 	AACENC_InArgs in_args;
 	AACENC_OutArgs out_args;
@@ -319,7 +319,7 @@ int aac_encode_frm(struct auenc_state *aes, bool *marker, uint8_t *buf,
 		error = aacEncEncode(aes->enc, &in_buf, &out_buf, &in_args,
 		                     &out_args);
 		if (error != AACENC_OK) {
-			warning("aac: aacEncEncode() failed (0x%x)\n",
+			warning_bs("aac: aacEncEncode() failed (0x%x)\n",
 			        error);
 			return EINVAL;
 		}
@@ -334,7 +334,7 @@ int aac_encode_frm(struct auenc_state *aes, bool *marker, uint8_t *buf,
 			/* au_sizes[i] = out_args.numOutBytes; */
 			if (i > 0)
 			 	/* single access unit only! */
-				warning("aac: Sorry, encoding multiple AU "
+				warning_bs("aac: Sorry, encoding multiple AU "
 				        "per packet is not implemented yet.\n"
 				        "Please reduce the amount of samples "
 				        "passed to encoder per packet by "

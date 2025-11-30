@@ -54,7 +54,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
 				  tmr_handler, pub);
 		}
 		else {
-			warning("%s: publisher got 200 OK without etag\n",
+			warning_bs("%s: publisher got 200 OK without etag\n",
 				account_aor(acc));
 		}
 	}
@@ -67,7 +67,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
 
 	}
 	else {
-		warning("%s: publisher got error response %u %r\n",
+		warning_bs("%s: publisher got error response %u %r\n",
 			account_aor(acc), msg->scode, &msg->reason);
 	}
 
@@ -151,7 +151,7 @@ static int publish(struct publisher *pub)
 			   mbuf_buf(mb),
 			   mbuf_get_left(mb));
 	if (err) {
-		warning("publisher: send PUBLISH: (%m)\n", err);
+		warning_bs("publisher: send PUBLISH: (%m)\n", err);
 	}
 
 out:

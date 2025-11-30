@@ -49,7 +49,7 @@ static void tmr_handler(void *data)
 
 	ret = mosquitto_loop_misc(mqtt->mosq);
 	if (ret != MOSQ_ERR_SUCCESS) {
-		warning("mqtt: error in loop (%s)\n", mosquitto_strerror(ret));
+		warning_bs("mqtt: error in loop (%s)\n", mosquitto_strerror(ret));
 	}
 }
 
@@ -65,17 +65,17 @@ static void connect_callback(struct mosquitto *mosq, void *obj, int result)
 	(void)mosq;
 
 	if (result != MOSQ_ERR_SUCCESS) {
-		warning("mqtt: could not connect to broker (%s) \n",
+		warning_bs("mqtt: could not connect to broker (%s) \n",
 			mosquitto_strerror(result));
 		return;
 	}
 
-	info("mqtt: connected to broker at %s:%d\n",
+	info_bs("mqtt: connected to broker at %s:%d\n",
 	     broker_host, broker_port);
 
 	err = mqtt_subscribe_start(mqtt);
 	if (err) {
-		warning("mqtt: subscribe_init failed (%m)\n", err);
+		warning_bs("mqtt: subscribe_init failed (%m)\n", err);
 	}
 }
 
@@ -92,14 +92,14 @@ static void tmr_reconnect(void *data)
 		err = fd_listen(&mqtt->fhs, mqtt->fd, FD_READ, fd_handler,
 				mqtt);
 		if (err) {
-			warning("mqtt: reconnect fd_listen failed\n");
+			warning_bs("mqtt: reconnect fd_listen failed\n");
 			return;
 		}
 		tmr_start(&mqtt->tmr, 500, tmr_handler, mqtt);
-		info("mqtt: reconnected\n");
+		info_bs("mqtt: reconnected\n");
 	}
 	else {
-		warning("mqtt: reconnect failed, will retry in 2 seconds\n");
+		warning_bs("mqtt: reconnect failed, will retry in 2 seconds\n");
 		tmr_start(&mqtt->tmr, 2000, tmr_reconnect, mqtt);
 	}
 }
@@ -114,7 +114,7 @@ static void disconnect_callback(struct mosquitto *mosq, void *obj, int rc)
 	if (rc == 0)
 		return;
 
-	warning("mqtt: connection lost (%s)\n", mosquitto_strerror(rc));
+	warning_bs("mqtt: connection lost (%s)\n", mosquitto_strerror(rc));
 	tmr_cancel(&mqtt->tmr);
 	mqtt->fhs = fd_close(mqtt->fhs);
 	tmr_start(&mqtt->tmr, 1000, tmr_reconnect, mqtt);
@@ -150,7 +150,7 @@ static int module_init(void)
 		     mqttsubscribetopic, sizeof(mqttsubscribetopic));
 	conf_get_u32(conf_cur(), "mqtt_broker_port", &broker_port);
 
-	info("mqtt: connecting to broker at %s:%d as %s topic %s\n",
+	info_bs("mqtt: connecting to broker at %s:%d as %s topic %s\n",
 		broker_host, broker_port, mqttclientid, mqttbasetopic);
 
 	if (*mqttsubscribetopic == '\0') {
@@ -162,7 +162,7 @@ static int module_init(void)
 				"/%s/event", mqttbasetopic);
 	}
 
-	info("mqtt: Publishing on %s, subscribing to %s\n",
+	info_bs("mqtt: Publishing on %s, subscribing to %s\n",
 		mqttpublishtopic, mqttsubscribetopic);
 
 	s_mqtt.basetopic = mqttbasetopic;
@@ -172,7 +172,7 @@ static int module_init(void)
 
 	s_mqtt.mosq = mosquitto_new(mqttclientid, true, &s_mqtt);
 	if (!s_mqtt.mosq) {
-		warning("mqtt: failed to create client instance\n");
+		warning_bs("mqtt: failed to create client instance\n");
 		return ENOMEM;
 	}
 
@@ -203,7 +203,7 @@ static int module_init(void)
 
 		err = ret == MOSQ_ERR_ERRNO ? errno : EIO;
 
-		warning("mqtt: failed to connect to %s:%d (%s)\n",
+		warning_bs("mqtt: failed to connect to %s:%d (%s)\n",
 			broker_host, broker_port,
 			mosquitto_strerror(ret));
 		return err;
@@ -222,7 +222,7 @@ static int module_init(void)
 	if (err)
 		return err;
 
-	info("mqtt: module loaded\n");
+	info_bs("mqtt: module loaded\n");
 
 	return 0;
 }
@@ -248,7 +248,7 @@ static int module_close(void)
 
 	mosquitto_lib_cleanup();
 
-	info("mqtt: module unloaded\n");
+	info_bs("mqtt: module unloaded\n");
 
 	return 0;
 }

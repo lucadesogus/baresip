@@ -21,7 +21,7 @@ void vidfilt_register(struct list *vidfiltl, struct vidfilt *vf)
 
 	list_append(vidfiltl, &vf->le, vf);
 
-	info("vidfilt: %s\n", vf->name);
+	info_bs("vidfilt: %s\n", vf->name);
 }
 
 

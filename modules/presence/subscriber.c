@@ -110,7 +110,7 @@ static void notify_handler(struct sip *sip, const struct sip_msg *msg,
 	    0 != pl_strcasecmp(&type_hdr->val, "application/pidf+xml")) {
 
 		if (type_hdr)
-			warning("presence: unsupported content-type: '%r'\n",
+			warning_bs("presence: unsupported content-type: '%r'\n",
 				&type_hdr->val);
 
 		sip_treplyf(NULL, NULL, sip, msg, false,
@@ -163,23 +163,23 @@ static void close_handler(int err, const struct sip_msg *msg,
 
 	pres->sub = mem_deref(pres->sub);
 
-	info("presence: subscriber closed <%s>: ",
+	info_bs("presence: subscriber closed <%s>: ",
 	     contact_uri(pres->contact));
 
 	if (substate) {
-		info("%s", sipevent_reason_name(substate->reason));
+		info_bs("%s", sipevent_reason_name(substate->reason));
 		wait = wait_term(substate);
 	}
 	else if (msg) {
-		info("%u %r", msg->scode, &msg->reason);
+		info_bs("%u %r", msg->scode, &msg->reason);
 		wait = wait_fail(++pres->failc);
 	}
 	else {
-		info("%m", err);
+		info_bs("%m", err);
 		wait = wait_fail(++pres->failc);
 	}
 
-	info("; will retry in %u secs (failc=%u)\n", wait, pres->failc);
+	info_bs("; will retry in %u secs (failc=%u)\n", wait, pres->failc);
 
 	tmr_start(&pres->tmr, wait * 1000, tmr_handler, pres);
 
@@ -191,7 +191,7 @@ static void destructor(void *arg)
 {
 	struct presence *pres = arg;
 
-	debug("presence: subscriber destroyed\n");
+	debug_bs("presence: subscriber destroyed\n");
 
 	list_unlink(&pres->le);
 	tmr_cancel(&pres->tmr);
@@ -224,7 +224,7 @@ static int subscribe(struct presence *pres)
 	/* We use the first UA */
 	ua = uag_find_aor(NULL);
 	if (!ua) {
-		warning("presence: no UA found\n");
+		warning_bs("presence: no UA found\n");
 		return ENOENT;
 	}
 
@@ -242,7 +242,7 @@ static int subscribe(struct presence *pres)
 				 notify_handler, close_handler, pres,
 				 "%H", ua_print_supported, ua);
 	if (err) {
-		warning("presence: sipevent_subscribe failed: %m\n", err);
+		warning_bs("presence: sipevent_subscribe failed: %m\n", err);
 	}
 
 	return err;
@@ -293,7 +293,7 @@ static void contact_handler(struct contact *contact,
 				0 == pl_strcasecmp(&val, "p2p")) {
 		if (!removed) {
 			if (presence_alloc(contact) != 0) {
-				warning("presence: presence_alloc failed\n");
+				warning_bs("presence: presence_alloc failed\n");
 				return;
 			}
 		}
@@ -311,7 +311,7 @@ static void contact_handler(struct contact *contact,
 				mem_deref(pres);
 			}
 			else {
-				warning("presence: No contact to remove\n");
+				warning_bs("presence: No contact to remove\n");
 			}
 		}
 	}
@@ -337,7 +337,7 @@ int subscriber_init(void)
 		}
 	}
 
-	info("Subscribing to %u contacts\n", list_count(&presencel));
+	info_bs("Subscribing to %u contacts\n", list_count(&presencel));
 
 	contact_set_update_handler(contacts, contact_handler, NULL);
 
@@ -358,7 +358,7 @@ void subscriber_close_all(void)
 {
 	struct le *le;
 
-	info("presence: subscriber: closing %u subs\n",
+	info_bs("presence: subscriber: closing %u subs\n",
 	     list_count(&presencel));
 
 	contact_set_update_handler(baresip_contacts(), NULL, NULL);
@@ -369,7 +369,7 @@ void subscriber_close_all(void)
 		struct presence *pres = le->data;
 		le = le->next;
 
-		debug("presence: shutdown: sub=%p\n", pres->sub);
+		debug_bs("presence: shutdown: sub=%p\n", pres->sub);
 
 		pres->shutdown = true;
 		if (pres->sub) {

@@ -90,10 +90,10 @@ sync_handler(
 		case GST_MESSAGE_ERROR:
 			gst_message_parse_error(msg, &err, &d);
 
-			warning("gst: Error: %d(%m) message=\"%s\"\n",
+			warning_bs("gst: Error: %d(%m) message=\"%s\"\n",
 				err->code,
 				err->code, err->message);
-			warning("gst: Debug: %s\n", d);
+			warning_bs("gst: Debug: %s\n", d);
 
 			g_free(d);
 
@@ -116,7 +116,7 @@ sync_handler(
 				GST_TAG_TITLE,
 				&title)) {
 
-				info("gst: title: '%s'\n", title);
+				info_bs("gst: title: '%s'\n", title);
 				g_free(title);
 			}
 			gst_tag_list_unref(tag_list);
@@ -142,11 +142,11 @@ static void format_check(struct ausrc_st *st, GstStructure *s)
 	gst_structure_get_int(s, "channels", &channels);
 
 	if ((int)st->prm.srate != rate) {
-		warning("gst: expected %u Hz (got %u Hz)\n", st->prm.srate,
+		warning_bs("gst: expected %u Hz (got %u Hz)\n", st->prm.srate,
 			rate);
 	}
 	if (st->prm.ch != channels) {
-		warning("gst: expected %d channels (got %d)\n",
+		warning_bs("gst: expected %d channels (got %d)\n",
 			st->prm.ch, channels);
 	}
 }
@@ -188,13 +188,13 @@ static void packet_handler(struct ausrc_st *st, GstBuffer *buffer)
 	 */
 
 	if (!gst_buffer_map(buffer, &info, GST_MAP_READ)) {
-		warning("gst: gst_buffer_map failed\n");
+		warning_bs("gst: gst_buffer_map failed\n");
 		return;
 	}
 
 	err = aubuf_write(st->aubuf, info.data, info.size);
 	if (err) {
-		warning("gst: aubuf_write: %m\n", err);
+		warning_bs("gst: aubuf_write: %m\n", err);
 	}
 
 	gst_buffer_unmap(buffer, &info);
@@ -273,7 +273,7 @@ static int gst_setup(struct ausrc_st *st)
 
 	st->pipeline = gst_pipeline_new("pipeline");
 	if (!st->pipeline) {
-		warning("gst: failed to create pipeline element\n");
+		warning_bs("gst: failed to create pipeline element\n");
 		return ENOMEM;
 	}
 
@@ -281,7 +281,7 @@ static int gst_setup(struct ausrc_st *st)
 
 	st->source = gst_element_factory_make("playbin", "source");
 	if (!st->source) {
-		warning("gst: failed to create playbin source element\n");
+		warning_bs("gst: failed to create playbin source element\n");
 		return ENOMEM;
 	}
 
@@ -291,7 +291,7 @@ static int gst_setup(struct ausrc_st *st)
 
 	st->capsfilt = gst_element_factory_make("capsfilter", NULL);
 	if (!st->capsfilt) {
-		warning("gst: failed to create capsfilter element\n");
+		warning_bs("gst: failed to create capsfilter element\n");
 		return ENOMEM;
 	}
 
@@ -299,7 +299,7 @@ static int gst_setup(struct ausrc_st *st)
 
 	st->sink = gst_element_factory_make("fakesink", "sink");
 	if (!st->sink) {
-		warning("gst: failed to create sink element\n");
+		warning_bs("gst: failed to create sink element\n");
 		return ENOMEM;
 	}
 
@@ -400,7 +400,7 @@ static void timeout(void *arg)
 		tmr_cancel(&st->tmr);
 
 		if (st->eos) {
-			debug("gst: end of file\n");
+			debug_bs("gst: end of file\n");
 			/* error handler must be called from re_main thread */
 			if (st->errh)
 				st->errh(0, "end of file", st->arg);
@@ -423,7 +423,7 @@ static int gst_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		return EINVAL;
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("gst: unsupported sample format (%s)\n",
+		warning_bs("gst: unsupported sample format (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}
@@ -507,7 +507,7 @@ static int gst_info_handler(const struct ausrc *as,
 
 	pipeline = gst_pipeline_new("pipeline");
 	if (!pipeline) {
-		warning("gst: failed to create pipeline element\n");
+		warning_bs("gst: failed to create pipeline element\n");
 		return ENOMEM;
 	}
 
@@ -558,7 +558,7 @@ static int mod_gst_init(void)
 
 	s = gst_version_string();
 
-	info("gst: init: %s\n", s);
+	info_bs("gst: init: %s\n", s);
 
 	g_free(s);
 

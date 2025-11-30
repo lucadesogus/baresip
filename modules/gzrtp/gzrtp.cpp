@@ -168,7 +168,7 @@ static int media_alloc(struct menc_media **stp, struct menc_sess *sess,
 		st->stream->sdp_decode(sdpm);
 		err = sess->session->start_stream(st->stream);
 		if (err) {
-			warning("zrtp: stream start failed: %d\n", err);
+			warning_bs("zrtp: stream start failed: %d\n", err);
 		}
 	}
 
@@ -199,7 +199,7 @@ static int module_init(void)
 
 	err = conf_path_get(config_path, sizeof(config_path));
 	if (err) {
-		warning("zrtp: could not get config path: %m\n", err);
+		warning_bs("zrtp: could not get config path: %m\n", err);
 		return err;
 	}
 

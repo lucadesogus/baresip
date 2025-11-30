@@ -100,7 +100,7 @@ static void print_rtp_stats(const struct stream *s)
 	if (!started)
 		return;
 
-	info("\n%-9s       Transmit:     Receive:\n"
+	info_bs("\n%-9s       Transmit:     Receive:\n"
 	     "packets:        %7u      %7u\n"
 	     "avg. bitrate:   %7.1f      %7.1f  (kbit/s)\n"
 	     "errors:         %7d      %7d\n"
@@ -115,7 +115,7 @@ static void print_rtp_stats(const struct stream *s)
 
 	if (s->rtcp_stats.tx.sent || s->rtcp_stats.rx.sent) {
 
-		info("pkt.report:     %7u      %7u\n"
+		info_bs("pkt.report:     %7u      %7u\n"
 		     "lost:           %7d      %7d\n"
 		     "jitter:         %7.1f      %7.1f  (ms)\n",
 		     s->rtcp_stats.tx.sent, s->rtcp_stats.rx.sent,
@@ -166,7 +166,7 @@ static const char *media_name(enum media_type type)
 
 static void send_set_raddr(struct stream *strm, const struct sa *raddr)
 {
-	debug("stream: set remote addr for '%s': %J\n",
+	debug_bs("stream: set remote addr for '%s': %J\n",
 	     media_name(strm->type), raddr);
 
 	mtx_lock(strm->tx.lock);
@@ -199,7 +199,7 @@ int stream_enable_tx(struct stream *strm, bool enable)
 		return EINVAL;
 
 	if (!enable) {
-		debug("stream: disable %s RTP sender\n",
+		debug_bs("stream: disable %s RTP sender\n",
 		      media_name(strm->type));
 
 		re_atomic_rls_set(&strm->tx.enabled, false);
@@ -218,7 +218,7 @@ int stream_enable_tx(struct stream *strm, bool enable)
 	if (sdp_media_ldir(strm->sdp) == SDP_INACTIVE)
 		return ENOTSUP;
 
-	debug("stream: enable %s RTP sender\n", media_name(strm->type));
+	debug_bs("stream: enable %s RTP sender\n", media_name(strm->type));
 	re_atomic_rls_set(&strm->tx.enabled, true);
 
 	return 0;
@@ -246,7 +246,7 @@ int stream_enable_rx(struct stream *strm, bool enable)
 		return EINVAL;
 
 	if (!enable) {
-		debug("stream: disable %s RTP receiver\n",
+		debug_bs("stream: disable %s RTP receiver\n",
 		      media_name(strm->type));
 
 		rtprecv_enable(strm->rx, false);
@@ -256,13 +256,13 @@ int stream_enable_rx(struct stream *strm, bool enable)
 	if (!(sdp_media_dir(strm->sdp) & SDP_RECVONLY))
 		return ENOTSUP;
 
-	debug("stream: enable %s RTP receiver\n", media_name(strm->type));
+	debug_bs("stream: enable %s RTP receiver\n", media_name(strm->type));
 	rtprecv_enable(strm->rx, true);
 
 	if (strm->rtp && strm->cfg.rxmode == RECEIVE_MODE_THREAD &&
 	    strm->type == MEDIA_AUDIO && !rtprecv_running(strm->rx)) {
 		if (stream_bundle(strm)) {
-			warning("stream: rtp_rxmode thread was disabled "
+			warning_bs("stream: rtp_rxmode thread was disabled "
 				"because it is not supported in combination "
 				"with avt_bundle\n");
 		}
@@ -316,7 +316,7 @@ static void check_rtp_handler(void *arg)
 		diff_ms = (int)(now - ts_last);
 
 		if (diff_ms > 100) {
-			debug("stream: last \"%s\" RTP packet: %d "
+			debug_bs("stream: last \"%s\" RTP packet: %d "
 			      "milliseconds\n",
 			      sdp_media_name(strm->sdp), diff_ms);
 		}
@@ -329,7 +329,7 @@ static void check_rtp_handler(void *arg)
 
 		if (diff_ms > (int)strm->rxm.rtp_timeout) {
 
-			info("stream: no %s RTP packets received for"
+			info_bs("stream: no %s RTP packets received for"
 			     " %d milliseconds\n",
 			     sdp_media_name(strm->sdp), diff_ms);
 
@@ -337,7 +337,7 @@ static void check_rtp_handler(void *arg)
 		}
 	}
 	else {
-		debug("check_rtp: not checking \"%s\" RTP (dir=%s)\n",
+		debug_bs("check_rtp: not checking \"%s\" RTP (dir=%s)\n",
 			  sdp_media_name(strm->sdp),
 			  sdp_dir_name(sdp_media_dir(strm->sdp)));
 	}
@@ -377,7 +377,7 @@ static int stream_sock_alloc(struct stream *s, int af)
 			 s->cfg.rtp_ports.min, s->cfg.rtp_ports.max,
 			 true, rtprecv_decode, rtprecv_handle_rtcp, s->rx);
 	if (err) {
-		warning("stream: rtp_listen failed: af=%s ports=%u-%u"
+		warning_bs("stream: rtp_listen failed: af=%s ports=%u-%u"
 			" (%m)\n", net_af2name(af),
 			s->cfg.rtp_ports.min, s->cfg.rtp_ports.max, err);
 		return err;
@@ -417,7 +417,7 @@ int stream_start_mediaenc(struct stream *strm)
 		struct sa raddr_rtp;
 		struct sa raddr_rtcp;
 
-		info("stream: %s: starting mediaenc '%s' (wait_secure=%d)\n",
+		info_bs("stream: %s: starting mediaenc '%s' (wait_secure=%d)\n",
 		     media_name(strm->type), strm->menc->id,
 		     strm->menc->wait_secure);
 
@@ -433,7 +433,7 @@ int stream_start_mediaenc(struct stream *strm)
 				 strm->rtcp_mux ? NULL : &raddr_rtcp,
 					 strm->sdp, strm);
 		if (err) {
-			warning("stream: start mediaenc error: %m\n", err);
+			warning_bs("stream: start mediaenc error: %m\n", err);
 			return err;
 		}
 	}
@@ -462,12 +462,12 @@ static void update_all_remote_addr(struct list *streaml,
 void stream_mnat_connected(struct stream *strm, const struct sa *raddr1,
 			   const struct sa *raddr2)
 {
-	info("stream: '%s' mnat '%s' connected: raddr %J %J\n",
+	info_bs("stream: '%s' mnat '%s' connected: raddr %J %J\n",
 	     media_name(strm->type),
 	     strm->mnat->id, raddr1, raddr2);
 
 	if (bundle_state(stream_bundle(strm)) == BUNDLE_MUX) {
-		warning("stream: unexpected mnat connected"
+		warning_bs("stream: unexpected mnat connected"
 			" in bundle state Mux\n");
 		return;
 	}
@@ -575,7 +575,7 @@ int stream_alloc(struct stream **sp, struct list *streaml,
 		err = rtprecv_alloc(&s->rx, s, media_name(type), cfg,
 			       rtph, pth, arg);
 		if (err) {
-			warning("stream: failed to create receiver"
+			warning_bs("stream: failed to create receiver"
 				" for media '%s' (%m)\n",
 				media_name(type), err);
 			goto out;
@@ -585,7 +585,7 @@ int stream_alloc(struct stream **sp, struct list *streaml,
 		tmr_init(&s->rxm.tmr_rec);
 		err = stream_sock_alloc(s, prm->af);
 		if (err) {
-			warning("stream: failed to create socket"
+			warning_bs("stream: failed to create socket"
 				" for media '%s' (%m)\n",
 				media_name(type), err);
 			goto out;
@@ -685,7 +685,7 @@ int stream_bundle_init(struct stream *strm, bool offerer)
 
 		id = stream_generate_extmap_id(strm);
 
-		info("stream: bundle init offerer: generate id=%u\n", id);
+		info_bs("stream: bundle init offerer: generate id=%u\n", id);
 
 		err = bundle_set_extmap(strm->bundle, strm->sdp, id);
 		if (err)
@@ -799,7 +799,7 @@ int stream_resend(struct stream *s, uint16_t seq, bool ext, bool marker,
 
 static void disable_mnat(struct stream *s)
 {
-	info("stream: disable MNAT (%s)\n", media_name(s->type));
+	info_bs("stream: disable MNAT (%s)\n", media_name(s->type));
 
 	s->mns = mem_deref(s->mns);
 	s->mnat = NULL;
@@ -808,7 +808,7 @@ static void disable_mnat(struct stream *s)
 
 static void disable_menc(struct stream *strm)
 {
-	info("stream: disable MENC (%s)\n", media_name(strm->type));
+	info_bs("stream: disable MENC (%s)\n", media_name(strm->type));
 
 	strm->mencs = mem_deref(strm->mencs);
 	strm->menc = NULL;
@@ -851,7 +851,7 @@ static void stream_remote_set(struct stream *s)
 	if (s->cfg.rtcp_mux && sdp_media_rattr(s->sdp, "rtcp-mux")) {
 
 		if (!s->rtcp_mux)
-			info("%s: RTP/RTCP multiplexing enabled\n",
+			info_bs("%s: RTP/RTCP multiplexing enabled\n",
 			     sdp_media_name(s->sdp));
 		s->rtcp_mux = true;
 
@@ -913,7 +913,7 @@ int stream_update(struct stream *s)
 	if (!s)
 		return EINVAL;
 
-	info("stream: update '%s'\n", media_name(s->type));
+	info_bs("stream: update '%s'\n", media_name(s->type));
 
 	/* disable rx/tx stream for updates */
 	stream_enable(s, false);
@@ -944,7 +944,7 @@ int stream_update(struct stream *s)
 
 		err = stream_start_mediaenc(s);
 		if (err) {
-			warning("stream: mediaenc update: %m\n", err);
+			warning_bs("stream: mediaenc update: %m\n", err);
 			return err;
 		}
 	}
@@ -1094,7 +1094,7 @@ void stream_enable_rtp_timeout(struct stream *strm, uint32_t timeout_ms)
 
 	if (timeout_ms) {
 
-		info("stream: Enable RTP timeout (%u milliseconds)\n",
+		info_bs("stream: Enable RTP timeout (%u milliseconds)\n",
 		     timeout_ms);
 
 		rtprecv_set_ts_last(strm->rx, tmr_jiffies());
@@ -1332,7 +1332,7 @@ static void update_menc_muxed(struct list *streaml, bool secure)
 
 		if (bundle_state(stream_bundle(strm)) == BUNDLE_MUX) {
 
-			debug("stream: update muxed: secure=%d\n", secure);
+			debug_bs("stream: update muxed: secure=%d\n", secure);
 			strm->menc_secure = secure;
 		}
 	}
@@ -1376,7 +1376,7 @@ static void natpinhole_handler(void *arg)
 	err = rtp_send(strm->rtp, &raddr_rtp, false, false,
 		       sc->pt, 0, tmr_jiffies_rt_usec(), mb);
 	if (err) {
-		warning("stream: rtp_send to open natpinhole"
+		warning_bs("stream: rtp_send to open natpinhole"
 			"failed (%m)\n", err);
 	}
 
@@ -1433,7 +1433,7 @@ int stream_start_rtcp(const struct stream *strm)
 	if (!strm)
 		return EINVAL;
 
-	debug("stream: %s: starting RTCP with remote %J\n",
+	debug_bs("stream: %s: starting RTCP with remote %J\n",
 	      media_name(strm->type), &strm->tx.raddr_rtcp);
 
 	if (strm->rxm.use_rxthread) {
@@ -1448,7 +1448,7 @@ int stream_start_rtcp(const struct stream *strm)
 			err = rtcp_send_app(strm->rtp, "PING",
 					    (void *)"PONG", 4);
 			if (err) {
-				warning("stream: rtcp_send_app failed (%m)\n",
+				warning_bs("stream: rtcp_send_app failed (%m)\n",
 					err);
 				return err;
 			}
@@ -1728,7 +1728,7 @@ void stream_parse_mid(struct stream *strm)
 	if (rmid) {
 
 		if (str_isset(strm->mid)) {
-			info("stream: parse mid: '%s' -> '%s'\n",
+			info_bs("stream: parse mid: '%s' -> '%s'\n",
 			     strm->mid, rmid);
 		}
 
@@ -1747,7 +1747,7 @@ void stream_enable_bundle(struct stream *strm, enum bundle_state st)
 	if (!strm)
 		return;
 
-	info("stream: '%s' enable bundle (%s)\n",
+	info_bs("stream: '%s' enable bundle (%s)\n",
 	     media_name(strm->type), bundle_state_name(st));
 
 	bundle_set_state(strm->bundle, st);

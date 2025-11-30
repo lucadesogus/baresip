@@ -15,13 +15,13 @@ static void print_rtcp_summary_line(const struct call *call,
 	rtcp = stream_rtcp_stats(s);
 
 	if (rtcp && (rtcp->tx.sent || rtcp->rx.sent)) {
-		info("\n");
+		info_bs("\n");
 		/*
 		 * Add a stats line to make it easier to parse result
 		 * from script. Use a similar format used for the
 		 * XRTP message in audio.c
 		 */
-		info(
+		info_bs(
 			"EX=BareSip;"  /* Reporter Identifier */
 			"CS=%d;"       /* Call Setup in ms */
 			"CD=%d;"       /* Call Duration in sec */
@@ -53,8 +53,8 @@ static void print_rtcp_summary_line(const struct call *call,
 			* put a line showing how
 			* RTCP stats were NOT collected
 			*/
-		info("\n");
-		info("EX=BareSip;ERROR=No RTCP stats collected;\n");
+		info_bs("\n");
+		info_bs("EX=BareSip;ERROR=No RTCP stats collected;\n");
 	}
 }
 
@@ -87,7 +87,7 @@ static int module_init(void)
 {
 	int err = bevent_register(event_handler, NULL);
 	if (err) {
-		info("Error loading rtcpsummary module: %d", err);
+		info_bs("Error loading rtcpsummary module: %d", err);
 		return err;
 	}
 	return 0;
@@ -96,7 +96,7 @@ static int module_init(void)
 
 static int module_close(void)
 {
-	debug("rtcpsummary: module closing..\n");
+	debug_bs("rtcpsummary: module closing..\n");
 	bevent_unregister(event_handler);
 	return 0;
 }

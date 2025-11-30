@@ -50,20 +50,20 @@ int open_netlink(net_change_h *changeh, void *arg)
 	d.fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 	if (d.fd < 0) {
 		err = errno;
-		warning("netroam: open of netlink socket failed (%m)\n", err);
+		warning_bs("netroam: open of netlink socket failed (%m)\n", err);
 		return err;
 	}
 
 	err = net_sockopt_blocking_set(d.fd, false);
 	if (err) {
-		warning("netroam: netlink non-blocking failed (%m)\n", err);
+		warning_bs("netroam: netlink non-blocking failed (%m)\n", err);
 		(void)close(d.fd);
 		return err;
 	}
 
 	if (bind(d.fd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
 		err = errno;
-		warning("netroam: bind to netlink socket failed (%m)\n", err);
+		warning_bs("netroam: bind to netlink socket failed (%m)\n", err);
 		(void)close(d.fd);
 		return err;
 	}

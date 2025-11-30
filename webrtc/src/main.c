@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 
 	err = conf_configure_buf((uint8_t *)modconfig, str_len(modconfig));
 	if (err) {
-		warning("main: configure failed: %m\n", err);
+		warning_bs("main: configure failed: %m\n", err);
 		goto out;
 	}
 
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
 	 */
 	err = baresip_init(conf_config());
 	if (err) {
-		warning("main: baresip init failed (%m)\n", err);
+		warning_bs("main: baresip init failed (%m)\n", err);
 		goto out;
 	}
 
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 	/* NOTE: modules must be unloaded after all application
 	 *       activity has stopped.
 	 */
-	debug("main: unloading modules..\n");
+	debug_bs("main: unloading modules..\n");
 	mod_close();
 
 	re_thread_async_close();

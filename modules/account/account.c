@@ -32,7 +32,7 @@ static int account_write_template(const char *file)
 	FILE *f = NULL;
 	int r, err = 0;
 
-	info("account: creating accounts template %s\n", file);
+	info_bs("account: creating accounts template %s\n", file);
 
 	f = fopen(file, "w");
 	if (!f)
@@ -139,7 +139,7 @@ static int line_handler(const struct pl *addr, void *arg)
 
 	acc = ua_account(ua);
 	if (!acc) {
-		warning("account: no account for this ua\n");
+		warning_bs("account: no account for this ua\n");
 		return ENOENT;
 	}
 
@@ -152,7 +152,7 @@ static int line_handler(const struct pl *addr, void *arg)
 			e = ua_fallback(ua);
 
 		if (e) {
-			warning("account: failed to register ua"
+			warning_bs("account: failed to register ua"
 				" '%s' (%m)\n", account_aor(acc), e);
 		}
 	}
@@ -192,7 +192,7 @@ static int account_read_file(void)
 
 	err = conf_path_get(path, sizeof(path));
 	if (err) {
-		warning("account: conf_path_get (%m)\n", err);
+		warning_bs("account: conf_path_get (%m)\n", err);
 		return err;
 	}
 
@@ -213,10 +213,10 @@ static int account_read_file(void)
 		return err;
 
 	n = list_count(uag_list());
-	info("Populated %u account%s\n", n, 1==n ? "" : "s");
+	info_bs("Populated %u account%s\n", n, 1==n ? "" : "s");
 
 	if (list_isempty(uag_list())) {
-		info("account: No SIP accounts found\n"
+		info_bs("account: No SIP accounts found\n"
 			" -- check your config "
 			"or add an account using 'uanew' command\n");
 	}

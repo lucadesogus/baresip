@@ -82,7 +82,7 @@ static int device_thread(void *arg)
 		if (err)
 			goto out;
 
-		info("wasapi/device/play: %s (%s)\n", name_utf8, dev_id_utf8);
+		info_bs("wasapi/device/play: %s (%s)\n", name_utf8, dev_id_utf8);
 
 		PropVariantClear(&name);
 		IPropertyStore_Release(store);
@@ -135,7 +135,7 @@ static int device_thread(void *arg)
 		if (err)
 			goto out;
 
-		info("wasapi/device/src: %s (%s)\n", name_utf8, dev_id_utf8);
+		info_bs("wasapi/device/src: %s (%s)\n", name_utf8, dev_id_utf8);
 
 		PropVariantClear(&name);
 		IPropertyStore_Release(store);
@@ -150,7 +150,7 @@ static int device_thread(void *arg)
 		name_utf8 = mem_deref(name_utf8);
 	}
 
-	info("wasapi: output devices: %d, input devices: %d\n", play_dev_count,
+	info_bs("wasapi: output devices: %d, input devices: %d\n", play_dev_count,
 	     src_dev_count);
 
 out:

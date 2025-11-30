@@ -44,7 +44,7 @@ void bundle_set_state(struct bundle *bun, enum bundle_state st)
 	if (!bun)
 		return;
 
-	debug("bundle: set state: %s\n", bundle_state_name(st));
+	debug_bs("bundle: set state: %s\n", bundle_state_name(st));
 
 	bun->state = st;
 }
@@ -57,7 +57,7 @@ int bundle_alloc(struct bundle **bunp)
 	if (!bunp)
 		return EINVAL;
 
-	info("bundle: alloc\n");
+	info_bs("bundle: alloc\n");
 
 	bun = mem_zalloc(sizeof(*bun), destructor);
 	if (!bun)
@@ -90,7 +90,7 @@ static bool bundle_handler(const char *name, const char *value, void *arg)
 
 		strm = stream_lookup_mid(streaml, pl_mid.p, pl_mid.l);
 		if (!strm) {
-			warning("bundle: stream not found (mid=%r)\n",
+			warning_bs("bundle: stream not found (mid=%r)\n",
 				&pl_mid);
 			return false;
 		}
@@ -171,7 +171,7 @@ static bool extmap_handler(const char *name, const char *value, void *arg)
 
 	err = sdp_extmap_decode(&extmap, value);
 	if (err) {
-		warning("bundle: sdp_extmap_decode error (%m)\n", err);
+		warning_bs("bundle: sdp_extmap_decode error (%m)\n", err);
 		return false;
 	}
 
@@ -276,7 +276,7 @@ static int get_rtcp_ssrc(const struct rtcp_msg *msg, uint32_t *ssrcp)
 		break;
 
 	default:
-		warning("bundle: rtcp not sup (pt=%d)\n", msg->hdr.pt);
+		warning_bs("bundle: rtcp not sup (pt=%d)\n", msg->hdr.pt);
 		return ENOTSUP;
 	}
 
@@ -311,7 +311,7 @@ static bool udp_helper_send_handler(int *err, struct sa *dst,
 
 #if 0
 	if (bun->state != BUNDLE_MUX) {
-		warning("send: expect state=mux, but state=%s\n",
+		warning_bs("send: expect state=mux, but state=%s\n",
 			bundle_state_name(bun->state));
 		return false;
 	}
@@ -325,7 +325,7 @@ static bool udp_helper_send_handler(int *err, struct sa *dst,
 
 		lerr = udp_send_helper(us, dst, mb, bun2->uh);
 		if (lerr) {
-			warning("bundle: send: %m\n", lerr);
+			warning_bs("bundle: send: %m\n", lerr);
 			*err = lerr;
 		}
 
@@ -347,7 +347,7 @@ static bool udp_helper_recv_handler(struct sa *src, struct mbuf *mb, void *arg)
 
 #if 0
 	if (bun->state != BUNDLE_BASE) {
-		warning("recv: expect state=base, but state=%s\n",
+		warning_bs("recv: expect state=base, but state=%s\n",
 			bundle_state_name(bun->state));
 		return false;
 	}
@@ -359,7 +359,7 @@ static bool udp_helper_recv_handler(struct sa *src, struct mbuf *mb, void *arg)
 
 		err = rtp_hdr_decode(&hdr, mb);
 		if (err) {
-			warning("bundle: rtp decode error (%m)\n", err);
+			warning_bs("bundle: rtp decode error (%m)\n", err);
 			return false;
 		}
 
@@ -370,7 +370,7 @@ static bool udp_helper_recv_handler(struct sa *src, struct mbuf *mb, void *arg)
 
 		err = rtcp_decode(&msg, mb);
 		if (err) {
-			warning("rtcp decode error (%m)\n", err);
+			warning_bs("rtcp decode error (%m)\n", err);
 			return false;
 		}
 
@@ -391,7 +391,7 @@ static bool udp_helper_recv_handler(struct sa *src, struct mbuf *mb, void *arg)
 		udp_recv_helper(us, src, mb, bun2->uh);
 	}
 	else {
-		warning("bundle: stream not found (ssrc=%x)\n",
+		warning_bs("bundle: stream not found (ssrc=%x)\n",
 			ssrc);
 	}
 
@@ -407,7 +407,7 @@ int bundle_start_socket(struct bundle *bun, struct udp_sock *us,
 	bool based;
 	int err;
 
-	info("bundle: start socket <%p>\n", us);
+	info_bs("bundle: start socket <%p>\n", us);
 
 	if (!bun || !us)
 		return EINVAL;

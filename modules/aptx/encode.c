@@ -48,7 +48,7 @@ int aptx_encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 
 	aes->enc = aptx_init(APTX_VARIANT);
 	if (!aes->enc) {
-		warning("aptx: Cannot initialize encoder.\n");
+		warning_bs("aptx: Cannot initialize encoder.\n");
 		err = ENOMEM;
 		goto out;
 	}
@@ -114,7 +114,7 @@ int aptx_encode_frm(struct auenc_state *aes, bool *marker, uint8_t *buf,
 	}
 
 	if (processed != sampv_len)
-		warning("aptx: Encoding stopped in the middle of the sample, "
+		warning_bs("aptx: Encoding stopped in the middle of the sample, "
 		        "dropped %u bytes\n",
 		        (unsigned int)(sampv_len - processed));
 

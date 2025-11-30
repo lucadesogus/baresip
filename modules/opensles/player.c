@@ -113,7 +113,7 @@ static int createPlayer(struct auplay_st *st, struct auplay_prm *prm)
 					       &audioSrc, &audioSnk,
 					       RE_ARRAY_SIZE(ids), ids, req);
 	if (SL_RESULT_SUCCESS != r) {
-		warning("opensles: CreateAudioPlayer error: r = %d\n", r);
+		warning_bs("opensles: CreateAudioPlayer error: r = %d\n", r);
 		return ENODEV;
 	}
 
@@ -160,12 +160,12 @@ int opensles_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 		return EINVAL;
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("opensles: player: unsupported sample format (%s)\n",
+		warning_bs("opensles: player: unsupported sample format (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}
 
-	debug("opensles: opening player %uHz, %uchannels\n",
+	debug_bs("opensles: opening player %uHz, %uchannels\n",
 			prm->srate, prm->ch);
 
 	st = mem_zalloc(sizeof(*st), auplay_destructor);

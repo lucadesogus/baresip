@@ -135,7 +135,7 @@ static void menu_on_quit(GtkMenuItem *menuItem, gpointer arg)
 	(void)menuItem;
 
 	mqueue_push(mod->mq, MQ_QUIT, 0);
-	info("quit from gtk\n");
+	info_bs("quit from gtk\n");
 }
 
 
@@ -1021,8 +1021,8 @@ static int gtk_thread(void *arg)
 			gtk_status_icon_new_from_icon_name("call-start");
 
 		if (!gtk_status_icon_get_visible(mod->status_icon)) {
-			info("gtk status icon is not supported. ");
-			info("Disable gtk_use_status_icon in the settings\n");
+			info_bs("gtk status icon is not supported. ");
+			info_bs("Disable gtk_use_status_icon in the settings\n");
 			module_close();
 			return 1;
 		}
@@ -1133,7 +1133,7 @@ static int gtk_thread(void *arg)
 	g_action_map_add_action_entries(G_ACTION_MAP(mod->app),
 			app_entries, G_N_ELEMENTS(app_entries), mod);
 
-	info("gtk_menu starting\n");
+	info_bs("gtk_menu starting\n");
 
 	bevent_register(event_handler, mod);
 	mod->run = true;
@@ -1195,7 +1195,7 @@ static int vu_encode_update(struct aufilt_enc_st **stp, void **ctx,
 		return 0;
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("vumeter: unsupported sample format (%s)\n",
+		warning_bs("vumeter: unsupported sample format (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}
@@ -1232,7 +1232,7 @@ static int vu_decode_update(struct aufilt_dec_st **stp,
 		return 0;
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("vumeter: unsupported sample format (%s)\n",
+		warning_bs("vumeter: unsupported sample format (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}
@@ -1307,7 +1307,7 @@ static int module_init(void)
 	err = message_listen(baresip_message(),
 				message_handler, &mod_obj);
 	if (err) {
-		warning("gtk: message_init failed (%m)\n", err);
+		warning_bs("gtk: message_init failed (%m)\n", err);
 		return err;
 	}
 #endif

@@ -23,7 +23,7 @@ void aufilt_register(struct list *aufiltl, struct aufilt *af)
 
 	list_append(aufiltl, &af->le, af);
 
-	info("aufilt: %s\n", af->name);
+	info_bs("aufilt: %s\n", af->name);
 }
 
 

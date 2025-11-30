@@ -38,14 +38,14 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 	if (ev == BEVENT_VU_RX) {
 		err = event_add_au_jb_stat(od,call);
 		if (err) {
-			info("Could not add audio jb value.\n");
+			info_bs("Could not add audio jb value.\n");
 		}
 	}
 
 	err = mqtt_publish_message(mqtt, mqtt->pubtopic, "%H",
 				   json_encode_odict, od);
 	if (err) {
-		warning("mqtt: failed to publish message (%m)\n", err);
+		warning_bs("mqtt: failed to publish message (%m)\n", err);
 		goto out;
 	}
 
@@ -80,7 +80,7 @@ int mqtt_publish_message(struct mqtt *mqtt, const char *topic,
 				0,
 				false);
 	if (ret != MOSQ_ERR_SUCCESS) {
-		warning("mqtt: failed to publish (%s)\n",
+		warning_bs("mqtt: failed to publish (%s)\n",
 			mosquitto_strerror(ret));
 		err = EINVAL;
 		goto out;

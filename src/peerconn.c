@@ -52,27 +52,27 @@ static void pc_summary(const struct peer_connection *pc)
 {
 	size_t i = 0;
 
-	info("*** RTCPeerConnection summary ***\n");
+	info_bs("*** RTCPeerConnection summary ***\n");
 
-	info("signaling_state: %s\n",
+	info_bs("signaling_state: %s\n",
 	     signaling_state_name(pc->signaling_state));
 
-	info("steps:\n");
-	info(".. gather:   %d\n", pc->gather_ok);
-	info(".. sdp_enc:  %u\n", pc->sdp_enc_ok);
-	info(".. sdp_dec:  %u\n", pc->sdp_dec_ok);
-	info("\n");
+	info_bs("steps:\n");
+	info_bs(".. gather:   %d\n", pc->gather_ok);
+	info_bs(".. sdp_enc:  %u\n", pc->sdp_enc_ok);
+	info_bs(".. sdp_dec:  %u\n", pc->sdp_dec_ok);
+	info_bs("\n");
 
 	for (struct le *le = pc->medial.head; le; le = le->next, ++i) {
 		struct media_track *media = le->data;
 
-		info(".. #%zu '%s'\n", i,
+		info_bs(".. #%zu '%s'\n", i,
 		     media_kind_name(mediatrack_kind(media)));
 
 		mediatrack_summary(media);
 	}
 
-	info("\n");
+	info_bs("\n");
 }
 
 
@@ -86,7 +86,7 @@ static void destructor(void *data)
 	for (le = pc->medial.head; le; le = le->next) {
 		struct media_track *media = le->data;
 
-		debug("%H\n", mediatrack_debug, media);
+		debug_bs("%H\n", mediatrack_debug, media);
 	}
 
 	le = pc->medial.head;
@@ -121,7 +121,7 @@ static void audio_error_handler(int err, const char *str, void *arg)
 {
 	struct media_track *media = arg;
 
-	warning("peerconnection: audio error: %m (%s)\n", err, str);
+	warning_bs("peerconnection: audio error: %m (%s)\n", err, str);
 
 	mediatrack_close(media, err);
 }
@@ -131,7 +131,7 @@ static void video_error_handler(int err, const char *str, void *arg)
 {
 	struct media_track *media = arg;
 
-	warning("peerconnection: video error: %m (%s)\n", err, str);
+	warning_bs("peerconnection: video error: %m (%s)\n", err, str);
 
 	mediatrack_close(media, err);
 }
@@ -143,18 +143,18 @@ static void mnat_estab_handler(int err, uint16_t scode, const char *reason,
 	struct peer_connection *pc = arg;
 
 	if (err) {
-		warning("peerconnection: medianat failed: %m\n", err);
+		warning_bs("peerconnection: medianat failed: %m\n", err);
 		pc_close(pc, err);
 		return;
 	}
 	else if (scode) {
-		warning("peerconnection: medianat failed: %u %s\n",
+		warning_bs("peerconnection: medianat failed: %u %s\n",
 			scode, reason);
 		pc_close(pc, EPROTO);
 		return;
 	}
 
-	info("peerconnection: medianat gathered (%s)\n",
+	info_bs("peerconnection: medianat gathered (%s)\n",
 	     signaling_state_name(pc->signaling_state));
 
 	pc->gather_ok = true;
@@ -173,7 +173,7 @@ static void menc_event_handler(enum menc_event event,
 
 	media = mediatrack_lookup_media(&pc->medial, strm);
 
-	info("peerconnection: mediaenc event '%s' (%s)\n",
+	info_bs("peerconnection: mediaenc event '%s' (%s)\n",
 	     menc_event_name(event), prm);
 
 	switch (event) {
@@ -198,7 +198,7 @@ static void menc_error_handler(int err, void *arg)
 {
 	struct peer_connection *pc = arg;
 
-	warning("peerconnection: mediaenc error: %m\n", err);
+	warning_bs("peerconnection: mediaenc error: %m\n", err);
 
 	if (pc->closeh)
 		pc->closeh(err, pc->arg);
@@ -225,7 +225,7 @@ int peerconnection_new(struct peer_connection **pcp,
 
 	sa_set_str(&laddr, "127.0.0.1", 0);
 
-	info("peerconnection: new: sdp=%s\n",
+	info_bs("peerconnection: new: sdp=%s\n",
 	     offerer ? "Offerer" : "Answerer");
 
 	pc = mem_zalloc(sizeof(*pc), destructor);
@@ -248,7 +248,7 @@ int peerconnection_new(struct peer_connection **pcp,
 
 	if (mnat->sessh) {
 
-		info("peerconnection: using mnat '%s'\n", mnat->id);
+		info_bs("peerconnection: using mnat '%s'\n", mnat->id);
 
 		pc->mnat = mnat;
 
@@ -260,13 +260,13 @@ int peerconnection_new(struct peer_connection **pcp,
 				  pc->sdp, offerer,
 				  mnat_estab_handler, pc);
 		if (err) {
-			warning("peerconnection: medianat session: %m\n", err);
+			warning_bs("peerconnection: medianat session: %m\n", err);
 			goto out;
 		}
 	}
 
 	if (menc->sessh) {
-		info("peerconnection: using menc '%s'\n", menc->id);
+		info_bs("peerconnection: using menc '%s'\n", menc->id);
 
 		pc->menc = menc;
 
@@ -274,7 +274,7 @@ int peerconnection_new(struct peer_connection **pcp,
 				  menc_event_handler,
 				  menc_error_handler, pc);
 		if (err) {
-			warning("peerconnection: mediaenc session: %m\n", err);
+			warning_bs("peerconnection: mediaenc session: %m\n", err);
 			goto out;
 		}
 	}
@@ -316,7 +316,7 @@ int peerconnection_add_audio_track(struct peer_connection *pc,
 	if (!pc || !cfg || !aucodecl)
 		return EINVAL;
 
-	info("peerconnection: add audio (codecs=%u)\n", list_count(aucodecl));
+	info_bs("peerconnection: add audio (codecs=%u)\n", list_count(aucodecl));
 
 	offerer = (pc->signaling_state != SS_HAVE_REMOTE_OFFER);
 
@@ -328,7 +328,7 @@ int peerconnection_add_audio_track(struct peer_connection *pc,
 			  pc->menc, pc->mencs, AUDIO_PTIME, aucodecl, offerer,
 			  NULL, NULL, audio_error_handler, media);
 	if (err) {
-		warning("peerconnection: audio alloc failed (%m)\n", err);
+		warning_bs("peerconnection: audio alloc failed (%m)\n", err);
 		return err;
 	}
 
@@ -354,10 +354,10 @@ int peerconnection_add_video_track(struct peer_connection *pc,
 	if (!pc || !cfg || !vidcodecl)
 		return EINVAL;
 
-	info("peerconnection: add video (codecs=%u)\n", list_count(vidcodecl));
+	info_bs("peerconnection: add video (codecs=%u)\n", list_count(vidcodecl));
 
 	if (list_isempty(vidcodecl)) {
-		warning("peerconnection: no video codecs!\n");
+		warning_bs("peerconnection: no video codecs!\n");
 		return EINVAL;
 	}
 
@@ -371,7 +371,7 @@ int peerconnection_add_video_track(struct peer_connection *pc,
 			  pc->mencs, NULL, vidcodecl, NULL, offerer,
 			  video_error_handler, media);
 	if (err) {
-		warning("peerconnection: video alloc failed (%m)\n", err);
+		warning_bs("peerconnection: video alloc failed (%m)\n", err);
 		return err;
 	}
 
@@ -396,7 +396,7 @@ int peerconnection_set_remote_descr(struct peer_connection *pc,
 	if (!pc || !sd)
 		return EINVAL;
 
-	info("peerconnection: set remote description. type=%s\n",
+	info_bs("peerconnection: set remote description. type=%s\n",
 	     sdptype_name(sd->type));
 
 	if (sd->type == SDP_ROLLBACK) {
@@ -405,7 +405,7 @@ int peerconnection_set_remote_descr(struct peer_connection *pc,
 	}
 
 	if (pc->signaling_state == SS_HAVE_REMOTE_OFFER) {
-		warning("peerconnection: set remote descr:"
+		warning_bs("peerconnection: set remote descr:"
 			" invalid signaling state (%s)\n",
 			signaling_state_name(pc->signaling_state));
 		return EPROTO;
@@ -414,9 +414,9 @@ int peerconnection_set_remote_descr(struct peer_connection *pc,
 	offer = (sd->type == SDP_OFFER);
 
 	if (LEVEL_DEBUG == log_level_get()) {
-		info("- - %s - -\n", sdptype_name(sd->type));
-		info("%b\n", (sd->sdp)->buf, (sd->sdp)->end);
-		info("- - - - - - -\n");
+		info_bs("- - %s - -\n", sdptype_name(sd->type));
+		info_bs("%b\n", (sd->sdp)->buf, (sd->sdp)->end);
+		info_bs("- - - - - - -\n");
 	}
 
 	if (offer)
@@ -426,7 +426,7 @@ int peerconnection_set_remote_descr(struct peer_connection *pc,
 
 	err = sdp_decode(pc->sdp, sd->sdp, offer);
 	if (err) {
-		warning("peerconnection: sdp decode failed (%m)\n", err);
+		warning_bs("peerconnection: sdp decode failed (%m)\n", err);
 		return err;
 	}
 
@@ -460,15 +460,15 @@ int peerconnection_create_offer(struct peer_connection *pc, struct mbuf **mb)
 	if (!pc)
 		return EINVAL;
 
-	info("peerconnection: create offer\n");
+	info_bs("peerconnection: create offer\n");
 
 	if (!pc->gather_ok) {
-		warning("peerconnection: create_offer: ice not gathered\n");
+		warning_bs("peerconnection: create_offer: ice not gathered\n");
 		return EPROTO;
 	}
 
 	if (pc->signaling_state != SS_STABLE) {
-		warning("peerconnection: create offer:"
+		warning_bs("peerconnection: create offer:"
 			" invalid signaling state (%s)\n",
 			signaling_state_name(pc->signaling_state));
 		return EPROTO;
@@ -479,9 +479,9 @@ int peerconnection_create_offer(struct peer_connection *pc, struct mbuf **mb)
 		return err;
 
 	if (LEVEL_DEBUG == log_level_get()) {
-		info("- - offer - -\n");
-		info("%b\n", (*mb)->buf, (*mb)->end);
-		info("- - - - - - -\n");
+		info_bs("- - offer - -\n");
+		info_bs("%b\n", (*mb)->buf, (*mb)->end);
+		info_bs("- - - - - - -\n");
 	}
 
 	pc->signaling_state = SS_HAVE_LOCAL_OFFER;
@@ -504,14 +504,14 @@ int peerconnection_create_answer(struct peer_connection *pc,
 		return EINVAL;
 
 	if (!pc->gather_ok) {
-		warning("peerconnection: create_answer: ice not gathered\n");
+		warning_bs("peerconnection: create_answer: ice not gathered\n");
 		return EPROTO;
 	}
 
-	info("peerconnection: create answer\n");
+	info_bs("peerconnection: create answer\n");
 
 	if (pc->signaling_state != SS_HAVE_REMOTE_OFFER) {
-		warning("peerconnection: create answer:"
+		warning_bs("peerconnection: create answer:"
 			" invalid signaling state (%s)\n",
 			signaling_state_name(pc->signaling_state));
 		return EPROTO;
@@ -524,9 +524,9 @@ int peerconnection_create_answer(struct peer_connection *pc,
 	pc->signaling_state = SS_STABLE;
 
 	if (LEVEL_DEBUG == log_level_get()) {
-		info("- - answer - -\n");
-		info("%b\n", (*mb)->buf, (*mb)->end);
-		info("- - - - - - -\n");
+		info_bs("- - answer - -\n");
+		info_bs("%b\n", (*mb)->buf, (*mb)->end);
+		info_bs("- - - - - - -\n");
 	}
 
 	++pc->sdp_enc_ok;
@@ -560,17 +560,17 @@ int peerconnection_start_ice(struct peer_connection *pc)
 	if (!pc)
 		return EINVAL;
 
-	info("peerconnection: start ice\n");
+	info_bs("peerconnection: start ice\n");
 
 	if (!pc->sdp_dec_ok) {
-		warning("peerconnection: ice: sdp not ready\n");
+		warning_bs("peerconnection: ice: sdp not ready\n");
 		return EPROTO;
 	}
 
 	if (pc->mnat->updateh && pc->mnats) {
 		err = pc->mnat->updateh(pc->mnats);
 		if (err) {
-			warning("peerconnection: mnat update failed (%m)\n",
+			warning_bs("peerconnection: mnat update failed (%m)\n",
 				err);
 			return err;
 		}

@@ -153,7 +153,7 @@ static int encode_response(int cmd_error, struct mbuf *resp, const char *token)
 
 	err = json_encode_odict(&pf, od);
 	if (err)
-		warning("ctrl_tcp: failed to encode response JSON (%m)\n",
+		warning_bs("ctrl_tcp: failed to encode response JSON (%m)\n",
 			err);
 
  out:
@@ -176,7 +176,7 @@ static bool command_handler(struct mbuf *mb, void *arg)
 
 	err = json_decode_odict(&od, 32, (const char*)mb->buf, mb->end, 16);
 	if (err) {
-		warning("ctrl_tcp: failed to decode JSON (%m)\n", err);
+		warning_bs("ctrl_tcp: failed to decode JSON (%m)\n", err);
 		goto out;
 	}
 
@@ -184,11 +184,11 @@ static bool command_handler(struct mbuf *mb, void *arg)
 	prm = odict_string(od, "params");
 	tok = odict_string(od, "token");
 	if (!cmd) {
-		warning("ctrl_tcp: missing json entries\n");
+		warning_bs("ctrl_tcp: missing json entries\n");
 		goto out;
 	}
 
-	debug("ctrl_tcp: handle_command:  cmd='%s', params:'%s', token='%s'\n",
+	debug_bs("ctrl_tcp: handle_command:  cmd='%s', params:'%s', token='%s'\n",
 	      cmd, prm, tok);
 
 	re_snprintf(buf, sizeof(buf), "%s%s%s", cmd, prm ? " " : "", prm);
@@ -201,19 +201,19 @@ static bool command_handler(struct mbuf *mb, void *arg)
 			       str_len(buf),
 			       &pf, NULL);
 	if (err) {
-		warning("ctrl_tcp: error processing command (%m)\n", err);
+		warning_bs("ctrl_tcp: error processing command (%m)\n", err);
 	}
 
 	err = encode_response(err, resp, tok ? tok : NULL);
 	if (err) {
-		warning("ctrl_tcp: failed to encode response (%m)\n", err);
+		warning_bs("ctrl_tcp: failed to encode response (%m)\n", err);
 		goto out;
 	}
 
 	resp->pos = NETSTRING_HEADER_SIZE;
 	err = tcp_send(st->tc, resp);
 	if (err) {
-		warning("ctrl_tcp: failed to send the response (%m)\n", err);
+		warning_bs("ctrl_tcp: failed to send the response (%m)\n", err);
 	}
 
  out:
@@ -270,13 +270,13 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 	err = odict_entry_add(od, "event", ODICT_BOOL, true);
 	err |= odict_encode_bevent(od, event);
 	if (err) {
-		warning("ctrl_tcp: failed to encode event (%m)\n", err);
+		warning_bs("ctrl_tcp: failed to encode event (%m)\n", err);
 		goto out;
 	}
 
 	err = json_encode_odict(&pf, od);
 	if (err) {
-		warning("ctrl_tcp: failed to encode event JSON (%m)\n", err);
+		warning_bs("ctrl_tcp: failed to encode event JSON (%m)\n", err);
 		goto out;
 	}
 
@@ -284,7 +284,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 		buf->pos = NETSTRING_HEADER_SIZE;
 		err = tcp_send(st->tc, buf);
 		if (err) {
-			warning("ctrl_tcp: failed to send event (%m)\n", err);
+			warning_bs("ctrl_tcp: failed to send event (%m)\n", err);
 		}
 	}
 
@@ -313,13 +313,13 @@ static void message_handler(struct ua *ua, const struct pl *peer,
 	err  = odict_entry_add(od, "message", ODICT_BOOL, true);
 	err |= message_encode_dict(od, ua_account(ua), peer, ctype, body);
 	if (err) {
-		warning("ctrl_tcp: failed to encode message (%m)\n", err);
+		warning_bs("ctrl_tcp: failed to encode message (%m)\n", err);
 		goto out;
 	}
 
 	err = json_encode_odict(&pf, od);
 	if (err) {
-		warning("ctrl_tcp: failed to encode event JSON (%m)\n", err);
+		warning_bs("ctrl_tcp: failed to encode event JSON (%m)\n", err);
 		goto out;
 	}
 
@@ -329,7 +329,7 @@ static void message_handler(struct ua *ua, const struct pl *peer,
 
 	err = tcp_send(st->tc, buf);
 	if (err) {
-		warning("ctrl_tcp: failed to send the SIP message (%m)\n",
+		warning_bs("ctrl_tcp: failed to send the SIP message (%m)\n",
 			err);
 	}
 
@@ -363,12 +363,12 @@ static int ctrl_alloc(struct ctrl_st **stp, const struct sa *laddr)
 
 	err = tcp_listen(&st->ts, laddr, tcp_conn_handler, st);
 	if (err) {
-		warning("ctrl_tcp: failed to listen on TCP %J (%m)\n",
+		warning_bs("ctrl_tcp: failed to listen on TCP %J (%m)\n",
 			laddr, err);
 		goto out;
 	}
 
-	debug("ctrl_tcp: TCP socket listening on %J\n", laddr);
+	debug_bs("ctrl_tcp: TCP socket listening on %J\n", laddr);
 
  out:
 	if (err)

@@ -21,7 +21,7 @@ static void exit_handler(void *arg)
 
 	bevent_app_emit(BEVENT_EXIT, NULL, NULL);
 
-	debug("ua: sip-stack exit\n");
+	debug_bs("ua: sip-stack exit\n");
 
 	if (uag.exith)
 		uag.exith(uag.arg);
@@ -52,7 +52,7 @@ int uag_hold_resume(struct call *call)
 	}
 
 	if (!toresume) {
-		debug ("ua: no call to resume\n");
+		debug_bs("ua: no call to resume\n");
 		return 0;
 	}
 
@@ -273,7 +273,7 @@ static int add_account_certs(void)
 			err = sip_transp_add_ccert(uag.sip,
 					&acc->laddr.uri, acc->cert);
 			if (err) {
-				warning("uag: SIP/TLS add client "
+				warning_bs("uag: SIP/TLS add client "
 					"certificate %s failed: %m\n",
 					acc->cert, err);
 				return err;
@@ -290,7 +290,7 @@ static int add_account_certs(void)
 			err = tls_add_certf(uag.tls, acc->cert, host);
 			mem_deref(host);
 			if (err) {
-				warning("uag: SIP/TLS add server "
+				warning_bs("uag: SIP/TLS add server "
 					"certificate %s failed: %m\n",
 					acc->cert, err);
 				return err;
@@ -317,14 +317,14 @@ static int uag_transp_add(const struct sa *laddr)
 	if (!sa_isset(laddr, SA_ADDR))
 		return EINVAL;
 
-	debug("uag: add local address %j\n", laddr);
+	debug_bs("uag: add local address %j\n", laddr);
 	if (str_isset(uag.cfg->local)) {
 		err = sa_decode(&local, uag.cfg->local,
 				str_len(uag.cfg->local));
 		if (err) {
 			err = sa_set_str(&local, uag.cfg->local, 0);
 			if (err) {
-				warning("ua: decode failed: '%s'\n",
+				warning_bs("ua: decode failed: '%s'\n",
 					uag.cfg->local);
 				return err;
 			}
@@ -352,7 +352,7 @@ static int uag_transp_add(const struct sa *laddr)
 					   &local);
 	}
 	if (err) {
-		warning("ua: SIP Transport failed: %m\n", err);
+		warning_bs("ua: SIP Transport failed: %m\n", err);
 		return err;
 	}
 
@@ -362,13 +362,13 @@ static int uag_transp_add(const struct sa *laddr)
 		if (!uag.tls) {
 			if (str_isset(uag.cfg->cert)) {
 				cert = uag.cfg->cert;
-				info("SIP Certificate: %s\n", cert);
+				info_bs("SIP Certificate: %s\n", cert);
 			}
 
 			err = tls_alloc(&uag.tls, TLS_METHOD_SSLV23,
 					cert, NULL);
 			if (err) {
-				warning("ua: tls_alloc() failed: %m\n", err);
+				warning_bs("ua: tls_alloc() failed: %m\n", err);
 				return err;
 			}
 
@@ -378,13 +378,13 @@ static int uag_transp_add(const struct sa *laddr)
 				capath = uag.cfg->capath;
 
 			if (cafile || capath) {
-				info("ua: adding SIP CA file: %s\n", cafile);
-				info("ua: adding SIP CA path: %s\n", capath);
+				info_bs("ua: adding SIP CA file: %s\n", cafile);
+				info_bs("ua: adding SIP CA path: %s\n", capath);
 
 				err = tls_add_cafile_path(uag.tls,
 					cafile, capath);
 				if (err) {
-					warning("ua: tls_add_ca() failed:"
+					warning_bs("ua: tls_add_ca() failed:"
 						" %m\n", err);
 				}
 			}
@@ -405,7 +405,7 @@ static int uag_transp_add(const struct sa *laddr)
 		err = sip_transp_add_sock(uag.sip, SIP_TRANSP_TLS, listen,
 					  &local, uag.tls);
 		if (err) {
-			warning("ua: SIP/TLS transport failed: %m\n", err);
+			warning_bs("ua: SIP/TLS transport failed: %m\n", err);
 			return err;
 		}
 
@@ -419,7 +419,7 @@ static int uag_transp_add(const struct sa *laddr)
 		err = sip_transp_add_websock(uag.sip, SIP_TRANSP_WS, &local,
 				false, NULL, NULL);
 		if (err) {
-			warning("ua: could not add Websock transport (%m)\n",
+			warning_bs("ua: could not add Websock transport (%m)\n",
 					err);
 			return err;
 		}
@@ -431,14 +431,14 @@ static int uag_transp_add(const struct sa *laddr)
 			err = tls_alloc(&uag.wss_tls, TLS_METHOD_SSLV23,
 					NULL, NULL);
 			if (err) {
-				warning("ua: wss tls_alloc() failed: %m\n",
+				warning_bs("ua: wss tls_alloc() failed: %m\n",
 					err);
 				return err;
 			}
 
 			err = tls_set_verify_purpose(uag.wss_tls, "sslserver");
 			if (err) {
-				warning("ua: wss tls_set_verify_purpose() "
+				warning_bs("ua: wss tls_set_verify_purpose() "
 					"failed: %m\n", err);
 				return err;
 			}
@@ -447,7 +447,7 @@ static int uag_transp_add(const struct sa *laddr)
 				err = tls_add_cafile_path(uag.wss_tls, cafile,
 							  capath);
 				if (err) {
-					warning("ua: wss tls_add_ca() failed:"
+					warning_bs("ua: wss tls_add_ca() failed:"
 							" %m\n", err);
 				}
 			}
@@ -458,7 +458,7 @@ static int uag_transp_add(const struct sa *laddr)
 		err = sip_transp_add_websock(uag.sip, SIP_TRANSP_WSS, &local,
 				false, uag.cfg->cert, uag.wss_tls);
 		if (err) {
-			warning("ua: could not add secure Websock transport "
+			warning_bs("ua: could not add secure Websock transport "
 				"(%m)\n", err);
 			return err;
 		}
@@ -508,7 +508,7 @@ static bool sub_handler(const struct sip_msg *msg, void *arg)
 
 	ua = uag_find_msg(msg);
 	if (!ua) {
-		warning("subscribe: no UA found for %r\n", &msg->uri.user);
+		warning_bs("subscribe: no UA found for %r\n", &msg->uri.user);
 		(void)sip_treply(NULL, uag_sip(), msg, 404, "Not Found");
 		return true;
 	}
@@ -562,7 +562,7 @@ int ua_init(const char *software, bool udp, bool tcp, bool tls)
 	int err;
 
 	if (!net) {
-		warning("ua: no network\n");
+		warning_bs("ua: no network\n");
 		return EINVAL;
 	}
 
@@ -585,7 +585,7 @@ int ua_init(const char *software, bool udp, bool tcp, bool tls)
 	err = sip_alloc(&uag.sip, net_dnsc(net), bsize, bsize, bsize,
 			software, exit_handler, NULL);
 	if (err) {
-		warning("ua: sip stack failed: %m\n", err);
+		warning_bs("ua: sip stack failed: %m\n", err);
 		goto out;
 	}
 
@@ -609,7 +609,7 @@ int ua_init(const char *software, bool udp, bool tcp, bool tls)
 
  out:
 	if (err) {
-		warning("ua: init failed (%m)\n", err);
+		warning_bs("ua: init failed (%m)\n", err);
 		ua_close();
 	}
 	return err;
@@ -646,7 +646,7 @@ void ua_stop_all(bool forced)
 	struct le *le;
 	unsigned ext_ref = 0;
 
-	info("ua: stop all (forced=%d)\n", forced);
+	info_bs("ua: stop all (forced=%d)\n", forced);
 
 	/* check if someone else has grabbed a ref to ua */
 	le = uag.ual.head;
@@ -661,7 +661,7 @@ void ua_stop_all(bool forced)
 	}
 
 	if (ext_ref) {
-		info("ua: in use (%u) by app module\n", ext_ref);
+		info_bs("ua: in use (%u) by app module\n", ext_ref);
 		uag.delayed_close = true;
 		return;
 	}
@@ -862,7 +862,7 @@ static bool uri_match_af(const struct uri *accu, const struct uri *peeru)
 		err |= sa_set(&sa2, &peeru->host, 0);
 
 		if (err) {
-			warning("ua: No valid IPv6 URI %r, %r (%m)\n",
+			warning_bs("ua: No valid IPv6 URI %r, %r (%m)\n",
 					&accu->host,
 					&peeru->host, err);
 			return false;
@@ -1084,7 +1084,7 @@ struct ua *uag_find_requri_pl(const struct pl *requri)
 	pl_set_str(&pl, uric);
 	err = sip_addr_decode(&addr, &pl);
 	if (err) {
-		warning("ua: address %r could not be parsed: %m\n",
+		warning_bs("ua: address %r could not be parsed: %m\n",
 			&pl, err);
 		goto out;
 	}

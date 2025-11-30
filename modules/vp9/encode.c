@@ -41,7 +41,7 @@ static void destructor(void *arg)
 
 	if (ves->ctxup) {
 
-		debug("vp9: encoder stats:"
+		debug_bs("vp9: encoder stats:"
 		      " frames=%u, key_frames=%u, bytes=%zu\n",
 		      ves->n_frames,
 		      ves->n_key_frames,
@@ -128,7 +128,7 @@ static int open_encoder(struct videnc_state *ves, const struct vidsz *size)
 	cfg.kf_mode           = VPX_KF_AUTO;
 
 	if (ves->ctxup) {
-		debug("vp9: re-opening encoder\n");
+		debug_bs("vp9: re-opening encoder\n");
 		vpx_codec_destroy(&ves->ctx);
 		ves->ctxup = false;
 	}
@@ -136,7 +136,7 @@ static int open_encoder(struct videnc_state *ves, const struct vidsz *size)
 	res = vpx_codec_enc_init(&ves->ctx, &vpx_codec_vp9_cx_algo, &cfg,
 				 0);
 	if (res) {
-		warning("vp9: enc init: %s\n", vpx_codec_err_to_string(res));
+		warning_bs("vp9: enc init: %s\n", vpx_codec_err_to_string(res));
 		return EPROTO;
 	}
 
@@ -144,16 +144,16 @@ static int open_encoder(struct videnc_state *ves, const struct vidsz *size)
 
 	res = vpx_codec_control(&ves->ctx, VP8E_SET_CPUUSED, 8);
 	if (res) {
-		warning("vp9: codec ctrl: %s\n", vpx_codec_err_to_string(res));
+		warning_bs("vp9: codec ctrl: %s\n", vpx_codec_err_to_string(res));
 	}
 #ifdef VP9E_SET_NOISE_SENSITIVITY
 	res = vpx_codec_control(&ves->ctx, VP9E_SET_NOISE_SENSITIVITY, 0);
 	if (res) {
-		warning("vp9: codec ctrl: %s\n", vpx_codec_err_to_string(res));
+		warning_bs("vp9: codec ctrl: %s\n", vpx_codec_err_to_string(res));
 	}
 #endif
 
-	info("vp9: encoder opened, picture size %u x %u\n", size->w, size->h);
+	info_bs("vp9: encoder opened, picture size %u x %u\n", size->w, size->h);
 
 	return 0;
 }
@@ -232,7 +232,7 @@ int vp9_encode(struct videnc_state *ves, bool update,
 		break;
 
 	default:
-		warning("vp9: pixel format not supported (%s)\n",
+		warning_bs("vp9: pixel format not supported (%s)\n",
 			vidfmt_name(frame->fmt));
 		return EINVAL;
 	}
@@ -249,14 +249,14 @@ int vp9_encode(struct videnc_state *ves, bool update,
 	++ves->n_frames;
 
 	if (update) {
-		/* debug("vp9: picture update\n"); */
+		/* debug_bs("vp9: picture update\n"); */
 		flags |= VPX_EFLAG_FORCE_KF;
 	}
 
 	img = vpx_img_wrap(NULL, img_fmt, frame->size.w, frame->size.h,
 			   16, NULL);
 	if (!img) {
-		warning("vp9: encoder: could not allocate image\n");
+		warning_bs("vp9: encoder: could not allocate image\n");
 		err = ENOMEM;
 		goto out;
 	}
@@ -269,7 +269,7 @@ int vp9_encode(struct videnc_state *ves, bool update,
 	res = vpx_codec_encode(&ves->ctx, img, timestamp, 1,
 			       flags, VPX_DL_REALTIME);
 	if (res) {
-		warning("vp9: enc error: %s\n", vpx_codec_err_to_string(res));
+		warning_bs("vp9: enc error: %s\n", vpx_codec_err_to_string(res));
 		err = ENOMEM;
 		goto out;
 	}

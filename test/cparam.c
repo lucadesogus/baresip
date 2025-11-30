@@ -108,7 +108,7 @@ int test_cparam_call_decode(void)
 	for (uint32_t i=0; i<RE_ARRAY_SIZE(testv); i++) {
 		mbuf_rewind(mb);
 
-		info("test %u: %s\n", i, testv[i].prm);
+		info_bs("test %u: %s\n", i, testv[i].prm);
 		cp = mem_deref(cp);
 		err = cparam_call_decode(&cp, testv[i].prm, &pf);
 		ASSERT_EQ(testv[i].err, err);
@@ -240,7 +240,7 @@ int test_cparam_ua_decode(void)
 	for (uint32_t i=0; i<RE_ARRAY_SIZE(testv); i++) {
 		mbuf_rewind(mb);
 
-		info("test %u: %s\n", i, testv[i].prm);
+		info_bs("test %u: %s\n", i, testv[i].prm);
 		cp = mem_deref(cp);
 		err = cparam_ua_decode(&cp, testv[i].prm, &pf);
 		ASSERT_EQ(testv[i].err, err);

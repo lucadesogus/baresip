@@ -72,7 +72,7 @@ static int read_thread(void *arg)
 	struct ausrc_st *st = arg;
 
 	if (!sio_start(st->hdl)) {
-		warning("sndio: could not start record\n");
+		warning_bs("sndio: could not start record\n");
 		goto out;
 	}
 
@@ -97,7 +97,7 @@ static int write_thread(void *arg)
 	struct auframe af;
 
 	if (!sio_start(st->hdl)) {
-		warning("sndio: could not start playback\n");
+		warning_bs("sndio: could not start playback\n");
 		goto out;
 	}
 
@@ -162,7 +162,7 @@ static int src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		return EINVAL;
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("sndio: source: unsupported sample format (%s)\n",
+		warning_bs("sndio: source: unsupported sample format (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}
@@ -178,7 +178,7 @@ static int src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	st->hdl = sio_open(name, SIO_REC, 0);
 
 	if (!st->hdl) {
-		warning("sndio: could not open ausrc device '%s'\n", name);
+		warning_bs("sndio: could not open ausrc device '%s'\n", name);
 		err = EINVAL;
 		goto out;
 	}
@@ -236,7 +236,7 @@ static int play_alloc(struct auplay_st **stp, const struct auplay *ap,
 		return EINVAL;
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("sndio: playback: unsupported sample format (%s)\n",
+		warning_bs("sndio: playback: unsupported sample format (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}
@@ -252,7 +252,7 @@ static int play_alloc(struct auplay_st **stp, const struct auplay *ap,
 	st->hdl = sio_open(name, SIO_PLAY, 0);
 
 	if (!st->hdl) {
-		warning("sndio: could not open auplay device '%s'\n", name);
+		warning_bs("sndio: could not open auplay device '%s'\n", name);
 		err = EINVAL;
 		goto out;
 	}

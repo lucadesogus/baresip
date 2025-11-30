@@ -189,7 +189,7 @@ static void rtprecv_periodic(void *arg)
 						    (void *)"PONG", 4);
 			}
 			if (err) {
-				warning("rtprecv: rtcp_send_app failed (%m)\n",
+				warning_bs("rtprecv: rtcp_send_app failed (%m)\n",
 					err);
 			}
 		}
@@ -211,19 +211,19 @@ static int rtprecv_thread(void *arg)
 	int err;
 
 	re_thread_init();
-	info("rtp_receiver: RTP RX thread started\n");
+	info_bs("rtp_receiver: RTP RX thread started\n");
 	tmr_start(&rx->tmr, 10, rtprecv_periodic, rx);
 
 	err = udp_thread_attach(rtp_sock(rx->rtp));
 	if (err) {
-		warning("rtp_receiver: could not attach to RTP socket (%m)\n",
+		warning_bs("rtp_receiver: could not attach to RTP socket (%m)\n",
 			err);
 		return err;
 	}
 
 	err = udp_thread_attach(rtcp_sock(rx->rtp));
 	if (err) {
-		warning("rtp_receiver: could not attach to RTCP socket (%m)\n",
+		warning_bs("rtp_receiver: could not attach to RTCP socket (%m)\n",
 			err);
 		return err;
 	}
@@ -274,14 +274,14 @@ static int handle_rtp(struct rtp_receiver *rx, const struct rtp_header *hdr,
 		int err;
 
 		if (hdr->x.type != RTPEXT_TYPE_MAGIC) {
-			debug("rtprecv: unknown ext type ignored (0x%04x)\n",
+			debug_bs("rtprecv: unknown ext type ignored (0x%04x)\n",
 			     hdr->x.type);
 			goto handler;
 		}
 
 		size_t ext_len = hdr->x.len*sizeof(uint32_t);
 		if (mb->pos < ext_len) {
-			warning("rtp_receiver: corrupt rtp packet,"
+			warning_bs("rtp_receiver: corrupt rtp packet,"
 				" not enough space for rtpext of %zu bytes\n",
 				ext_len);
 			return 0;
@@ -294,7 +294,7 @@ static int handle_rtp(struct rtp_receiver *rx, const struct rtp_header *hdr,
 
 			err = rtpext_decode(&extv[i], mb);
 			if (err) {
-				warning("rtp_receiver: rtpext_decode failed "
+				warning_bs("rtp_receiver: rtpext_decode failed "
 					"(%m)\n", err);
 				return 0;
 			}
@@ -430,7 +430,7 @@ void rtprecv_decode(const struct sa *src, const struct rtp_header *hdr,
 	}
 
 	if (rtp_pt_is_rtcp(hdr->pt)) {
-		debug("rtprecv: drop incoming RTCP packet on RTP port"
+		debug_bs("rtprecv: drop incoming RTCP packet on RTP port"
 		     " (pt=%u)\n", hdr->pt);
 		mtx_unlock(rx->mtx);
 		return;
@@ -442,7 +442,7 @@ void rtprecv_decode(const struct sa *src, const struct rtp_header *hdr,
 
 	if (!rx->rtp_estab) {
 		if (rx->rtpestabh) {
-			debug("rtprecv: incoming rtp for '%s' established, "
+			debug_bs("rtprecv: incoming rtp for '%s' established, "
 			      "receiving from %J\n", rx->name, src);
 			rx->rtp_estab = true;
 			pass_rtpestab_work(rx);
@@ -459,7 +459,7 @@ void rtprecv_decode(const struct sa *src, const struct rtp_header *hdr,
 	}
 	else if (hdr->ssrc != ssrc0) {
 
-		debug("rtprecv: %s: SSRC changed 0x%x -> 0x%x"
+		debug_bs("rtprecv: %s: SSRC changed 0x%x -> 0x%x"
 		     " (%zu bytes from %J)\n",
 		     rx->name, ssrc0, hdr->ssrc,
 		     mbuf_get_left(mb), src);
@@ -481,7 +481,7 @@ void rtprecv_decode(const struct sa *src, const struct rtp_header *hdr,
 		/* Put frame in Jitter Buffer */
 		err = jbuf_put(rx->jbuf, hdr, mb);
 		if (err) {
-			info("rtprecv: %s: dropping %zu bytes from %J"
+			info_bs("rtprecv: %s: dropping %zu bytes from %J"
 			     " [seq=%u, ts=%u] (%m)\n",
 			     rx->name, mb->end,
 			     src, hdr->seq, hdr->ts, err);
@@ -570,13 +570,13 @@ void rtprecv_set_ssrc(struct rtp_receiver *rx, uint32_t ssrc)
 	mtx_lock(rx->mtx);
 	if (rx->ssrc_set) {
 		if (ssrc != rx->ssrc) {
-			debug("rtprecv: receive: SSRC changed: %x -> %x\n",
+			debug_bs("rtprecv: receive: SSRC changed: %x -> %x\n",
 			     rx->ssrc, ssrc);
 			rx->ssrc = ssrc;
 		}
 	}
 	else {
-		debug("rtprecv: receive: setting SSRC: %x\n", ssrc);
+		debug_bs("rtprecv: receive: setting SSRC: %x\n", ssrc);
 		rx->ssrc = ssrc;
 		rx->ssrc_set = true;
 	}

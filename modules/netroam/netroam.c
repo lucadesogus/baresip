@@ -109,7 +109,7 @@ static bool print_addr(const char *ifname, const struct sa *sa, void *arg)
 
 static void print_changes(struct netroam *n)
 {
-	info("Network changed:\n");
+	info_bs("Network changed:\n");
 	net_laddr_apply(n->net, print_addr, NULL);
 }
 
@@ -142,7 +142,7 @@ static void poll_changes(void *arg)
 		print_changes(n);
 		err = uag_reset_transp(true, true);
 		if (err) {
-			warning("netroam: could not reset transport\n");
+			warning_bs("netroam: could not reset transport\n");
 			module_event("netroam", "could not reset transport",
 				     NULL, NULL, "failc=%u (%m)", d.failc,
 				     err);

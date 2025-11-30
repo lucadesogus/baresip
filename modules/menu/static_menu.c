@@ -896,7 +896,7 @@ static void options_resp_handler(int err, const struct sip_msg *msg, void *arg)
 	(void)arg;
 
 	if (err) {
-		warning("options reply error: %m\n", err);
+		warning_bs("options reply error: %m\n", err);
 		return;
 	}
 
@@ -906,13 +906,13 @@ static void options_resp_handler(int err, const struct sip_msg *msg, void *arg)
 	if (msg->scode < 300) {
 
 		mbuf_set_pos(msg->mb, 0);
-		info("----- OPTIONS of %r -----\n%b",
+		info_bs("----- OPTIONS of %r -----\n%b",
 		     &msg->to.auri, mbuf_buf(msg->mb),
 		     mbuf_get_left(msg->mb));
 		return;
 	}
 
-	info("%r: OPTIONS failed: %u %r\n", &msg->to.auri,
+	info_bs("%r: OPTIONS failed: %u %r\n", &msg->to.auri,
 	     msg->scode, &msg->reason);
 }
 
@@ -922,11 +922,11 @@ static void refer_resp_handler(int err, const struct sip_msg *msg, void *arg)
 	(void)arg;
 
 	if (err) {
-		warning("REFER reply error (%m)\n", err);
+		warning_bs("REFER reply error (%m)\n", err);
 		return;
 	}
 
-	info("%r: REFER reply %u %r\n", &msg->to.auri,
+	info_bs("%r: REFER reply %u %r\n", &msg->to.auri,
 	     msg->scode, &msg->reason);
 }
 

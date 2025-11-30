@@ -72,7 +72,7 @@ static int load_module(struct mod **modp, const struct pl *modpath,
 	pl_strcpy(name, namestr, sizeof(namestr));
 
 	if (mod_find(namestr)) {
-		info("static module already loaded: %r\n", name);
+		info_bs("static module already loaded: %r\n", name);
 		return EALREADY;
 	}
 
@@ -96,7 +96,7 @@ static int load_module(struct mod **modp, const struct pl *modpath,
 
  out:
 	if (err) {
-		warning("module %r: %m\n", name, err);
+		warning_bs("module %r: %m\n", name, err);
 	}
 	else if (modp)
 		*modp = m;
@@ -117,7 +117,7 @@ static int module_app_handler(const struct pl *val, void *arg)
 	struct mod *mod = NULL;
 	const struct mod_export *me;
 
-	debug("module: loading app %r\n", val);
+	debug_bs("module: loading app %r\n", val);
 
 	if (load_module(&mod, arg, val)) {
 		return 0;
@@ -125,7 +125,7 @@ static int module_app_handler(const struct pl *val, void *arg)
 
 	me = mod_export(mod);
 	if (0 != str_casecmp(me->type, "application")) {
-		warning("module_app %r should be type application (%s)\n",
+		warning_bs("module_app %r should be type application (%s)\n",
 			val, me->type);
 	}
 
@@ -171,7 +171,7 @@ void module_app_unload(void)
 		le = le->prev;
 
 		if (me && 0 == str_casecmp(me->type, "application")) {
-			debug("module: unloading app %s\n", me->name);
+			debug_bs("module: unloading app %s\n", me->name);
 			mem_deref(mod);
 		}
 	}
@@ -264,10 +264,10 @@ void module_unload(const char *name)
 
 	mod = mod_find(filename);
 	if (mod) {
-		info("unloading module: %s\n", filename);
+		info_bs("unloading module: %s\n", filename);
 		mem_deref(mod);
 		return;
 	}
 
-	info("ERROR: Module %s is not currently loaded\n", name);
+	info_bs("ERROR: Module %s is not currently loaded\n", name);
 }

@@ -84,13 +84,13 @@ static bool send_handler(int *err, struct sa *dst, struct mbuf *mb, void *arg)
 	if (is_rtcp_packet(mb)) {
 		*err = srtcp_encrypt(comp->tx->srtp, mb);
 		if (*err) {
-			warning("srtp: srtcp_encrypt failed (%m)\n", *err);
+			warning_bs("srtp: srtcp_encrypt failed (%m)\n", *err);
 		}
 	}
 	else {
 		*err = srtp_encrypt(comp->tx->srtp, mb);
 		if (*err) {
-			warning("srtp: srtp_encrypt failed (%m)\n", *err);
+			warning_bs("srtp: srtp_encrypt failed (%m)\n", *err);
 		}
 	}
 
@@ -106,7 +106,7 @@ static bool recv_handler(struct sa *src, struct mbuf *mb, void *arg)
 	(void)src;
 
 	if (is_dtls_packet(mb)) {
-		info("srtp: received DTLS packet on SRTP socket\n");
+		info_bs("srtp: received DTLS packet on SRTP socket\n");
 	}
 
 	if (!is_rtp_or_rtcp(mb))
@@ -120,7 +120,7 @@ static bool recv_handler(struct sa *src, struct mbuf *mb, void *arg)
 	}
 
 	if (err) {
-		warning("srtp: recv: failed to decrypt %s-packet (%m)\n",
+		warning_bs("srtp: recv: failed to decrypt %s-packet (%m)\n",
 			is_rtcp_packet(mb) ? "RTCP" : "RTP", err);
 		return true;   /* error - drop packet */
 	}
@@ -145,7 +145,7 @@ int srtp_stream_add(struct srtp_stream **sp, enum srtp_suite suite,
 
 	err = srtp_alloc(&s->srtp, suite, key, key_size, 0);
 	if (err) {
-		warning("srtp: srtp_alloc() failed (%m)\n", err);
+		warning_bs("srtp: srtp_alloc() failed (%m)\n", err);
 		goto out;
 	}
 

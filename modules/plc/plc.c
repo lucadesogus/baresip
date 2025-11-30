@@ -54,12 +54,12 @@ static int update(struct aufilt_dec_st **stp, void **ctx,
 		return 0;
 
 	if (prm->ch != 1) {
-		warning("plc: only mono supported (ch=%u)\n", prm->ch);
+		warning_bs("plc: only mono supported (ch=%u)\n", prm->ch);
 		return ENOSYS;
 	}
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("plc: unsupported sample format (%s)\n",
+		warning_bs("plc: unsupported sample format (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}

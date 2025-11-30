@@ -158,7 +158,7 @@ static int mock_decode(struct viddec_state *vds, struct vidframe *frame,
 
 	err = hdr_decode(&hdr, mb);
 	if (err) {
-		warning("mock_vidcodec: could not decode header (%m)\n", err);
+		warning_bs("mock_vidcodec: could not decode header (%m)\n", err);
 		return err;
 	}
 

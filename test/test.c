@@ -13,7 +13,7 @@ static void timeout_handler(void *arg)
 {
 	int *err = arg;
 
-	warning("selftest: re_main() loop timed out -- test hung..\n");
+	warning_bs("selftest: re_main() loop timed out -- test hung..\n");
 
 	*err = ETIMEDOUT;
 

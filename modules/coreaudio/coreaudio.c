@@ -53,7 +53,7 @@ int coreaudio_enum_devices(const char *name, struct list *dev_list,
 						NULL,
 						&dataSize);
 	if (kAudioHardwareNoError != status) {
-		warning("AudioObjectGetPropertyDataSize"
+		warning_bs("AudioObjectGetPropertyDataSize"
 			" (kAudioHardwarePropertyDevices) failed: %i\n",
 			status);
 		err = ENODEV;
@@ -75,7 +75,7 @@ int coreaudio_enum_devices(const char *name, struct list *dev_list,
 					    &dataSize,
 					    audioDevices);
 	if (kAudioHardwareNoError != status) {
-		warning("AudioObjectGetPropertyData"
+		warning_bs("AudioObjectGetPropertyData"
 			" (kAudioHardwarePropertyDevices) failed: %i\n",
 			status);
 		err = ENODEV;
@@ -113,7 +113,7 @@ int coreaudio_enum_devices(const char *name, struct list *dev_list,
 						    &dataSize,
 						    &deviceUID);
 		if (kAudioHardwareNoError != status) {
-			warning("AudioObjectGetPropertyData"
+			warning_bs("AudioObjectGetPropertyData"
 				" (kAudioDevicePropertyDeviceUID) "
 				"failed: %i\n", status);
 			continue;
@@ -130,7 +130,7 @@ int coreaudio_enum_devices(const char *name, struct list *dev_list,
 						    &dataSize,
 						    &deviceName);
 		if (kAudioHardwareNoError != status) {
-			warning("AudioObjectGetPropertyData"
+			warning_bs("AudioObjectGetPropertyData"
 				" (kAudioDevicePropertyDeviceNameCFString)"
 				" failed: %i\n", status);
 			continue;
@@ -146,7 +146,7 @@ int coreaudio_enum_devices(const char *name, struct list *dev_list,
 						name_buf,
 						sizeof(name_buf),
 						kCFStringEncodingUTF8)) {
-				warning("CFStringGetCString "
+				warning_bs("CFStringGetCString "
 					" failed: %i\n", status);
 				continue;
 			}

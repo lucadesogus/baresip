@@ -107,11 +107,11 @@ static int stunsrv_decode(struct account *acc, const struct sip_addr *aor)
 	memset(&uri, 0, sizeof(uri));
 	if (0 == msg_param_decode(&aor->params, "stunserver", &srv)) {
 
-		info("using stunserver: '%r'\n", &srv);
+		info_bs("using stunserver: '%r'\n", &srv);
 
 		err = uri_decode(&uri, &srv);
 		if (err) {
-			warning("account: decode '%r' failed (%m)\n",
+			warning_bs("account: decode '%r' failed (%m)\n",
 				&srv, err);
 			return err;
 		}
@@ -171,7 +171,7 @@ static int cert_decode(struct account *acc, const struct pl *prm)
 		return 0;
 
 	if (!fs_isfile(acc->cert)) {
-		warning("account: certificate %s not found\n", acc->cert);
+		warning_bs("account: certificate %s not found\n", acc->cert);
 		err = errno;
 	}
 
@@ -241,7 +241,7 @@ static void answermode_decode(struct account *prm, const struct pl *pl)
 			prm->answermode = ANSWERMODE_AUTO;
 		}
 		else {
-			warning("account: answermode unknown (%r)\n", &amode);
+			warning_bs("account: answermode unknown (%r)\n", &amode);
 		}
 	}
 
@@ -268,7 +268,7 @@ static void rel100_decode(struct account *prm, const struct pl *pl)
 			prm->rel100_mode = REL100_REQUIRED;
 		}
 		else {
-			warning("account: 100rel mode unknown (%r)\n", &rmode);
+			warning_bs("account: 100rel mode unknown (%r)\n", &rmode);
 		}
 	}
 }
@@ -333,7 +333,7 @@ static void inreq_mode_decode(struct account *prm, const struct pl *pl)
 			prm->inreq_mode = INREQ_MODE_ON;
 		}
 		else {
-			warning("account: inreq_allowed mode unknown (%r)\n",
+			warning_bs("account: inreq_allowed mode unknown (%r)\n",
 				&mode);
 		}
 	}
@@ -397,7 +397,7 @@ static int audio_codecs_decode(struct account *acc, const struct pl *prm)
 			ac = (struct aucodec *)aucodec_find(aucodecl,
 							    cname, srate, ch);
 			if (!ac) {
-				warning("account: audio codec not found:"
+				warning_bs("account: audio codec not found:"
 					" %s/%u/%d\n",
 					cname, srate, ch);
 				continue;
@@ -507,7 +507,7 @@ static int sip_params_decode(struct account *acc, const struct sip_addr *aor)
 		if (u32 <= 65535)
 			acc->tcpsrcport = u32;
 		else
-			warning("account: invalid tcpsrcport\n");
+			warning_bs("account: invalid tcpsrcport\n");
 	}
 
 	err |= param_dstr(&acc->regq, &aor->params, "regq");
@@ -598,7 +598,7 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	pl_set_str(&pl, acc->buf);
 	err = sip_addr_decode(&acc->laddr, &pl);
 	if (err) {
-		warning("account: error parsing SIP address: '%r'\n", &pl);
+		warning_bs("account: error parsing SIP address: '%r'\n", &pl);
 		goto out;
 	}
 
@@ -630,7 +630,7 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	err |= decode_pair(&acc->auplay_mod, &acc->auplay_dev,
 			   &acc->laddr.params, "audio_player");
 	if (err) {
-		warning("account: audio_source/audio_player parse error\n");
+		warning_bs("account: audio_source/audio_player parse error\n");
 		goto out;
 	}
 
@@ -639,7 +639,7 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	err |= decode_pair(&acc->viddisp_mod, &acc->viddisp_dev,
 			   &acc->laddr.params, "video_display");
 	if (err) {
-		warning("account: video_source/video_display parse error\n");
+		warning_bs("account: video_source/video_display parse error\n");
 		goto out;
 	}
 
@@ -657,7 +657,7 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	if (acc->mnatid) {
 		acc->mnat = mnat_find(baresip_mnatl(), acc->mnatid);
 		if (!acc->mnat) {
-			warning("account: medianat not found: '%s'\n",
+			warning_bs("account: medianat not found: '%s'\n",
 				acc->mnatid);
 		}
 	}
@@ -665,7 +665,7 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	if (acc->mencid) {
 		acc->menc = menc_find(baresip_mencl(), acc->mencid);
 		if (!acc->menc) {
-			warning("account: mediaenc not found: '%s'\n",
+			warning_bs("account: mediaenc not found: '%s'\n",
 				acc->mencid);
 		}
 	}
@@ -769,7 +769,7 @@ int account_set_sipnat(struct account *acc, const char *sipnat)
 			return str_dup(&acc->sipnat, sipnat);
 		}
 		else {
-			warning("account: unknown sipnat value: '%s'\n",
+			warning_bs("account: unknown sipnat value: '%s'\n",
 				sipnat);
 			return EINVAL;
 		}
@@ -823,7 +823,7 @@ int account_set_stun_uri(struct account *acc, const char *uri)
 	pl_set_str(&pl, uri);
 	err = stunuri_decode(&acc->stun_host, &pl);
 	if (err)
-		warning("account: decode '%r' failed: %m\n",
+		warning_bs("account: decode '%r' failed: %m\n",
 			&pl, err);
 
 	return err;
@@ -975,7 +975,7 @@ int account_set_mediaenc(struct account *acc, const char *mencid)
 	if (mencid) {
 		menc = menc_find(baresip_mencl(), mencid);
 		if (!menc) {
-			warning("account: mediaenc not found: `%s'\n",
+			warning_bs("account: mediaenc not found: `%s'\n",
 				mencid);
 			return EINVAL;
 		}
@@ -1011,7 +1011,7 @@ int account_set_medianat(struct account *acc, const char *mnatid)
 	if (mnatid) {
 		mnat = mnat_find(baresip_mnatl(), mnatid);
 		if (!mnat) {
-			warning("account: medianat not found: `%s'\n",
+			warning_bs("account: medianat not found: `%s'\n",
 				mnatid);
 			return EINVAL;
 		}
@@ -1368,7 +1368,7 @@ int account_set_answermode(struct account *acc, enum answermode mode)
 	if ((mode != ANSWERMODE_MANUAL) && (mode != ANSWERMODE_EARLY) &&
 	    (mode != ANSWERMODE_AUTO) && (mode != ANSWERMODE_EARLY_VIDEO) &&
 	    (mode != ANSWERMODE_EARLY_AUDIO)) {
-		warning("account: invalid answermode : `%d'\n", mode);
+		warning_bs("account: invalid answermode : `%d'\n", mode);
 		return EINVAL;
 	}
 
@@ -1406,7 +1406,7 @@ int account_set_rel100_mode(struct account *acc, enum rel100_mode mode)
 
 	if ((mode != REL100_DISABLED) && (mode != REL100_ENABLED) &&
 	    (mode != REL100_REQUIRED)) {
-		warning("account: invalid 100rel mode : `%d'\n", mode);
+		warning_bs("account: invalid 100rel mode : `%d'\n", mode);
 		return EINVAL;
 	}
 
@@ -1445,7 +1445,7 @@ int account_set_dtmfmode(struct account *acc, enum dtmfmode mode)
 	if ((mode != DTMFMODE_RTP_EVENT) &&
 	    (mode != DTMFMODE_SIP_INFO) &&
 	    (mode != DTMFMODE_AUTO)) {
-		warning("account: invalid dtmfmode : `%d'\n", mode);
+		warning_bs("account: invalid dtmfmode : `%d'\n", mode);
 		return EINVAL;
 	}
 
@@ -2237,7 +2237,7 @@ int account_set_inreq_mode(struct account *acc, enum inreq_mode mode)
 		return EINVAL;
 
 	if ((mode != INREQ_MODE_OFF) && (mode != INREQ_MODE_ON)) {
-		warning("account: invalid inreq_allowed : '%d'\n", mode);
+		warning_bs("account: invalid inreq_allowed : '%d'\n", mode);
 		return EINVAL;
 	}
 

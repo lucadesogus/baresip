@@ -69,7 +69,7 @@ static void vidframe_set_pixbuf(struct vidframe *f, const CVImageBufferRef b)
 		break;
 
 	default:
-		warning("avcapture: unknown pixfmt %c%c%c%c\n",
+		warning_bs("avcapture: unknown pixfmt %c%c%c%c\n",
 			type>>24, type>>16, type>>8, type>>0);
 		f->fmt = -1;
 		f->data[0] = NULL;
@@ -210,7 +210,7 @@ static void vidframe_set_pixbuf(struct vidframe *f, const CVImageBufferRef b)
 	if (name)
 		re_snprintf(devname, sizeof(devname), name);
 
-	info("avcapture: device=%s %dx%d\n", name, sz->w, sz->h);
+	info_bs("avcapture: device=%s %dx%d\n", name, sz->w, sz->h);
 
 	if (name && !strcmp(name, "screen")) {
 		screenInput = [[AVCaptureScreenInput alloc] init];
@@ -462,14 +462,14 @@ static int module_init(void)
 #endif
 		const char *name = [[dev localizedName] UTF8String];
 
-		debug("avcapture: found video device '%s'\n", name);
+		debug_bs("avcapture: found video device '%s'\n", name);
 
 		err = mediadev_add(&vidsrc->dev_list, name);
 		if (err)
 			goto out;
 	}
 
-	debug("avcapture: found video device 'screen'\n");
+	debug_bs("avcapture: found video device 'screen'\n");
 	err = mediadev_add(&vidsrc->dev_list, "screen");
 
  out:

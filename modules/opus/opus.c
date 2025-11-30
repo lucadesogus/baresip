@@ -87,7 +87,7 @@ void opus_mirror_params(const char *x)
 	if (!opus_mirror)
 		return;
 
-	info("opus: mirror parameters: \"%s\"\n", x);
+	info_bs("opus: mirror parameters: \"%s\"\n", x);
 
 	str_ncpy(fmtp_mirror, x, sizeof(fmtp_mirror));
 }
@@ -132,7 +132,7 @@ static int module_init(void)
 
 		if ((value != 8000) && (value != 12000) && (value != 16000) &&
 		    (value != 24000) && (value != 48000)) {
-			warning("opus: invalid samplerate: %d\n", value);
+			warning_bs("opus: invalid samplerate: %d\n", value);
 			return EINVAL;
 		}
 		opus.srate = value;
@@ -184,7 +184,7 @@ static int module_init(void)
 		else if (!pl_strcasecmp(&pl, "voip"))
 			opus_application = OPUS_APPLICATION_VOIP;
 		else {
-			warning("opus: unknown encoder application: %r\n",
+			warning_bs("opus: unknown encoder application: %r\n",
 					&pl);
 			return EINVAL;
 		}
@@ -198,7 +198,7 @@ static int module_init(void)
 			opus_packet_loss = value;
 	}
 
-	debug("opus: fmtp=\"%s\"\n", fmtp);
+	debug_bs("opus: fmtp=\"%s\"\n", fmtp);
 
 	aucodec_register(baresip_aucodecl(), &opus);
 

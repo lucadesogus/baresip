@@ -71,15 +71,15 @@ static void http_resph(int err, const struct http_msg *msg, void *arg)
 	(void) arg;
 
 	if (err) {
-		warning("httpreq: HTTP response error (%m)\n", err);
+		warning_bs("httpreq: HTTP response error (%m)\n", err);
 	}
 	else if (!msg) {
-		warning("httpreq: HTTP empty response\n");
+		warning_bs("httpreq: HTTP empty response\n");
 	}
 	else {
 		hdr = http_msg_hdr(msg, HTTP_HDR_CONTENT_TYPE);
 		v = &hdr->val;
-		info("httpreq: HTTP response:\n");
+		info_bs("httpreq: HTTP response:\n");
 		re_fprintf(stdout, "%H\n", http_msg_print,  msg);
 		if (msg->mb && !re_regex(v->p, v->l, "text/")) {
 			pl_set_mbuf(&pl, msg->mb);
@@ -96,7 +96,7 @@ static int ensure_alloc(void)
 		err = net_alloc(&d->net, d->cfg);
 
 	if (err) {
-		warning("httpreq: could not create network\n");
+		warning_bs("httpreq: could not create network\n");
 		return err;
 	}
 
@@ -104,7 +104,7 @@ static int ensure_alloc(void)
 		err = http_client_alloc(&d->client, net_dnsc(d->net));
 
 	if (err) {
-		warning("httpreq: could not alloc http client\n");
+		warning_bs("httpreq: could not alloc http client\n");
 		return err;
 	}
 
@@ -113,7 +113,7 @@ static int ensure_alloc(void)
 				NULL);
 
 	if (err)
-		warning("httpreq: could not alloc http request connection\n");
+		warning_bs("httpreq: could not alloc http request connection\n");
 
 	return err;
 }
@@ -399,7 +399,7 @@ static int ca_handler(const struct pl *pl, void *arg)
 
 	/* ignore err, just print warning */
 	if (err)
-		warning("httpreq: could not add ca %s\n", parm);
+		warning_bs("httpreq: could not add ca %s\n", parm);
 
 	return 0;
 }
@@ -463,7 +463,7 @@ static int module_init(void)
 	char *buf;
 #endif
 
-	info("httpreq: module init\n");
+	info_bs("httpreq: module init\n");
 	d = mem_zalloc(sizeof(*d), destructor);
 	if (!d)
 		return ENOMEM;
@@ -522,7 +522,7 @@ static int module_init(void)
 
 static int module_close(void)
 {
-	info("httpreq: module closed\n");
+	info_bs("httpreq: module closed\n");
 
 	cmd_unregister(baresip_commands(), cmdv);
 	d = mem_deref(d);

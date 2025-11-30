@@ -87,7 +87,7 @@ static void pastream_destructor(void *arg)
 
 	pa_threaded_mainloop_unlock(c->mainloop);
 
-	info("pulse: %s [overrun=%zu underrun=%zu]\n",
+	info_bs("pulse: %s [overrun=%zu underrun=%zu]\n",
 	     st->sname, st->stats.overrun, st->stats.underrun);
 }
 
@@ -102,7 +102,7 @@ static void stream_latency_update_cb(pa_stream *s, void *arg)
 
 	pa_err = pa_stream_get_latency(s, &usec, &neg);
 	if (!pa_err)
-		debug("pulse: stream %s latency update "
+		debug_bs("pulse: stream %s latency update "
 				"usec=%lu, neg=%d\n", st->sname,
 				(unsigned long) usec, neg);
 }
@@ -202,7 +202,7 @@ int pastream_start(struct pastream_st* st, void *arg)
 				PA_STREAM_AUTO_TIMING_UPDATE);
 	}
 	else {
-		warning("pulse: stream %s unsupported stream "
+		warning_bs("pulse: stream %s unsupported stream "
 			"direction %d\n",
 			st->sname, (int)st->direction);
 		err = EINVAL;
@@ -210,7 +210,7 @@ int pastream_start(struct pastream_st* st, void *arg)
 
 out:
 	if (st && pa_err) {
-		warning("pulse: stream %s stream error %d\n", st->sname,
+		warning_bs("pulse: stream %s stream error %d\n", st->sname,
 			pa_err);
 		err = EINVAL;
 	}

@@ -400,7 +400,7 @@ static void encode_rtp_send(struct vtx *vtx, struct vidframe *frame,
 			vtx->picup = false;
 		}
 		else {
-			warning("video: Skipping Packet as"
+			warning_bs("video: Skipping Packet as"
 				" Packetize Handler not initialized ..\n");
 		}
 		goto out;
@@ -506,7 +506,7 @@ static void vidsrc_error_handler(int err, void *arg)
 
 	MAGIC_CHECK(vtx->video);
 
-	warning("video: video-source error: %m\n", err);
+	warning_bs("video: video-source error: %m\n", err);
 
 	vtx->vsrc = mem_deref(vtx->vsrc);
 }
@@ -680,7 +680,7 @@ static void send_fir(struct stream *s, bool pli)
 				    rtp_sess_ssrc(stream_rtp_sock(s)));
 
 	if (err) {
-		warning("video: failed to send RTCP %s: %m\n",
+		warning_bs("video: failed to send RTCP %s: %m\n",
 			pli ? "PLI" : "FIR", err);
 	}
 }
@@ -713,7 +713,7 @@ static void update_rtp_timestamp(struct timestamp_recv *tsr, uint32_t rtp_ts)
 		switch (wrap) {
 
 		case -1:
-			info("video: rtp timestamp wraps backwards"
+			info_bs("video: rtp timestamp wraps backwards"
 			     " (delta = %d) -- discard\n",
 			     (int32_t)(tsr->last - rtp_ts));
 			return;
@@ -766,7 +766,7 @@ static int video_stream_decode(struct vrx *vrx, const struct rtp_header *hdr,
 
 	/* No decoder set */
 	if (!vrx->dec) {
-		warning("video: No video decoder!\n");
+		warning_bs("video: No video decoder!\n");
 		goto out;
 	}
 
@@ -781,7 +781,7 @@ static int video_stream_decode(struct vrx *vrx, const struct rtp_header *hdr,
 	if (err) {
 
 		if (err != EPROTO) {
-			warning("video: %s decode error"
+			warning_bs("video: %s decode error"
 				" (seq=%u, %zu bytes): %m\n",
 				vrx->vc->name, hdr->seq,
 				mbuf_get_left(mb), err);
@@ -803,7 +803,7 @@ static int video_stream_decode(struct vrx *vrx, const struct rtp_header *hdr,
 		goto out;
 
 	if (!vrx->size.w) {
-		info("video: receiving with resolution %u x %u"
+		info_bs("video: receiving with resolution %u x %u"
 		     " and format '%s'\n",
 		     frame->size.w, frame->size.h,
 		     vidfmt_name(frame->fmt));
@@ -840,7 +840,7 @@ static int video_stream_decode(struct vrx *vrx, const struct rtp_header *hdr,
 
 	frame_filt = mem_deref(frame_filt);
 	if (err == ENODEV) {
-		warning("video: video-display was closed\n");
+		warning_bs("video: video-display was closed\n");
 		vrx->vidisp = mem_deref(vrx->vidisp);
 		vrx->vd = NULL;
 
@@ -872,7 +872,7 @@ static int stream_pt_handler(uint8_t pt, struct mbuf *mb, void *arg)
 		return 0;
 
 	if (v->vrx.pt_rx != -1)
-		info("Video decoder changed payload %d -> %u\n",
+		info_bs("Video decoder changed payload %d -> %u\n",
 		     v->vrx.pt_rx, pt);
 
 	lc = sdp_media_lformat(stream_sdpmedia(v->strm), pt);
@@ -946,7 +946,7 @@ static void rtcp_nack_handler(struct vtx *vtx, struct rtcp_msg *msg)
 		if (qent->seq != pids[i])
 			continue;
 
-		debug("NACK resend rtp seq: %u\n", pids[i]);
+		debug_bs("NACK resend rtp seq: %u\n", pids[i]);
 		stream_resend(vtx->video->strm, qent->seq, qent->ext,
 			      qent->marker, qent->pt, qent->ts, qent->mb);
 
@@ -970,7 +970,7 @@ static void rtcp_handler(struct stream *strm, struct rtcp_msg *msg, void *arg)
 
 	case RTCP_FIR:
 		mtx_lock(vtx->lock_enc);
-		debug("video: recv Full Intra Request (FIR)\n");
+		debug_bs("video: recv Full Intra Request (FIR)\n");
 		vtx->picup = true;
 		mtx_unlock(vtx->lock_enc);
 		break;
@@ -981,7 +981,7 @@ static void rtcp_handler(struct stream *strm, struct rtcp_msg *msg, void *arg)
 			const char *s = msg->hdr.count == RTCP_PSFB_PLI ?
 				"Picture Loss Indication (PLI)" :
 				"Full Intra Request (FIR)";
-			debug("video: recv %s\n", s);
+			debug_bs("video: recv %s\n", s);
 			mtx_lock(vtx->lock_enc);
 			vtx->picup = true;
 			mtx_unlock(vtx->lock_enc);
@@ -1114,7 +1114,7 @@ int video_alloc(struct video **vp, struct list *streaml,
 		str_ncpy(v->vtx.device, acc->vidsrc_dev,
 			sizeof(v->vtx.device));
 
-		info("video: using account specific source: (%s,%s)\n",
+		info_bs("video: using account specific source: (%s,%s)\n",
 			acc->vidsrc_mod, acc->vidsrc_dev);
 	}
 
@@ -1124,7 +1124,7 @@ int video_alloc(struct video **vp, struct list *streaml,
 		str_ncpy(v->vrx.device, acc->viddisp_dev,
 			sizeof(v->vrx.device));
 
-		info("video: using account specific display: (%s,%s)\n",
+		info_bs("video: using account specific display: (%s,%s)\n",
 			acc->viddisp_mod, acc->viddisp_dev);
 	}
 
@@ -1202,7 +1202,7 @@ int video_alloc(struct video **vp, struct list *streaml,
 		err |= vidfilt_enc_append(&v->vtx.filtl, &ctx, vf, &prmenc, v);
 		err |= vidfilt_dec_append(&v->vrx.filtl, &ctx, vf, &prmdec, v);
 		if (err) {
-			warning("video: video-filter '%s' failed (%m)\n",
+			warning_bs("video: video-filter '%s' failed (%m)\n",
 				vf->name, err);
 			break;
 		}
@@ -1225,7 +1225,7 @@ static void vidisp_resize_handler(const struct vidsz *sz, void *arg)
 
 	MAGIC_CHECK(vrx->video);
 
-	info("video: display resized: %u x %u\n", sz->w, sz->h);
+	info_bs("video: display resized: %u x %u\n", sz->w, sz->h);
 }
 
 
@@ -1299,7 +1299,7 @@ int video_update(struct video *v, const char *peer)
 
 	m = stream_sdpmedia(v->strm);
 
-	debug("video: update\n");
+	debug_bs("video: update\n");
 
 	if (!sdp_media_disabled(m)) {
 		dir = sdp_media_dir(m);
@@ -1307,7 +1307,7 @@ int video_update(struct video *v, const char *peer)
 	}
 
 	if (!sc) {
-		info("video: video stream is disabled..\n");
+		info_bs("video: video stream is disabled..\n");
 		video_stop(v);
 		return 0;
 	}
@@ -1341,7 +1341,7 @@ int video_update(struct video *v, const char *peer)
 	}
 
 	if (err)
-		warning("video: video stream error: %m\n", err);
+		warning_bs("video: video stream error: %m\n", err);
 
 	return err;
 }
@@ -1367,7 +1367,7 @@ int video_start_source(struct video *v)
 
 	struct vtx *vtx = &v->vtx;
 
-	debug("video: start source %s,%s\n", vtx->module, vtx->device);
+	debug_bs("video: start source %s,%s\n", vtx->module, vtx->device);
 
 	if (vidsrc_find(baresip_vidsrcl(), NULL)) {
 		struct vidsrc *vs;
@@ -1375,7 +1375,7 @@ int video_start_source(struct video *v)
 		vs = (struct vidsrc *)vidsrc_find(baresip_vidsrcl(),
 						  v->cfg.src_mod);
 		if (!vs) {
-			warning("video: source not found: %s\n",
+			warning_bs("video: source not found: %s\n",
 				v->cfg.src_mod);
 			return ENOENT;
 		}
@@ -1394,17 +1394,17 @@ int video_start_source(struct video *v)
 				 vidsrc_frame_handler, vidsrc_packet_handler,
 				 vidsrc_error_handler, vtx);
 		if (err) {
-			warning("video: could not set source to"
+			warning_bs("video: could not set source to"
 				" [%u x %u] %m\n",
 				size.w, size.h, err);
 		}
 
 		vtx->vs = vs;
 		if (v->vtx.vc)
-			info("%H", vtx_print_pipeline, &v->vtx);
+			info_bs("%H", vtx_print_pipeline, &v->vtx);
 	}
 	else {
-		info("video: no video source\n");
+		info_bs("video: no video source\n");
 	}
 
 	if (!re_atomic_rlx(&vtx->run)) {
@@ -1412,7 +1412,7 @@ int video_start_source(struct video *v)
 		thread_create_name(&vtx->thrd, "Video TX", vtx_thread, vtx);
 	}
 	else {
-		warning("video_start_source: Video TX already started\n");
+		warning_bs("video_start_source: Video TX already started\n");
 	}
 
 	stream_enable_tx(v->strm, true);
@@ -1440,7 +1440,7 @@ int video_start_display(struct video *v, const char *peer)
 	if (v->vrx.vidisp)
 		return 0;
 
-	debug("video: start display\n");
+	debug_bs("video: start display\n");
 
 	if (peer) {
 		v->peer = mem_deref(v->peer);
@@ -1452,16 +1452,16 @@ int video_start_display(struct video *v, const char *peer)
 	if (vidisp_find(baresip_vidispl(), NULL)) {
 		err = set_vidisp(&v->vrx);
 		if (err) {
-			warning("video: could not set vidisp '%s': %m\n",
+			warning_bs("video: could not set vidisp '%s': %m\n",
 				v->vrx.device, err);
 			return err;
 		}
 
 		if (v->vrx.vc)
-			info("%H", vrx_print_pipeline, &v->vrx);
+			info_bs("%H", vrx_print_pipeline, &v->vrx);
 	}
 	else {
-		info("video: no video display\n");
+		info_bs("video: no video display\n");
 	}
 
 	return 0;
@@ -1478,7 +1478,7 @@ static void video_stop_source(struct video *v)
 	if (!v)
 		return;
 
-	debug("video: stopping video source ..\n");
+	debug_bs("video: stopping video source ..\n");
 
 	stream_enable_tx(v->strm, false);
 	v->vtx.vsrc = mem_deref(v->vtx.vsrc);
@@ -1506,7 +1506,7 @@ void video_stop_display(struct video *v)
 	if (!v)
 		return;
 
-	debug("video: stopping video display ..\n");
+	debug_bs("video: stopping video display ..\n");
 
 	v->vrx.vidisp = mem_deref(v->vrx.vidisp);
 }
@@ -1588,14 +1588,14 @@ int video_encoder_set(struct video *v, struct vidcodec *vc,
 	vtx = &v->vtx;
 
 	if (!vc->encupdh || !vc->ench) {
-		info("video: vidcodec '%s' has no encoder\n", vc->name);
+		info_bs("video: vidcodec '%s' has no encoder\n", vc->name);
 
 		struct list *vidcodecl = vc->le.list;
 
 		struct vidcodec *vcd = (struct vidcodec *)
 			vidcodec_find_encoder(vidcodecl, vc->name);
 		if (!vcd) {
-			warning("video: could not find encoder (%s)\n",
+			warning_bs("video: could not find encoder (%s)\n",
 				vc->name);
 			return ENOENT;
 		}
@@ -1614,14 +1614,14 @@ int video_encoder_set(struct video *v, struct vidcodec *vc,
 		prm.fps     = get_fps(v);
 		prm.max_fs  = -1;
 
-		info("Set video encoder: %s %s (%u bit/s, %.2f fps)\n",
+		info_bs("Set video encoder: %s %s (%u bit/s, %.2f fps)\n",
 		     vc->name, vc->variant, prm.bitrate, prm.fps);
 
 		vtx->enc = mem_deref(vtx->enc);
 		err = vc->encupdh(&vtx->enc, vc, &prm, params,
 				  packet_handler, v);
 		if (err) {
-			warning("video: encoder alloc: %m\n", err);
+			warning_bs("video: encoder alloc: %m\n", err);
 			goto out;
 		}
 
@@ -1650,12 +1650,12 @@ int video_decoder_set(struct video *v, struct vidcodec *vc, int pt_rx,
 	if (!vc->decupdh || !vc->dech) {
 		struct list *vidcodecl = vc->le.list;
 
-		info("video: vidcodec '%s' has no decoder\n", vc->name);
+		info_bs("video: vidcodec '%s' has no decoder\n", vc->name);
 
 		struct vidcodec *vcd = (struct vidcodec *)
 			vidcodec_find_decoder(vidcodecl, vc->name);
 		if (!vcd) {
-			warning("video: could not find decoder (%s)\n",
+			warning_bs("video: could not find decoder (%s)\n",
 				vc->name);
 			return ENOENT;
 		}
@@ -1669,13 +1669,13 @@ int video_decoder_set(struct video *v, struct vidcodec *vc, int pt_rx,
 
 	if (vc != vrx->vc) {
 
-		info("Set video decoder: %s %s\n", vc->name, vc->variant);
+		info_bs("Set video decoder: %s %s\n", vc->name, vc->variant);
 
 		vrx->dec = mem_deref(vrx->dec);
 
 		err = vc->decupdh(&vrx->dec, vc, fmtp, v);
 		if (err) {
-			warning("video: decoder alloc: %m\n", err);
+			warning_bs("video: decoder alloc: %m\n", err);
 			return err;
 		}
 

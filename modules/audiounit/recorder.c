@@ -95,7 +95,7 @@ static OSStatus input_callback(void *inRefCon,
 			      inNumberFrames,
 			      &abl_in);
 	if (ret) {
-		debug("audiounit: record: AudioUnitRender input error (%d)\n",
+		debug_bs("audiounit: record: AudioUnitRender input error (%d)\n",
 		      ret);
 		return ret;
 	}
@@ -125,7 +125,7 @@ static OSStatus input_callback(void *inRefCon,
 				      inNumberFrames,
 				      &abl_conv);
 		if (ret) {
-			debug("audiounit: record: "
+			debug_bs("audiounit: record: "
 			      "AudioUnitRender convert error (%d)\n", ret);
 			return ret;
 		}
@@ -291,7 +291,7 @@ int audiounit_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		goto out;
 #endif
 
-	debug("audiounit: record hardware sample rate is now at %f Hz\n",
+	debug_bs("audiounit: record hardware sample rate is now at %f Hz\n",
 	      hw_srate);
 
 	st->sampc_ratio = prm->srate / hw_srate;
@@ -338,12 +338,12 @@ int audiounit_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 
 	ret = AudioComponentInstanceNew(audiounit_comp_conv, &st->au_conv);
 	if (ret) {
-		warning("audiounit: record: AudioConverter failed (%d)\n",
+		warning_bs("audiounit: record: AudioConverter failed (%d)\n",
 			ret);
 		goto out;
 	}
 
-	info("audiounit: record: enable resampler %.1f -> %u Hz\n",
+	info_bs("audiounit: record: enable resampler %.1f -> %u Hz\n",
 	     hw_srate, prm->srate);
 
 	ret = AudioUnitSetProperty(st->au_conv,
@@ -386,7 +386,7 @@ int audiounit_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 
  out:
 	if (ret) {
-		warning("audiounit: record failed: %d (%c%c%c%c)\n", ret,
+		warning_bs("audiounit: record failed: %d (%c%c%c%c)\n", ret,
 			ret>>24, ret>>16, ret>>8, ret);
 		err = ENODEV;
 	}

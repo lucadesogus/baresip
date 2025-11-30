@@ -116,7 +116,7 @@ static int dns_handler(const struct pl *pl, void *arg, bool fallback)
 	int err;
 
 	if (cfg->nsc >= max_count) {
-		warning("config: too many DNS nameservers (max %zu)\n",
+		warning_bs("config: too many DNS nameservers (max %zu)\n",
 			max_count);
 		return EOVERFLOW;
 	}
@@ -128,7 +128,7 @@ static int dns_handler(const struct pl *pl, void *arg, bool fallback)
 	cfg->nsv[cfg->nsc].fallback = fallback;
 
 	if (err) {
-		warning("config: dns_server: could not copy string (%r)\n",
+		warning_bs("config: dns_server: could not copy string (%r)\n",
 			pl);
 		return err;
 	}
@@ -175,7 +175,7 @@ enum rtp_receive_mode resolve_receive_mode(const struct pl *fmt)
 	if (0 == pl_strcasecmp(fmt, "main"))     return RECEIVE_MODE_MAIN;
 	if (0 == pl_strcasecmp(fmt, "thread"))   return RECEIVE_MODE_THREAD;
 
-	warning("rtp_rxmode %r is not supported\n", fmt);
+	warning_bs("rtp_rxmode %r is not supported\n", fmt);
 	return RECEIVE_MODE_MAIN;
 }
 
@@ -206,7 +206,7 @@ static int conf_get_aufmt(const struct conf *conf, const char *name,
 
 	fmt = resolve_aufmt(&pl);
 	if (fmt == -1) {
-		warning("config: %s: sample format not supported"
+		warning_bs("config: %s: sample format not supported"
 			" (%r)\n", name, &pl);
 		return EINVAL;
 	}
@@ -239,7 +239,7 @@ static int conf_get_vidfmt(const struct conf *conf, const char *name,
 		}
 	}
 
-	warning("config: %s: pixel format not supported (%r)\n", name, &pl);
+	warning_bs("config: %s: pixel format not supported (%r)\n", name, &pl);
 
 	return ENOENT;
 }
@@ -448,7 +448,7 @@ int config_parse_conf(struct config *cfg, const struct conf *conf)
 		else if (0 == pl_strcasecmp(&txmode, "thread"))
 			cfg->audio.txmode = AUDIO_MODE_THREAD;
 		else {
-			warning("unsupported audio txmode (%r)\n", &txmode);
+			warning_bs("unsupported audio txmode (%r)\n", &txmode);
 		}
 	}
 
@@ -461,7 +461,7 @@ int config_parse_conf(struct config *cfg, const struct conf *conf)
 
 	conf_get_range(conf, "audio_buffer", &cfg->audio.buffer);
 	if (!cfg->audio.buffer.min || !cfg->audio.buffer.max) {
-		warning("config: audio_buffer cannot be zero\n");
+		warning_bs("config: audio_buffer cannot be zero\n");
 		return EINVAL;
 	}
 
@@ -503,12 +503,12 @@ int config_parse_conf(struct config *cfg, const struct conf *conf)
 	}
 
 	if (0 == conf_get(conf, "audio_jitter_buffer_delay", &jbtype)) {
-		warning("config: audio_jitter_buffer_delay is deprecated, use "
+		warning_bs("config: audio_jitter_buffer_delay is deprecated, use "
 			"audio_jitter_buffer_ms and "
 			"audio_jitter_buffer_size\n");
 	}
 	if (0 == conf_get(conf, "video_jitter_buffer_delay", &jbtype)) {
-		warning("config: video_jitter_buffer_delay is deprecated, use "
+		warning_bs("config: video_jitter_buffer_delay is deprecated, use "
 			"video_jitter_buffer_ms and "
 			"video_jitter_buffer_size\n");
 	}
@@ -540,7 +540,7 @@ int config_parse_conf(struct config *cfg, const struct conf *conf)
 	}
 
 	if (err) {
-		warning("config: configure parse error (%m)\n", err);
+		warning_bs("config: configure parse error (%m)\n", err);
 	}
 
 	/* Network */
@@ -557,7 +557,7 @@ int config_parse_conf(struct config *cfg, const struct conf *conf)
 		else if (0 == pl_strcasecmp(&pl, "ipv6"))
 			cfg->net.af = AF_INET6;
 		else {
-			warning("unsupported af (%r)\n", &pl);
+			warning_bs("unsupported af (%r)\n", &pl);
 		}
 	}
 
@@ -1026,7 +1026,7 @@ static const char *detect_module_path(bool *valid)
 
 		uint32_t n = count_modules(pathv[i]);
 
-		info("%s: detected %u modules\n", pathv[i], n);
+		info_bs("%s: detected %u modules\n", pathv[i], n);
 
 		if (n > nmax) {
 			nmax = n;
@@ -1077,11 +1077,11 @@ int config_write_template(const char *file, const struct config *cfg)
 	if (!file || !cfg)
 		return EINVAL;
 
-	info("config: creating config template %s\n", file);
+	info_bs("config: creating config template %s\n", file);
 
 	err = fs_fopen(&f, file, "w");
 	if (err) {
-		warning("config: writing %s: %m\n", file, err);
+		warning_bs("config: writing %s: %m\n", file, err);
 		return err;
 	}
 

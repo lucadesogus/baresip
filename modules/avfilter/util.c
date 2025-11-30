@@ -73,7 +73,7 @@ int avframe_ensure_topdown(AVFrame *frame)
 
 			if (frame->linesize[i] <0) {
 
-				warning("avfilter: unsupported frame"
+				warning_bs("avfilter: unsupported frame"
 					" format with negative linesize: %d",
 					frame->format);
 

@@ -122,7 +122,7 @@ static int resamp_setup(struct auresamp_st *st, struct auframe *af)
 	err = auresamp_setup(&st->resamp, af->srate, af->ch,
 			     st->oprm.srate, st->oprm.ch);
 	if (err) {
-		warning("resample: auresamp_setup error (%m)\n", err);
+		warning_bs("resample: auresamp_setup error (%m)\n", err);
 		return err;
 	}
 
@@ -162,7 +162,7 @@ static int common_resample(struct auresamp_st *st, struct auframe *af)
 	int err = 0;
 
 	if (st->dbg) {
-		debug("auresamp: resample %s %u/%u --> %u/%u\n", st->dbg,
+		debug_bs("auresamp: resample %s %u/%u --> %u/%u\n", st->dbg,
 		      af->srate, af->ch, st->oprm.srate, st->oprm.ch);
 		st->dbg = NULL;
 	}
@@ -200,7 +200,7 @@ static int common_resample(struct auresamp_st *st, struct auframe *af)
 	rsampc = st->rsampsz / 2;
 	err = auresamp(&st->resamp, st->rsampv, &rsampc, sampv, af->sampc);
 	if (err) {
-		warning("resample: auresamp error (%m)\n", err);
+		warning_bs("resample: auresamp error (%m)\n", err);
 		return err;
 	}
 

@@ -426,7 +426,7 @@ int cmd_register(struct commands *commands,
 			const struct cmd *x = cmd_find_by_key(commands,
 							      cmd->key);
 			if (x) {
-				warning("short command '%c' already"
+				warning_bs("short command '%c' already"
 					" registered as \"%s\"\n",
 					x->key, x->desc);
 				return EALREADY;
@@ -434,14 +434,14 @@ int cmd_register(struct commands *commands,
 		}
 
 		if (cmd->key == LONG_PREFIX) {
-			warning("cmd: cannot register command with"
+			warning_bs("cmd: cannot register command with"
 				" short key '%c'\n", cmd->key);
 			return EINVAL;
 		}
 
 		if (str_isset(cmd->name) &&
 		    cmd_find_long(commands, cmd->name)) {
-			warning("cmd: long command '%s' already registered\n",
+			warning_bs("cmd: long command '%s' already registered\n",
 				cmd->name);
 			return EINVAL;
 		}
@@ -526,7 +526,7 @@ int cmd_process(struct commands *commands, struct cmd_ctx **ctxp, char key,
 		return EINVAL;
 
 	if (key == KEYCODE_NONE) {
-		warning("cmd: process: illegal keycode NONE\n");
+		warning_bs("cmd: process: illegal keycode NONE\n");
 		return EINVAL;
 	}
 
@@ -574,7 +574,7 @@ int cmd_process(struct commands *commands, struct cmd_ctx **ctxp, char key,
 			return err;
 
 		if (!ctxp) {
-			warning("cmd: ctxp is required\n");
+			warning_bs("cmd: ctxp is required\n");
 			return EINVAL;
 		}
 

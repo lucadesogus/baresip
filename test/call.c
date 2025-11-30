@@ -171,7 +171,7 @@ struct fixture {
 			       SIP_TRANSP_TLS, &f->dst);		\
 	TEST_ERR(err);							\
 									\
-	debug("test: local SIP transp: UDP=%J, TCP=%J\n",		\
+	debug_bs("test: local SIP transp: UDP=%J, TCP=%J\n",		\
 	      &f->laddr_udp, &f->laddr_tcp);				\
 									\
 	re_snprintf(f->buri, sizeof(f->buri),				\
@@ -503,14 +503,14 @@ static bool check_rule(struct cancel_rule *rule, int met_prev,
 
 	if (str_isset(rule->prm) &&
 	    !str_str(prm, rule->prm)) {
-		info("test: event %s prm=[%s] (expected [%s])\n",
+		info_bs("test: event %s prm=[%s] (expected [%s])\n",
 		     bevent_str(ev), prm, rule->prm);
 		return false;
 	}
 
 	if (rule->ua &&
 	    ag->ua != rule->ua) {
-		info("test: event %s ua=[%s] (expected [%s]\n",
+		info_bs("test: event %s ua=[%s] (expected [%s]\n",
 		     bevent_str(ev),
 		     account_aor(ua_account(ag->ua)),
 		     account_aor(ua_account(rule->ua)));
@@ -518,13 +518,13 @@ static bool check_rule(struct cancel_rule *rule, int met_prev,
 	}
 
 	if (rule->checkack && !ag->gotack) {
-		info("test: event %s waiting for ACK\n", bevent_str(ev));
+		info_bs("test: event %s waiting for ACK\n", bevent_str(ev));
 		return false;
 	}
 
 	if (UINTSET(rule->n_incoming) &&
 	    ag->n_incoming != rule->n_incoming) {
-		info("test: event %s n_incoming=%u (expected %u)\n",
+		info_bs("test: event %s n_incoming=%u (expected %u)\n",
 		     bevent_str(ev),
 		     ag->n_incoming, rule->n_incoming);
 		return false;
@@ -532,7 +532,7 @@ static bool check_rule(struct cancel_rule *rule, int met_prev,
 
 	if (UINTSET(rule->n_progress) &&
 	    ag->n_progress < rule->n_progress) {
-		info("test: event %s n_progress=%u (expected %u)\n",
+		info_bs("test: event %s n_progress=%u (expected %u)\n",
 		     bevent_str(ev),
 		     ag->n_progress, rule->n_progress);
 		return false;
@@ -540,7 +540,7 @@ static bool check_rule(struct cancel_rule *rule, int met_prev,
 
 	if (UINTSET(rule->n_established) &&
 	    ag->n_established != rule->n_established) {
-		info("test: event %s n_established=%u (expected %u)\n",
+		info_bs("test: event %s n_established=%u (expected %u)\n",
 		     bevent_str(ev),
 		     ag->n_established, rule->n_established);
 		return false;
@@ -548,7 +548,7 @@ static bool check_rule(struct cancel_rule *rule, int met_prev,
 
 	if (UINTSET(rule->n_audio_estab) &&
 	    ag->n_audio_estab != rule->n_audio_estab) {
-		info("test: event %s n_audio_estab=%u (expected %u)\n",
+		info_bs("test: event %s n_audio_estab=%u (expected %u)\n",
 		     bevent_str(ev),
 		     ag->n_audio_estab, rule->n_audio_estab);
 		return false;
@@ -556,7 +556,7 @@ static bool check_rule(struct cancel_rule *rule, int met_prev,
 
 	if (UINTSET(rule->n_video_estab) &&
 	    ag->n_video_estab != rule->n_video_estab) {
-		info("test: event %s n_video_estab=%u (expected %u)\n",
+		info_bs("test: event %s n_video_estab=%u (expected %u)\n",
 		     bevent_str(ev),
 		     ag->n_video_estab, rule->n_video_estab);
 		return false;
@@ -564,7 +564,7 @@ static bool check_rule(struct cancel_rule *rule, int met_prev,
 
 	if (UINTSET(rule->n_offer_cnt) &&
 	    ag->n_offer_cnt != rule->n_offer_cnt) {
-		info("test: event %s n_offer_cnt=%u (expected %u)\n",
+		info_bs("test: event %s n_offer_cnt=%u (expected %u)\n",
 		     bevent_str(ev),
 		     ag->n_offer_cnt, rule->n_offer_cnt);
 		return false;
@@ -572,7 +572,7 @@ static bool check_rule(struct cancel_rule *rule, int met_prev,
 
 	if (UINTSET(rule->n_answer_cnt) &&
 	    ag->n_answer_cnt != rule->n_answer_cnt) {
-		info("test: event %s n_answer_cnt=%u (expected %u)\n",
+		info_bs("test: event %s n_answer_cnt=%u (expected %u)\n",
 		     bevent_str(ev),
 		     ag->n_answer_cnt, rule->n_answer_cnt);
 		return false;
@@ -606,7 +606,7 @@ static bool check_rule(struct cancel_rule *rule, int met_prev,
 out:
 
 	if (met_prev && met_next) {
-		info("canceled by %H", cancel_rule_debug, rule);
+		info_bs("canceled by %H", cancel_rule_debug, rule);
 		re_cancel();
 		cancel_rules_reset(ag->fix);
 	}
@@ -640,7 +640,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 	int err = 0;
 
 #if 1
-	info("test: [ %s ] event: %s (%s)\n",
+	info_bs("test: [ %s ] event: %s (%s)\n",
 	     account_aor(ua_account(ua)), bevent_str(ev), prm);
 #endif
 
@@ -656,7 +656,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 	if (ua && ev == BEVENT_SIPSESS_CONN) {
 		err = ua_accept(ua, msg);
 		if (err) {
-			warning("test: could not accept incoming call (%m)\n",
+			warning_bs("test: could not accept incoming call (%m)\n",
 				err);
 			return;
 		}
@@ -671,7 +671,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 	else if (ua == f->c.ua)
 		ag = &f->c;
 	else {
-		warning("test: could not find agent/ua\n");
+		warning_bs("test: could not find agent/ua\n");
 		return;
 	}
 
@@ -689,7 +689,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 		case BEHAVIOUR_ANSWER:
 			err = ua_answer(ua, call, VIDMODE_ON);
 			if (err) {
-				warning("ua_answer failed (%m)\n", err);
+				warning_bs("ua_answer failed (%m)\n", err);
 				goto out;
 			}
 			break;
@@ -713,7 +713,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 			hdrs = call_get_custom_hdrs(call);
 			err = ua_answer(ua, call, VIDMODE_ON);
 			if (err) {
-				warning("ua_answer failed (%m)\n", err);
+				warning_bs("ua_answer failed (%m)\n", err);
 				goto out;
 			}
 			break;
@@ -721,7 +721,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 		case BEHAVIOUR_PROGRESS:
 			err = call_progress(call);
 			if (err) {
-				warning("call_progress failed (%m)\n", err);
+				warning_bs("call_progress failed (%m)\n", err);
 				goto out;
 			}
 			break;
@@ -847,7 +847,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 			pl_set_str(&pl, prm);
 			err = call_connect(call2, &pl);
 			if (err) {
-				warning("ua: transfer: connect error: %m\n",
+				warning_bs("ua: transfer: connect error: %m\n",
 					err);
 			}
 		}
@@ -926,7 +926,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 	}
 
 	if (ag->failed && ag->peer->failed) {
-		info("test: re_cancel on call failed\n");
+		info_bs("test: re_cancel on call failed\n");
 		re_cancel();
 		return;
 	}
@@ -935,7 +935,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 
  out:
 	if (err) {
-		warning("error in event-handler (%m)\n", err);
+		warning_bs("error in event-handler (%m)\n", err);
 		fixture_abort(f, err);
 	}
 }
@@ -980,14 +980,14 @@ int test_call_answer(void)
 	conf_config()->call.accept = true;
 	err = test_call_answer_priv();
 	if (err) {
-		warning("call_accept true failed\n");
+		warning_bs("call_accept true failed\n");
 		return err;
 	}
 
 	conf_config()->call.accept = false;
 	err = test_call_answer_priv();
 	if (err) {
-		warning("call_accept false failed\n");
+		warning_bs("call_accept false failed\n");
 		return err;
 	}
 
@@ -1840,14 +1840,14 @@ static void auframe_handler(struct auframe *af, const char *dev, void *arg)
 		ag = &fix->b;
 	}
 	else {
-		warning("test: received audio frame - agent unclear\n");
+		warning_bs("test: received audio frame - agent unclear\n");
 		return;
 	}
 
 	ua = ag->ua;
 	/* Does auframe come from the decoder ? */
 	if (!audio_rxaubuf_started(call_audio(ua_call(ua)))) {
-		debug("test: [%s] no audio received from decoder yet\n",
+		debug_bs("test: [%s] no audio received from decoder yet\n",
 		      account_aor(ua_account(ua)));
 		return;
 	}
@@ -2908,7 +2908,7 @@ static int test_call_bundle_base(bool use_mnat, bool use_menc)
 		err = re_regex((char *)sdp->buf, sdp->end,
 			       "a=group:BUNDLE 0 1");
 		if (err) {
-			warning("test: BUNDLE missing in SDP\n");
+			warning_bs("test: BUNDLE missing in SDP\n");
 			re_printf("%b\n", sdp->buf, sdp->end);
 			goto out;
 		}
@@ -2976,7 +2976,7 @@ static int test_call_bundle_base(bool use_mnat, bool use_menc)
 		return fix.err;
 
 	if (err) {
-		warning("test: call bundle test failed with mnat=%s menc=%s "
+		warning_bs("test: call bundle test failed with mnat=%s menc=%s "
 			"(%m)\n",
 			use_mnat ? "on" : "off",
 			use_menc ? "on" : "off", err);
@@ -3044,7 +3044,7 @@ int test_call_ipv6ll(void)
 	int err = 0;
 
 	if (!net_laddr_af(net, AF_INET6)) {
-		info("no IPv6 address -- skipping test %s\n", __func__);
+		info_bs("no IPv6 address -- skipping test %s\n", __func__);
 		return 0;
 	}
 

@@ -93,7 +93,7 @@ int contact_add(struct contacts *contacts,
 
 	err = sip_addr_decode(&c->addr, &pl);
 	if (err) {
-		warning("contact: decode error '%r'\n", addr);
+		warning_bs("contact: decode error '%r'\n", addr);
 		goto out;
 	}
 
@@ -110,7 +110,7 @@ int contact_add(struct contacts *contacts,
 			c->access = ACCESS_ALLOW;
 		}
 		else {
-			warning("contact: unknown 'access=%r' for '%r'\n",
+			warning_bs("contact: unknown 'access=%r' for '%r'\n",
 				&pl, addr);
 			err = EINVAL;
 			goto out;
@@ -254,7 +254,7 @@ void contact_set_presence(struct contact *c, enum presence_status status)
 
 	if (c->status != PRESENCE_UNKNOWN && c->status != status) {
 
-		info("<%r> changed status from %s to %s\n", &c->addr.auri,
+		info_bs("<%r> changed status from %s to %s\n", &c->addr.auri,
 		     contact_presence_str(c->status),
 		     contact_presence_str(status));
 	}

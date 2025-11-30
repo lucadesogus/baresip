@@ -50,7 +50,7 @@ static void message_recv_handler(struct ua *ua, const struct pl *peer,
 	int err = 0;
 	(void)ua;
 
-	info("[ %s ] recv msg from %r: \"%b\"\n", ep->uri, peer,
+	info_bs("[ %s ] recv msg from %r: \"%b\"\n", ep->uri, peer,
 	     mbuf_buf(body), mbuf_get_left(body));
 
 	TEST_STRCMP(text_plain, strlen(text_plain),
@@ -81,17 +81,17 @@ static void send_resp_handler(int err, const struct sip_msg *msg, void *arg)
 	++ep->n_resp;
 
 	if (err) {
-		warning("sending failed: %m\n", err);
+		warning_bs("sending failed: %m\n", err);
 		goto out;
 	}
 
 	if (msg->scode >= 300) {
-		warning("sending failed: %u %r\n", msg->scode, &msg->reason);
+		warning_bs("sending failed: %u %r\n", msg->scode, &msg->reason);
 		err = EPROTO;
 		goto out;
 	}
 
-	info("[ %s ] message sent OK\n", ep->uri);
+	info_bs("[ %s ] message sent OK\n", ep->uri);
 
 	ASSERT_EQ(ep->test->transp, msg->tp);
 	ASSERT_EQ(200, msg->scode);
@@ -117,11 +117,11 @@ static void send_resp_handler_403(int err, const struct sip_msg *msg,
 	++ep->n_resp;
 
 	if (err) {
-		warning("sending failed: %m\n", err);
+		warning_bs("sending failed: %m\n", err);
 		goto out;
 	}
 
-	info("[ %s ] message sent OK\n", ep->uri);
+	info_bs("[ %s ] message sent OK\n", ep->uri);
 
 	ASSERT_EQ(ep->test->transp, msg->tp);
 	ASSERT_EQ(403, msg->scode);

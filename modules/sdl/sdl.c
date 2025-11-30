@@ -93,7 +93,7 @@ static void poll_events(struct vidisp_st *st)
 			case SDLK_f:
 				/* press key 'f' to toggle fullscreen */
 				st->fullscreen = !st->fullscreen;
-				info("sdl: %sable fullscreen mode\n",
+				info_bs("sdl: %sable fullscreen mode\n",
 				     st->fullscreen ? "en" : "dis");
 
 				if (st->fullscreen)
@@ -140,7 +140,7 @@ static void mqueue_handler(int id, void *data, void *arg)
 	(void)data;
 	(void)arg;
 
-	info("sdl: mqueue event: id=%d\n", id);
+	info_bs("sdl: mqueue event: id=%d\n", id);
 
 	ui_input_key(baresip_uis(), id, NULL);
 }
@@ -200,14 +200,14 @@ static int display(struct vidisp_st *st, const char *title,
 
 	format = match_fmt(frame->fmt);
 	if (format == SDL_PIXELFORMAT_UNKNOWN) {
-		warning("sdl: pixel format not supported (%s)\n",
+		warning_bs("sdl: pixel format not supported (%s)\n",
 			vidfmt_name(frame->fmt));
 		return ENOTSUP;
 	}
 
 	if (!vidsz_cmp(&st->size, &frame->size) || frame->fmt != st->fmt) {
 		if (st->size.w && st->size.h) {
-			info("sdl: reset size:"
+			info_bs("sdl: reset size:"
 			     " %s %u x %u ---> %s %u x %u\n",
 			     vidfmt_name(st->fmt), st->size.w, st->size.h,
 			     vidfmt_name(frame->fmt),
@@ -240,7 +240,7 @@ static int display(struct vidisp_st *st, const char *title,
 					      frame->size.w, frame->size.h,
 					      st->flags);
 		if (!st->window) {
-			warning("sdl: unable to create sdl window: %s\n",
+			warning_bs("sdl: unable to create sdl window: %s\n",
 				SDL_GetError());
 			return ENODEV;
 		}
@@ -263,13 +263,13 @@ static int display(struct vidisp_st *st, const char *title,
 
 		st->renderer = SDL_CreateRenderer(st->window, -1, flags);
 		if (!st->renderer) {
-			warning("sdl: unable to create renderer: %s\n",
+			warning_bs("sdl: unable to create renderer: %s\n",
 				SDL_GetError());
 			return ENOMEM;
 		}
 
 		if (!SDL_GetRendererInfo(st->renderer, &rend_info)) {
-			info("sdl: created renderer '%s'\n", rend_info.name);
+			info_bs("sdl: created renderer '%s'\n", rend_info.name);
 		}
 
 		SDL_RenderSetLogicalSize(st->renderer,
@@ -283,7 +283,7 @@ static int display(struct vidisp_st *st, const char *title,
 						SDL_TEXTUREACCESS_STREAMING,
 						frame->size.w, frame->size.h);
 		if (!st->texture) {
-			warning("sdl: unable to create texture: %s\n",
+			warning_bs("sdl: unable to create texture: %s\n",
 				SDL_GetError());
 			return ENODEV;
 		}
@@ -294,7 +294,7 @@ static int display(struct vidisp_st *st, const char *title,
 
 	ret = SDL_LockTexture(st->texture, NULL, &pixels, &dpitch);
 	if (ret != 0) {
-		warning("sdl: unable to lock texture (ret=%d)\n", ret);
+		warning_bs("sdl: unable to lock texture (ret=%d)\n", ret);
 		return ENODEV;
 	}
 
@@ -354,12 +354,12 @@ static int module_init(void)
 	int err;
 
 	if (SDL_Init(0) != 0) {
-		warning("sdl: unable to init SDL: %s\n", SDL_GetError());
+		warning_bs("sdl: unable to init SDL: %s\n", SDL_GetError());
 		return ENODEV;
 	}
 
 	if (SDL_VideoInit(NULL) != 0) {
-		warning("sdl: unable to init Video: %s\n", SDL_GetError());
+		warning_bs("sdl: unable to init Video: %s\n", SDL_GetError());
 		return ENODEV;
 	}
 

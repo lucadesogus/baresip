@@ -222,19 +222,19 @@ void Stream::print_message(GnuZrtpCodes::MessageSeverity severity,
 {
 	switch (severity) {
 	case Info:
-		debug("zrtp: INFO<%s>: %s\n",
+		debug_bs("zrtp: INFO<%s>: %s\n",
 		     media_name(), info_msg(subcode));
 		break;
 	case Warning:
-		warning("zrtp: WARNING<%s>: %s\n",
+		warning_bs("zrtp: WARNING<%s>: %s\n",
 		        media_name(), warning_msg(subcode));
 		break;
 	case Severe:
-		warning("zrtp: SEVERE<%s>: %s\n",
+		warning_bs("zrtp: SEVERE<%s>: %s\n",
 		        media_name(), severe_msg(subcode));
 		break;
 	case ZrtpError:
-		warning("zrtp: ZRTP_ERR<%s>: %s\n",
+		warning_bs("zrtp: ZRTP_ERR<%s>: %s\n",
 		        media_name(), zrtp_msg(subcode));
 		break;
 	default:

@@ -14,7 +14,7 @@ static int status_update(struct ua *current_ua,
 	if (ua_presence_status(current_ua) == new_status)
 		return 0;
 
-	info("presence: update status of '%s' from '%s' to '%s'\n",
+	info_bs("presence: update status of '%s' from '%s' to '%s'\n",
 	     account_aor(ua_account(current_ua)),
 	     contact_presence_str(ua_presence_status(current_ua)),
 	     contact_presence_str(new_status));
@@ -62,7 +62,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 
 	if (ev == BEVENT_SHUTDOWN) {
 		struct ua *ua = bevent_get_ua(event);
-		debug("presence: ua=%p got event %d (%s)\n", ua, ev,
+		debug_bs("presence: ua=%p got event %d (%s)\n", ua, ev,
 		      bevent_str(ev));
 
 		publisher_close();

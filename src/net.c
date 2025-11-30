@@ -112,7 +112,7 @@ static int net_dns_srv_get(const struct network *net,
 	if (net->nsnf) {
 		offset = *n;
 		if ((offset + net->nsnf) > limit) {
-			debug("net: too many DNS nameservers, "
+			debug_bs("net: too many DNS nameservers, "
 					"fallback DNS ignored\n");
 			return 0;
 		}
@@ -324,7 +324,7 @@ static bool print_addr(const char *ifname, const struct sa *sa, void *arg)
 {
 	(void) arg;
 
-	info(" %10s:  %j\n", ifname, sa);
+	info_bs(" %10s:  %j\n", ifname, sa);
 	return false;
 }
 
@@ -361,7 +361,7 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 
 			err = sa_decode(&sa, ns, str_len(ns));
 			if (err) {
-				warning("net: dns_server:"
+				warning_bs("net: dns_server:"
 					" could not decode `%s' (%m)\n",
 					ns, err);
 				goto out;
@@ -369,7 +369,7 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 
 			err = net_dns_srv_add(net, &sa, cfg->nsv[i].fallback);
 			if (err) {
-				warning("net: failed to add nameserver: %m\n",
+				warning_bs("net: failed to add nameserver: %m\n",
 					err);
 				goto out;
 			}
@@ -379,7 +379,7 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 	/* Initialise DNS resolver */
 	err = dns_init(net);
 	if (err) {
-		warning("net: dns_init: %m\n", err);
+		warning_bs("net: dns_init: %m\n", err);
 		goto out;
 	}
 
@@ -389,9 +389,9 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 		dnsc_getaddrinfo(net->dnsc, false);
 
 	net_if_apply(add_laddr_filter, net);
-	info("Local network addresses:\n");
+	info_bs("Local network addresses:\n");
 	if (!list_count(&net->laddrs))
-		info("  None available for net_interface: %s\n",
+		info_bs("  None available for net_interface: %s\n",
 				str_isset(cfg->ifname) ? cfg->ifname : "-");
 	else
 		net_laddr_apply(net, print_addr, NULL);

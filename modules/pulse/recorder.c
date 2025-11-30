@@ -52,7 +52,7 @@ int pulse_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if (!stp || !as || !prm || !rh)
 		return EINVAL;
 
-	info ("pulse: opening recorder(%u Hz, %d channels,"
+	info_bs("pulse: opening recorder(%u Hz, %d channels,"
 	      "device '%s')\n", prm->srate, prm->ch, dev);
 
 	st = mem_zalloc(sizeof(*st), ausrc_destructor);
@@ -84,13 +84,13 @@ int pulse_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 
 	err = pastream_start(st->b, st);
 	if (err) {
-		warning("pulse: could not connect record stream %s "
+		warning_bs("pulse: could not connect record stream %s "
 			"(%m)\n", st->b->sname, err);
 		err = ENODEV;
 		goto out;
 	}
 
-	info ("pulse: record stream %s started\n", st->b->sname);
+	info_bs("pulse: record stream %s started\n", st->b->sname);
 
   out:
 	if (err)
@@ -117,7 +117,7 @@ static void dev_list_cb(pa_context *context, const pa_source_info *l, int eol,
 
 	err = mediadev_add(dev_list, l->name);
 	if (err)
-		warning("pulse: record device %s could not be added\n",
+		warning_bs("pulse: record device %s could not be added\n",
 			l->name);
 }
 

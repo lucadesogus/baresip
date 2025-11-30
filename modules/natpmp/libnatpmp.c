@@ -72,7 +72,7 @@ static void timeout(void *arg)
 	tmr_start(&np->tmr, NATPMP_DELAY<<np->n, timeout, arg);
 
 #if 1
-	debug("natpmp: {n=%u} tx %u bytes\n", np->n, np->mb->end);
+	debug_bs("natpmp: {n=%u} tx %u bytes\n", np->n, np->mb->end);
 #endif
 
 	np->n++;
@@ -110,7 +110,7 @@ static int resp_decode(struct natpmp_resp *resp, struct mbuf *mb)
 		break;
 
 	default:
-		warning("natmap: unknown opcode %d\n", resp->op);
+		warning_bs("natmap: unknown opcode %d\n", resp->op);
 		return EBADMSG;
 	}
 

@@ -86,17 +86,17 @@ static void print_video_input(const struct vidsrc_st *st)
 
 #ifndef OPENBSD
 	if (-1 == v4l2_ioctl(st->fd, VIDIOC_G_INPUT, &input.index)) {
-		warning("v4l2: VIDIOC_G_INPUT: %m\n", errno);
+		warning_bs("v4l2: VIDIOC_G_INPUT: %m\n", errno);
 		return;
 	}
 #endif
 
 	if (-1 == v4l2_ioctl(st->fd, VIDIOC_ENUMINPUT, &input)) {
-		warning("v4l2: VIDIOC_ENUMINPUT: %m\n", errno);
+		warning_bs("v4l2: VIDIOC_ENUMINPUT: %m\n", errno);
 		return;
 	}
 
-	info("v4l2: Current input: \"%s\"\n", input.name);
+	info_bs("v4l2: Current input: \"%s\"\n", input.name);
 }
 
 
@@ -111,14 +111,14 @@ static void print_framerate(const struct vidsrc_st *st)
 	streamparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
 	if (v4l2_ioctl(st->fd, VIDIOC_G_PARM, &streamparm) != 0) {
-		warning("v4l2: VIDIOC_G_PARM error (%m)\n", errno);
+		warning_bs("v4l2: VIDIOC_G_PARM error (%m)\n", errno);
 		return;
 	}
 
 	tpf = streamparm.parm.capture.timeperframe;
 	fps = (double)tpf.denominator / (double)tpf.numerator;
 
-	info("v4l2: current framerate is %.2f fps\n", fps);
+	info_bs("v4l2: current framerate is %.2f fps\n", fps);
 }
 
 
@@ -147,7 +147,7 @@ static int init_mmap(struct vidsrc_st *st, const char *dev_name)
 
 	if (-1 == xioctl(st->fd, VIDIOC_REQBUFS, &req)) {
 		if (EINVAL == errno) {
-			warning("v4l2: %s does not support "
+			warning_bs("v4l2: %s does not support "
 				"memory mapping\n", dev_name);
 			return errno;
 		}
@@ -157,7 +157,7 @@ static int init_mmap(struct vidsrc_st *st, const char *dev_name)
 	}
 
 	if (req.count < 2) {
-		warning("v4l2: Insufficient buffer memory on %s\n", dev_name);
+		warning_bs("v4l2: Insufficient buffer memory on %s\n", dev_name);
 		return ENOMEM;
 	}
 
@@ -175,7 +175,7 @@ static int init_mmap(struct vidsrc_st *st, const char *dev_name)
 		buf.index  = st->n_buffers;
 
 		if (-1 == xioctl(st->fd, VIDIOC_QUERYBUF, &buf)) {
-			warning("v4l2: VIDIOC_QUERYBUF\n");
+			warning_bs("v4l2: VIDIOC_QUERYBUF\n");
 			return errno;
 		}
 
@@ -188,7 +188,7 @@ static int init_mmap(struct vidsrc_st *st, const char *dev_name)
 				  st->fd, buf.m.offset);
 
 		if (MAP_FAILED == st->buffers[st->n_buffers].start) {
-			warning("v4l2: mmap failed\n");
+			warning_bs("v4l2: mmap failed\n");
 			return ENODEV;
 		}
 	}
@@ -209,22 +209,22 @@ static int v4l2_init_device(struct vidsrc_st *st, const char *dev_name,
 
 	if (-1 == xioctl(st->fd, VIDIOC_QUERYCAP, &cap)) {
 		if (EINVAL == errno) {
-			warning("v4l2: %s is no V4L2 device\n", dev_name);
+			warning_bs("v4l2: %s is no V4L2 device\n", dev_name);
 			return ENODEV;
 		}
 		else {
-			warning("v4l2: VIDIOC_QUERYCAP: %m\n", errno);
+			warning_bs("v4l2: VIDIOC_QUERYCAP: %m\n", errno);
 			return errno;
 		}
 	}
 
 	if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-		warning("v4l2: %s is no video capture device\n", dev_name);
+		warning_bs("v4l2: %s is no video capture device\n", dev_name);
 		return ENODEV;
 	}
 
 	if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-		warning("v4l2: %s does not support streaming i/o\n",
+		warning_bs("v4l2: %s does not support streaming i/o\n",
 			dev_name);
 		return ENOSYS;
 	}
@@ -242,7 +242,7 @@ static int v4l2_init_device(struct vidsrc_st *st, const char *dev_name,
 	}
 
 	if (!st->pixfmt) {
-		warning("v4l2: format negotiation failed: %m\n", errno);
+		warning_bs("v4l2: format negotiation failed: %m\n", errno);
 		return errno;
 	}
 
@@ -257,7 +257,7 @@ static int v4l2_init_device(struct vidsrc_st *st, const char *dev_name,
 	fmt.fmt.pix.field       = V4L2_FIELD_INTERLACED;
 
 	if (-1 == xioctl(st->fd, VIDIOC_S_FMT, &fmt)) {
-		warning("v4l2: VIDIOC_S_FMT: %m\n", errno);
+		warning_bs("v4l2: VIDIOC_S_FMT: %m\n", errno);
 		return errno;
 	}
 
@@ -281,12 +281,12 @@ static int v4l2_init_device(struct vidsrc_st *st, const char *dev_name,
 	pix = (char *)&fmt.fmt.pix.pixelformat;
 
 	if (st->pixfmt != fmt.fmt.pix.pixelformat) {
-		warning("v4l2: %s: unexpectedly got %c%c%c%c\n", dev_name,
+		warning_bs("v4l2: %s: unexpectedly got %c%c%c%c\n", dev_name,
 			pix[0], pix[1], pix[2], pix[3]);
 		return ENODEV;
 	}
 
-	info("v4l2: %s: found valid V4L2 device (%u x %u) pixfmt=%c%c%c%c\n",
+	info_bs("v4l2: %s: found valid V4L2 device (%u x %u) pixfmt=%c%c%c%c\n",
 	       dev_name, fmt.fmt.pix.width, fmt.fmt.pix.height,
 	       pix[0], pix[1], pix[2], pix[3]);
 
@@ -381,13 +381,13 @@ static int read_frame(struct vidsrc_st *st)
 			/* fall through */
 
 		default:
-			warning("v4l2: VIDIOC_DQBUF: %m\n", errno);
+			warning_bs("v4l2: VIDIOC_DQBUF: %m\n", errno);
 			return errno;
 		}
 	}
 
 	if (buf.index >= st->n_buffers) {
-		warning("v4l2: index >= n_buffers\n");
+		warning_bs("v4l2: index >= n_buffers\n");
 	}
 
 	ts = buf.timestamp;
@@ -397,7 +397,7 @@ static int read_frame(struct vidsrc_st *st)
 	call_frame_handler(st, st->buffers[buf.index].start, timestamp);
 
 	if (-1 == xioctl (st->fd, VIDIOC_QBUF, &buf)) {
-		warning("v4l2: VIDIOC_QBUF\n");
+		warning_bs("v4l2: VIDIOC_QBUF\n");
 		return errno;
 	}
 
@@ -433,7 +433,7 @@ static int vd_open(struct vidsrc_st *st, const char *device)
 {
 	st->fd = v4l2_open(device, O_RDWR);
 	if (st->fd < 0) {
-		warning("v4l2: open %s: %m\n", device, errno);
+		warning_bs("v4l2: open %s: %m\n", device, errno);
 		return errno;
 	}
 
@@ -445,10 +445,10 @@ static void destructor(void *arg)
 {
 	struct vidsrc_st *st = arg;
 
-	debug("v4l2: stopping video source..\n");
+	debug_bs("v4l2: stopping video source..\n");
 
 	if (re_atomic_rlx(&st->run)) {
-		debug("v4l2: stopping read thread\n");
+		debug_bs("v4l2: stopping read thread\n");
 		re_atomic_rlx_set(&st->run, false);
 		thrd_join(st->thread, NULL);
 	}
@@ -469,7 +469,7 @@ static int read_thread(void *arg)
 	while (re_atomic_rlx(&st->run)) {
 		err = read_frame(st);
 		if (err) {
-			warning("v4l2: read_frame: %m\n", err);
+			warning_bs("v4l2: read_frame: %m\n", err);
 		}
 	}
 
@@ -502,7 +502,7 @@ static int alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 			dev = md->name;
 		}
 		else {
-			warning("v4l2: No available devices\n");
+			warning_bs("v4l2: No available devices\n");
 			return ENODEV;
 		}
 	}

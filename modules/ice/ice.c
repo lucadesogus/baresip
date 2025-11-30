@@ -82,7 +82,7 @@ static void call_gather_handler(int err, struct mnat_media *m, uint16_t scode,
 	if (m->nstun != 0)
 		return;
 
-	debug("ice: all components gathered.\n");
+	debug_bs("ice: all components gathered.\n");
 
 	if (err)
 		goto out;
@@ -92,7 +92,7 @@ static void call_gather_handler(int err, struct mnat_media *m, uint16_t scode,
 
 	err = icem_comps_set_default_cand(m->icem);
 	if (err) {
-		warning("ice: set default cands failed (%m)\n", err);
+		warning_bs("ice: set default cands failed (%m)\n", err);
 		goto out;
 	}
 
@@ -115,12 +115,12 @@ static void stun_resp_handler(int err, uint16_t scode, const char *reason,
 	--m->nstun;
 
 	if (err || scode > 0) {
-		warning("ice: comp %u: STUN Request failed: %m\n",
+		warning_bs("ice: comp %u: STUN Request failed: %m\n",
 			comp->id, err);
 		goto out;
 	}
 
-	debug("ice: srflx gathering for comp %u complete.\n", comp->id);
+	debug_bs("ice: srflx gathering for comp %u complete.\n", comp->id);
 
 	/* base candidate */
 	lcand = icem_cand_find(icem_lcandl(m->icem), comp->id, NULL);
@@ -131,7 +131,7 @@ static void stun_resp_handler(int err, uint16_t scode, const char *reason,
 	if (!attr)
 		attr = stun_msg_attr(msg, STUN_ATTR_MAPPED_ADDR);
 	if (!attr) {
-		warning("ice: no Mapped Address in Response\n");
+		warning_bs("ice: no Mapped Address in Response\n");
 		err = EPROTO;
 		goto out;
 	}
@@ -153,7 +153,7 @@ static int send_binding_request(struct mnat_media *m, struct comp *comp)
 	if (comp->ct_gath)
 		return EALREADY;
 
-	debug("ice: gathering srflx for comp %u ..\n", comp->id);
+	debug_bs("ice: gathering srflx for comp %u ..\n", comp->id);
 
 	err = stun_request(&comp->ct_gath, icem_stun(m->icem), IPPROTO_UDP,
 			   comp->sock, &m->sess->srv, 0,
@@ -190,13 +190,13 @@ static void turnc_handler(int err, uint16_t scode, const char *reason,
 	}
 
 	if (err) {
-		warning("{%u} TURN Client error: %m\n",
+		warning_bs("{%u} TURN Client error: %m\n",
 			      comp->id, err);
 		goto out;
 	}
 
 	if (scode) {
-		warning("{%u} TURN Client error: %u %s\n",
+		warning_bs("{%u} TURN Client error: %u %s\n",
 			      comp->id, scode, reason);
 		err = send_binding_request(m, comp);
 		if (err)
@@ -204,7 +204,7 @@ static void turnc_handler(int err, uint16_t scode, const char *reason,
 		return;
 	}
 
-	debug("ice: relay gathered for comp %u (%u %s)\n",
+	debug_bs("ice: relay gathered for comp %u (%u %s)\n",
 	      comp->id, scode, reason);
 
 	err = icem_lcand_add_base(m->icem, ICE_CAND_TYPE_RELAY, comp->id, 0,
@@ -305,7 +305,7 @@ static void ice_printf(struct mnat_media *m, const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	debug("%s: %v", m ? sdp_media_name(m->sdpm) : "ICE", fmt, &ap);
+	debug_bs("%s: %v", m ? sdp_media_name(m->sdpm) : "ICE", fmt, &ap);
 	va_end(ap);
 }
 
@@ -416,7 +416,7 @@ static bool if_handler(const char *ifname, const struct sa *sa, void *arg)
 	}
 
 	if (err) {
-		warning("ice: %s:%j: icem_cand_add: %m\n", ifname, sa, err);
+		warning_bs("ice: %s:%j: icem_cand_add: %m\n", ifname, sa, err);
 	}
 
 	/* Ensure each local preference is unique */
@@ -452,7 +452,7 @@ static void dns_handler(int err, const struct sa *srv, void *arg)
 	if (err)
 		goto out;
 
-	debug("ice: resolved %s-server to address %J\n",
+	debug_bs("ice: resolved %s-server to address %J\n",
 	      sess->turn ? "TURN" : "STUN", srv);
 
 	sess->srv = *srv;
@@ -504,7 +504,7 @@ static int session_alloc(struct mnat_sess **sessp,
 		return EINVAL;
 
 	if (srv) {
-		info("ice: new session with %s-server at %s (username=%s)\n",
+		info_bs("ice: new session with %s-server at %s (username=%s)\n",
 		     srv->scheme == STUN_SCHEME_TURN ? "TURN" : "STUN",
 		     srv->host, user);
 
@@ -582,7 +582,7 @@ static bool verify_peer_ice(struct mnat_sess *ms)
 		unsigned i;
 
 		if (!sdp_media_has_media(m->sdpm)) {
-			info("ice: stream '%s' is disabled -- ignore\n",
+			info_bs("ice: stream '%s' is disabled -- ignore\n",
 			     sdp_media_name(m->sdpm));
 			continue;
 		}
@@ -594,7 +594,7 @@ static bool verify_peer_ice(struct mnat_sess *ms)
 			if (m->compv[i].sock &&
 			    sa_isset(&raddr[i], SA_ADDR) &&
 			    !icem_verify_support(m->icem, i+1, &raddr[i])) {
-				warning("ice: %s.%u: no remote candidates"
+				warning_bs("ice: %s.%u: no remote candidates"
 					" found (address = %J)\n",
 					sdp_media_name(m->sdpm),
 					i+1, &raddr[i]);
@@ -686,7 +686,7 @@ static void gather_handler(int err, uint16_t scode, const char *reason,
 	mnat_estab_h *estabh = m->sess->estabh;
 
 	if (err || scode) {
-		warning("ice: gather error: %m (%u %s)\n",
+		warning_bs("ice: gather error: %m (%u %s)\n",
 			err, scode, reason);
 	}
 	else {
@@ -694,7 +694,7 @@ static void gather_handler(int err, uint16_t scode, const char *reason,
 			      icem_cand_default(m->icem, 1),
 			      icem_cand_default(m->icem, 2));
 
-		info("ice: %s: Default local candidates: %J / %J\n",
+		info_bs("ice: %s: Default local candidates: %J / %J\n",
 		     sdp_media_name(m->sdpm),
 		     &m->compv[0].laddr, &m->compv[1].laddr);
 
@@ -723,13 +723,13 @@ static void conncheck_handler(int err, bool update, void *arg)
 	if (m->terminated)
 		return;
 
-	info("ice: %s: connectivity check is complete (update=%d)\n",
+	info_bs("ice: %s: connectivity check is complete (update=%d)\n",
 	     sdp_media_name(m->sdpm), update);
 
 	ice_printf(m, "Dumping media state: %H\n", icem_debug, m->icem);
 
 	if (err) {
-		warning("ice: connectivity check failed: %m\n", err);
+		warning_bs("ice: connectivity check failed: %m\n", err);
 	}
 	else {
 		const struct ice_cand *cand1, *cand2;
@@ -760,7 +760,7 @@ static void conncheck_handler(int err, bool update, void *arg)
 	/* call estab-handler and send re-invite */
 	if (sess_complete && sess->send_reinvite && update) {
 
-		info("ice: %s: sending Re-INVITE with updated"
+		info_bs("ice: %s: sending Re-INVITE with updated"
 		     " default candidates\n",
 		     sdp_media_name(m->sdpm));
 
@@ -867,7 +867,7 @@ static int media_alloc(struct mnat_media **mp, struct mnat_sess *sess,
 	icem_conf(m->icem)->rc	   = 4;
 	icem_conf(m->icem)->policy = ice.policy;
 
-	debug("ice: policy = %s\n",
+	debug_bs("ice: policy = %s\n",
 	      ice.policy == ICE_POLICY_RELAY ? "relay" : "all");
 
 	icem_set_conf(m->icem, icem_conf(m->icem));
@@ -970,11 +970,11 @@ static int update(struct mnat_sess *sess)
 		err = ice_start(sess);
 	}
 	else if (sess->turn) {
-		info("ice: ICE not supported by peer, fallback to TURN\n");
+		info_bs("ice: ICE not supported by peer, fallback to TURN\n");
 		err = enable_turn_channels(sess);
 	}
 	else {
-		info("ice: ICE not supported by peer\n");
+		info_bs("ice: ICE not supported by peer\n");
 
 		LIST_FOREACH(&sess->medial, le) {
 			struct mnat_media *m = le->data;
@@ -998,7 +998,7 @@ static void attr_handler(struct mnat_media *mm,
 
 	int err = icem_sdp_decode(mm->icem, name, value);
 	if (err) {
-		warning("ice: sdp decode failed (%m)\n", err);
+		warning_bs("ice: sdp decode failed (%m)\n", err);
 		return;
 	}
 

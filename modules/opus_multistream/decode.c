@@ -48,7 +48,7 @@ int opus_multistream_decode_update(struct audec_state **adsp,
 	for (ch=0; ch<ac->ch; ch++) {
 
 		if (ch >= 256) {
-			warning("opus: Exceeding the acceptable"
+			warning_bs("opus: Exceeding the acceptable"
 				" 255 channel-mappings\n");
 			return EINVAL;
 		}
@@ -68,7 +68,7 @@ int opus_multistream_decode_update(struct audec_state **adsp,
 						   opus_ms_c_streams,
 						   mapping, &opuserr);
 	if (!ads->dec) {
-		warning("opus_multistream: decoder create: %s\n",
+		warning_bs("opus_multistream: decoder create: %s\n",
 			opus_strerror(opuserr));
 		err = ENOMEM;
 		goto out;
@@ -100,7 +100,7 @@ int opus_multistream_decode_frm(struct audec_state *ads,
 		n = opus_multistream_decode(ads->dec, buf, (opus_int32)len,
 				sampv, (int)(*sampc/ads->ch), 0);
 		if (n < 0) {
-			warning("opus_multistream: decode error: %s\n",
+			warning_bs("opus_multistream: decode error: %s\n",
 				opus_strerror(n));
 			return EPROTO;
 		}
@@ -111,7 +111,7 @@ int opus_multistream_decode_frm(struct audec_state *ads,
 						  buf, (opus_int32)len,
 				      sampv, (int)(*sampc/ads->ch), 0);
 		if (n < 0) {
-			warning("opus_multistream: float decode error: %s\n",
+			warning_bs("opus_multistream: float decode error: %s\n",
 				opus_strerror(n));
 			return EPROTO;
 		}

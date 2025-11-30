@@ -118,7 +118,7 @@ static int filename_alloc(char **filenamep,
 	if (err)
 		return err;
 
-	info("sndfile: dumping %s audio to %s\n",
+	info_bs("sndfile: dumping %s audio to %s\n",
 	     enc ? "encode" : "decode", filename);
 
 	module_event("sndfile", "dump", NULL, NULL, "%s", filename);
@@ -138,7 +138,7 @@ static int openfile(SNDFILE **sfp, const char *filename,
 
 	format = get_format(prm->fmt);
 	if (!format) {
-		warning("sndfile: sample format not supported (%s)\n",
+		warning_bs("sndfile: sample format not supported (%s)\n",
 			aufmt_name(prm->fmt));
 		return EINVAL;
 	}
@@ -149,12 +149,12 @@ static int openfile(SNDFILE **sfp, const char *filename,
 
 	sf = sf_open(filename, SFM_WRITE, &sfinfo);
 	if (!sf) {
-		warning("sndfile: could not open: %s\n", filename);
+		warning_bs("sndfile: could not open: %s\n", filename);
 		puts(sf_strerror(NULL));
 		return EIO;
 	}
 
-	info("sndfile: dumping %s audio to %s\n",
+	info_bs("sndfile: dumping %s audio to %s\n",
 	     enc ? "encode" : "decode", filename);
 
 	module_event("sndfile", "dump", NULL, NULL, "%s", filename);
@@ -297,7 +297,7 @@ static int module_init(void)
 
 	conf_get_str(conf_cur(), "snd_path", file_path, sizeof(file_path));
 
-	info("sndfile: saving files in %s\n", file_path);
+	info_bs("sndfile: saving files in %s\n", file_path);
 
 	return 0;
 }

@@ -22,7 +22,7 @@ int session_description_encode(struct odict **odp,
 	if (!odp || !sdp)
 		return EINVAL;
 
-	info("descr: encode: type='%s'\n", sdptype_name(type));
+	info_bs("descr: encode: type='%s'\n", sdptype_name(type));
 
 	err = mbuf_strdup(sdp, &str, sdp->end);
 	if (err)
@@ -64,14 +64,14 @@ int session_description_decode(struct session_description *sd,
 	err = json_decode_odict(&od, HASH_SIZE, (char *)mbuf_buf(mb),
 				mbuf_get_left(mb), MAX_DEPTH);
 	if (err) {
-		warning("descr: could not decode json (%m)\n", err);
+		warning_bs("descr: could not decode json (%m)\n", err);
 		return err;
 	}
 
 	type = odict_string(od, "type");
 	sdp  = odict_string(od, "sdp");
 	if (!type || !sdp) {
-		warning("descr: missing json fields\n");
+		warning_bs("descr: missing json fields\n");
 		err = EPROTO;
 		goto out;
 	}
@@ -83,7 +83,7 @@ int session_description_decode(struct session_description *sd,
 	else if (0 == str_casecmp(type, "rollback"))
 		sd->type = SDP_ROLLBACK;
 	else {
-		warning("descr: invalid type %s\n", type);
+		warning_bs("descr: invalid type %s\n", type);
 		err = EPROTO;
 		goto out;
 	}
@@ -97,7 +97,7 @@ int session_description_decode(struct session_description *sd,
 	mbuf_write_str(sd->sdp, sdp);
 	sd->sdp->pos = 0;
 
-	info("descr: decode: type='%s'\n", type);
+	info_bs("descr: decode: type='%s'\n", type);
 
  out:
 	mem_deref(od);

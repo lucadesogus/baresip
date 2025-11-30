@@ -126,7 +126,7 @@ static int cmd_api_uastate(struct re_printf *pf, void *unused)
 
 	err |= json_encode_odict(pf, od);
 	if (err)
-		warning("debug: failed to encode json (%m)\n", err);
+		warning_bs("debug: failed to encode json (%m)\n", err);
 
 	mem_deref(od);
 
@@ -157,7 +157,7 @@ static int cmd_play_file(struct re_printf *pf, void *arg)
                         cfg->audio.alert_mod, cfg->audio.alert_dev);
 		if (err)
 		{
-			warning("debug_cmd: play_file(%s) failed (%m)\n",
+			warning_bs("debug_cmd: play_file(%s) failed (%m)\n",
 					filename, err);
 			return err;
 		}
@@ -172,12 +172,12 @@ static void print_fileinfo(struct ausrc_prm *prm)
 	double s  = ((float) prm->duration) / 1000;
 
 	if (prm->duration) {
-		info("debug_cmd: length = %1.3lf seconds\n", s);
+		info_bs("debug_cmd: length = %1.3lf seconds\n", s);
 		module_event("debug_cmd", "aufileinfo", NULL, NULL,
 			 "length = %lf seconds", s);
 	}
 	else {
-		info("debug_cmd: timeout\n");
+		info_bs("debug_cmd: timeout\n");
 		module_event("debug_cmd", "aufileinfo", NULL, NULL,
 			 "length unknown");
 	}
@@ -215,7 +215,7 @@ static int cmd_aufileinfo(struct re_printf *pf, void *arg)
 
 	err = conf_get_str(conf_cur(), "file_ausrc", aumod, sizeof(aumod));
 	if (err) {
-		warning("debug_cmd: file_ausrc is not set\n");
+		warning_bs("debug_cmd: file_ausrc is not set\n");
 		return EINVAL;
 	}
 
@@ -233,7 +233,7 @@ static int cmd_aufileinfo(struct re_printf *pf, void *arg)
 
 	err = ausrc_info(baresip_ausrcl(), aumod, &prm, path);
 	if (err) {
-		warning("debug_cmd: %s - ausrc %s does not support info query "
+		warning_bs("debug_cmd: %s - ausrc %s does not support info query "
 			"or reading source %s failed. (%m)\n",
 			__func__, aumod, carg->prm, err);
 		goto out;

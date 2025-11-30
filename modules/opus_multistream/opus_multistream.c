@@ -90,7 +90,7 @@ void opus_multistream_mirror_params(const char *x)
 	if (!opus_mirror)
 		return;
 
-	info("opus_multistream: mirror parameters: \"%s\"\n", x);
+	info_bs("opus_multistream: mirror parameters: \"%s\"\n", x);
 
 	str_ncpy(fmtp_mirror, x, sizeof(fmtp_mirror));
 }
@@ -172,7 +172,7 @@ static int module_init(void)
 		else if (!pl_strcasecmp(&pl, "voip"))
 			opus_ms_application = OPUS_APPLICATION_VOIP;
 		else {
-			warning("opus: unknown encoder application: %r\n",
+			warning_bs("opus: unknown encoder application: %r\n",
 					&pl);
 			return EINVAL;
 		}
@@ -185,7 +185,7 @@ static int module_init(void)
 	(void)conf_get_u32(conf, "opus_ms_streams", &opus_ms_streams);
 	(void)conf_get_u32(conf, "opus_ms_c_streams", &opus_ms_c_streams);
 
-	debug("opus_multistream: fmtp=\"%s\"\n", fmtp);
+	debug_bs("opus_multistream: fmtp=\"%s\"\n", fmtp);
 
 	aucodec_register(baresip_aucodecl(), &opus_multistream);
 

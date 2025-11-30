@@ -99,14 +99,14 @@ static int encode_process(struct vidfilt_enc_st *st, struct vidframe *frame,
 
 	avpixfmt = vidfmt_to_avpixfmt(frame->fmt);
 	if (avpixfmt == AV_PIX_FMT_NONE) {
-		warning("swscale: unknown pixel-format (%s)\n",
+		warning_bs("swscale: unknown pixel-format (%s)\n",
 			vidfmt_name(frame->fmt));
 		return EINVAL;
 	}
 
 	avpixfmt_dst = vidfmt_to_avpixfmt(enc->swscale_format);
 	if (avpixfmt_dst == AV_PIX_FMT_NONE) {
-		warning("swscale: unknown pixel-format (%s)\n",
+		warning_bs("swscale: unknown pixel-format (%s)\n",
 			vidfmt_name(enc->swscale_format));
 		return EINVAL;
 	}
@@ -121,13 +121,13 @@ static int encode_process(struct vidfilt_enc_st *st, struct vidframe *frame,
 				     avpixfmt_dst,
 				     flags, NULL, NULL, NULL);
 		if (!sws) {
-			warning("swscale: sws_getContext error\n");
+			warning_bs("swscale: sws_getContext error\n");
 			return ENOMEM;
 		}
 
 		enc->sws = sws;
 
-		info("swscale: created SwsContext:"
+		info_bs("swscale: created SwsContext:"
 		     " '%s' %d x %d --> '%s' %u x %u\n",
 		     vidfmt_name(frame->fmt), width, height,
 		     vidfmt_name(enc->swscale_format),
@@ -139,7 +139,7 @@ static int encode_process(struct vidfilt_enc_st *st, struct vidframe *frame,
 		err = vidframe_alloc(&enc->frame, enc->swscale_format,
 				     &enc->dst_size);
 		if (err || !enc->frame) {
-			warning("swscale: vidframe_alloc error (%m)\n", err);
+			warning_bs("swscale: vidframe_alloc error (%m)\n", err);
 			return err;
 		}
 	}
@@ -154,7 +154,7 @@ static int encode_process(struct vidfilt_enc_st *st, struct vidframe *frame,
 	h = sws_scale(enc->sws, srcSlice, srcStride,
 		      0, height, dst, dstStride);
 	if (h <= 0) {
-		warning("swscale: sws_scale error (%d)\n", h);
+		warning_bs("swscale: sws_scale error (%d)\n", h);
 		return EPROTO;
 	}
 

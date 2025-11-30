@@ -22,7 +22,7 @@ void mnat_register(struct list *mnatl, struct mnat *mnat)
 
 	list_append(mnatl, &mnat->le, mnat);
 
-	info("medianat: %s\n", mnat->id);
+	info_bs("medianat: %s\n", mnat->id);
 }
 
 

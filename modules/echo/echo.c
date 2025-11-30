@@ -26,7 +26,7 @@ static void destructor(void *arg)
 {
 	struct session *sess = arg;
 
-	debug("echo: session destroyed\n");
+	debug_bs("echo: session destroyed\n");
 
 	list_unlink(&sess->le);
 }
@@ -41,7 +41,7 @@ static void call_event_handler(struct call *call, enum call_event ev,
 	switch (ev) {
 
 	case CALL_EVENT_CLOSED:
-		debug("echo: CALL_CLOSED: %s\n", str);
+		debug_bs("echo: CALL_CLOSED: %s\n", str);
 		mem_deref(sess->call_in);
 		mem_deref(sess);
 		break;
@@ -56,7 +56,7 @@ static void call_dtmf_handler(struct call *call, char key, void *arg)
 {
 	(void)arg;
 
-	debug("echo: relaying DTMF event: key = '%c'\n", key ? key : '.');
+	debug_bs("echo: relaying DTMF event: key = '%c'\n", key ? key : '.');
 
 	call_send_digit(call, key);
 }
@@ -102,7 +102,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 	switch (ev) {
 
 	case BEVENT_CALL_INCOMING:
-		info("echo: CALL_INCOMING: peer=%s  -->  local=%s\n",
+		info_bs("echo: CALL_INCOMING: peer=%s  -->  local=%s\n",
 				call_peeruri(call),
 				call_localuri(call));
 
@@ -128,7 +128,7 @@ static int module_init(void)
 	if (err)
 		return err;
 
-	debug("echo: module loaded\n");
+	debug_bs("echo: module loaded\n");
 
 	return 0;
 }
@@ -136,11 +136,11 @@ static int module_init(void)
 
 static int module_close(void)
 {
-	debug("echo: module closing..\n");
+	debug_bs("echo: module closing..\n");
 
 	if (!list_isempty(&sessionl)) {
 
-		info("echo: flushing %u sessions\n", list_count(&sessionl));
+		info_bs("echo: flushing %u sessions\n", list_count(&sessionl));
 		list_flush(&sessionl);
 	}
 

@@ -47,7 +47,7 @@ int webrtc_aec_encode_update(struct aufilt_enc_st **stp, void **ctx,
 		break;
 
 	default:
-		warning("webrtc_aec: enc: unsupported sample format (%s)\n",
+		warning_bs("webrtc_aec: enc: unsupported sample format (%s)\n",
 			aufmt_name((enum aufmt)prm->fmt));
 		return ENOTSUP;
 	}
@@ -97,7 +97,7 @@ static int encode_float(struct aec_enc *enc, float *sampv, size_t sampc)
 		r = aec->inst->ProcessStream(&src, config,
 					     config, &dest);
 		if (r != 0) {
-			warning("webrtc_aec: encode:"
+			warning_bs("webrtc_aec: encode:"
 				" ProcessStream error (%d)\n",
 				r);
 			err = EPROTO;

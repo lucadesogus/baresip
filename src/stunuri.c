@@ -63,7 +63,7 @@ int stunuri_decode(struct stun_uri **sup, const struct pl *pl)
 
 	err = uri_decode(&uri, pl);
 	if (err) {
-		warning("stunuri: decode '%r' failed (%m)\n", pl, err);
+		warning_bs("stunuri: decode '%r' failed (%m)\n", pl, err);
 		return err;
 	}
 
@@ -100,7 +100,7 @@ int stunuri_decode_uri(struct stun_uri **sup, const struct uri *uri)
 	else if (0 == pl_strcasecmp(&uri->scheme, "turns"))
 		scheme = STUN_SCHEME_TURNS;
 	else {
-		warning("stunuri: scheme not supported (%r)\n", &uri->scheme);
+		warning_bs("stunuri: scheme not supported (%r)\n", &uri->scheme);
 		return ENOTSUP;
 	}
 
@@ -112,7 +112,7 @@ int stunuri_decode_uri(struct stun_uri **sup, const struct uri *uri)
 		else if (0 == pl_strcasecmp(&tp, "tcp"))
 			proto = IPPROTO_TCP;
 		else {
-			warning("stunuri: unsupported transport '%r'\n", &tp);
+			warning_bs("stunuri: unsupported transport '%r'\n", &tp);
 			return EPROTONOSUPPORT;
 		}
 	}

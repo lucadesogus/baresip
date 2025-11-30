@@ -78,7 +78,7 @@ static void close_handler(int err, const struct sip_msg *msg,
 	struct mwi *mwi = arg;
 	(void)substate;
 
-	info("mwi: subscription for %s closed: %s (%u %r)\n",
+	info_bs("mwi: subscription for %s closed: %s (%u %r)\n",
 	     account_aor(ua_account(mwi->ua)),
 	     err ? strerror(err) : "",
 	     err ? 0 : msg->scode,
@@ -104,7 +104,7 @@ static int mwi_subscribe(struct ua *ua)
 
 	routev[0] = ua_outbound(ua);
 
-	info("mwi: subscribing to messages for %s\n", aor);
+	info_bs("mwi: subscribing to messages for %s\n", aor);
 
 	err = sipevent_subscribe(&mwi->sub, uag_sipevent_sock(), aor,
 				 NULL, aor, "message-summary", NULL,
@@ -115,7 +115,7 @@ static int mwi_subscribe(struct ua *ua)
 				 "Accept:"
 				 " application/simple-message-summary\r\n");
 	if (err) {
-		warning("mwi: subscribe ERROR: %m\n", err);
+		warning_bs("mwi: subscribe ERROR: %m\n", err);
 	}
 
 	if (err)
@@ -160,7 +160,7 @@ static void event_handler(enum bevent_ev ev, struct bevent *event, void *arg)
 
 		if (mwi) {
 
-			info("mwi: shutdown of %s\n", account_aor(acc));
+			info_bs("mwi: shutdown of %s\n", account_aor(acc));
 
 			mwi->shutdown = true;
 

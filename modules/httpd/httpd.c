@@ -202,7 +202,7 @@ static int module_init(void)
 
 	ui_register(baresip_uis(), &ui_http);
 
-	info("httpd: listening on %J\n", &laddr);
+	info_bs("httpd: listening on %J\n", &laddr);
 
 	return 0;
 }

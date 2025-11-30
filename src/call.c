@@ -144,7 +144,7 @@ static const struct sdp_format *sdp_media_rcodec(const struct sdp_media *m)
 
 static void call_timer_start(struct call *call)
 {
-	debug("call: timer started\n");
+	debug_bs("call: timer started\n");
 	tmr_cancel(&call->tmr_inv);
 	call->time_start = time(NULL);
 }
@@ -188,7 +188,7 @@ static void invite_timeout(void *arg)
 {
 	struct call *call = arg;
 
-	info("%s: Local timeout after %u seconds\n",
+	info_bs("%s: Local timeout after %u seconds\n",
 	     call->peer_uri, call->config_call.local_timeout);
 
 	call_event_handler(call, CALL_EVENT_CLOSED, "Local timeout");
@@ -203,24 +203,24 @@ static void mnat_handler(int err, uint16_t scode, const char *reason,
 	MAGIC_CHECK(call);
 
 	if (err) {
-		warning("call: medianat '%s' failed: %m\n",
+		warning_bs("call: medianat '%s' failed: %m\n",
 			call->acc->mnatid, err);
 		call_event_handler(call, CALL_EVENT_CLOSED, "%m", err);
 		return;
 	}
 	else if (scode) {
-		warning("call: medianat failed: %u %s\n", scode, reason);
+		warning_bs("call: medianat failed: %u %s\n", scode, reason);
 		call_event_handler(call, CALL_EVENT_CLOSED, "%u %s",
 				   scode, reason);
 		return;
 	}
 
-	info("call: media-nat '%s' established/gathered\n",
+	info_bs("call: media-nat '%s' established/gathered\n",
 	     call->acc->mnatid);
 
 	/* Re-INVITE */
 	if (!call->mnat_wait) {
-		info("call: medianat established -- sending Re-INVITE\n");
+		info_bs("call: medianat established -- sending Re-INVITE\n");
 		(void)call_modify(call);
 		return;
 	}
@@ -310,7 +310,7 @@ int call_update_media(struct call *call)
 
 static int update_media(struct call *call)
 {
-	debug("call: update media\n");
+	debug_bs("call: update media\n");
 
 	bevent_call_emit(BEVENT_CALL_REMOTE_SDP, call,
 			 call->got_offer ? "offer" : "answer");
@@ -325,7 +325,7 @@ static void print_summary(const struct call *call)
 	if (!dur)
 		return;
 
-	info("%s: Call with %s terminated (duration: %H)\n",
+	info_bs("%s: Call with %s terminated (duration: %H)\n",
 	     call->local_uri, call->peer_uri, fmt_human_time, &dur);
 }
 
@@ -372,7 +372,7 @@ static void audio_event_handler(int key, bool end, void *arg)
 	struct call *call = arg;
 	MAGIC_CHECK(call);
 
-	info("received in-band DTMF event: '%c' (end=%d)\n", key, end);
+	info_bs("received in-band DTMF event: '%c' (end=%d)\n", key, end);
 
 	if (call->dtmfh)
 		call->dtmfh(call, end ? KEYCODE_REL : key, call->arg);
@@ -395,7 +395,7 @@ static void audio_error_handler(int err, const char *str, void *arg)
 	MAGIC_CHECK(call);
 
 	if (err) {
-		warning("call: audio device error: %m (%s)\n", err, str);
+		warning_bs("call: audio device error: %m (%s)\n", err, str);
 
 		bevent_call_emit(BEVENT_AUDIO_ERROR, call,
 				 "%d,%s", err, str);
@@ -414,7 +414,7 @@ static void video_error_handler(int err, const char *str, void *arg)
 	struct call *call = arg;
 	MAGIC_CHECK(call);
 
-	warning("call: video device error: %m (%s)\n", err, str);
+	warning_bs("call: video device error: %m (%s)\n", err, str);
 
 	call_stream_stop(call);
 	call_event_handler(call, CALL_EVENT_CLOSED, "%s", str);
@@ -429,7 +429,7 @@ static void menc_event_handler(enum menc_event event,
 	(void)strm;
 	MAGIC_CHECK(call);
 
-	debug("call: mediaenc event '%s' (%s)\n", menc_event_name(event), prm);
+	debug_bs("call: mediaenc event '%s' (%s)\n", menc_event_name(event), prm);
 
 	switch (event) {
 
@@ -439,7 +439,7 @@ static void menc_event_handler(enum menc_event event,
 			stream_start_rtcp(audio_strm(call->audio));
 			err = audio_update(call->audio);
 			if (err) {
-				warning("call: secure: could not"
+				warning_bs("call: secure: could not"
 					" start audio: %m\n", err);
 			}
 		}
@@ -448,12 +448,12 @@ static void menc_event_handler(enum menc_event event,
 			stream_start_rtcp(video_strm(call->video));
 			err = video_update(call->video, call->peer_uri);
 			if (err) {
-				warning("call: secure: could not"
+				warning_bs("call: secure: could not"
 					" start video: %m\n", err);
 			}
 		}
 		else {
-			info("call: mediaenc: no match for stream (%s)\n",
+			info_bs("call: mediaenc: no match for stream (%s)\n",
 			     prm);
 		}
 		break;
@@ -475,7 +475,7 @@ static void menc_error_handler(int err, void *arg)
 	struct call *call = arg;
 	MAGIC_CHECK(call);
 
-	warning("call: mediaenc '%s' error: %m\n", call->acc->mencid, err);
+	warning_bs("call: mediaenc '%s' error: %m\n", call->acc->mencid, err);
 
 	call_stream_stop(call);
 	call_event_handler(call, CALL_EVENT_CLOSED, "mediaenc failed");
@@ -504,7 +504,7 @@ static void stream_mnatconn_handler(struct stream *strm, void *arg)
 		case MEDIA_AUDIO:
 			err = audio_update(call->audio);
 			if (err) {
-				warning("call: mnatconn: could not"
+				warning_bs("call: mnatconn: could not"
 					" start audio: %m\n", err);
 			}
 			break;
@@ -512,7 +512,7 @@ static void stream_mnatconn_handler(struct stream *strm, void *arg)
 		case MEDIA_VIDEO:
 			err = video_update(call->video, call->peer_uri);
 			if (err) {
-				warning("call: mnatconn: could not"
+				warning_bs("call: mnatconn: could not"
 					" start video: %m\n", err);
 			}
 			break;
@@ -561,7 +561,7 @@ static void stream_error_handler(struct stream *strm, int err, void *arg)
 	struct call *call = arg;
 	MAGIC_CHECK(call);
 
-	info("call: error in \"%s\" rtp stream (%m)\n",
+	info_bs("call: error in \"%s\" rtp stream (%m)\n",
 		sdp_media_name(stream_sdpmedia(strm)), err);
 
 	call->scode = 701;
@@ -608,7 +608,7 @@ static void call_rfc5373_autoanswer(struct call *call,
 	if (!msg_param_exists(&hdr->val, "require", &v1) &&
 			!account_sip_autoanswer(call->acc)) {
 
-		warning("call: rejected, since %s is not allowed\n", name);
+		warning_bs("call: rejected, since %s is not allowed\n", name);
 		call_hangup(call, 0, NULL);
 		return;
 	}
@@ -672,7 +672,7 @@ static void call_decode_diverter(struct call *call, const struct sip_msg *msg)
 
 	err = sip_addr_decode(&addr, &hdr->val);
 	if (err) {
-		warning("call: error parsing diverter address: %r\n",
+		warning_bs("call: error parsing diverter address: %r\n",
 			&hdr->val);
 		return;
 	}
@@ -680,7 +680,7 @@ static void call_decode_diverter(struct call *call, const struct sip_msg *msg)
 	err = pl_strdup(&call->diverter_uri, &addr.auri);
 
 	if (err) {
-		warning("call: could not extract diverter uri");
+		warning_bs("call: could not extract diverter uri");
 		return;
 	}
 }
@@ -712,7 +712,7 @@ static void call_decode_sip_autoanswer(struct call *call,
 			err = pl_strdup(&call->aluri, &v);
 
 		if (err) {
-			warning("call: could not extract Alert-Info URI\n");
+			warning_bs("call: could not extract Alert-Info URI\n");
 			return;
 		}
 
@@ -836,7 +836,7 @@ int call_alloc(struct call **callp, const struct config *cfg, struct list *lst,
 	if (!cfg || !local_uri || !acc || !ua || !prm)
 		return EINVAL;
 
-	debug("call: alloc with params laddr=%j, af=%s, use_rtp=%d\n",
+	debug_bs("call: alloc with params laddr=%j, af=%s, use_rtp=%d\n",
 	      &prm->laddr, net_af2name(prm->af), prm->use_rtp);
 
 	call = mem_zalloc(sizeof(*call), call_destructor);
@@ -902,7 +902,7 @@ int call_alloc(struct call **callp, const struct config *cfg, struct list *lst,
 				       call->sdp, !call->got_offer,
 				       mnat_handler, call);
 		if (err) {
-			warning("call: medianat session: %m\n", err);
+			warning_bs("call: medianat session: %m\n", err);
 			goto out;
 		}
 	}
@@ -916,7 +916,7 @@ int call_alloc(struct call **callp, const struct config *cfg, struct list *lst,
 					       menc_event_handler,
 					       menc_error_handler, call);
 			if (err) {
-				warning("call: mediaenc session: %m\n", err);
+				warning_bs("call: mediaenc session: %m\n", err);
 				goto out;
 			}
 		}
@@ -929,7 +929,7 @@ int call_alloc(struct call **callp, const struct config *cfg, struct list *lst,
 		&& (NULL != vidsrc_find(baresip_vidsrcl(), NULL)
 		    || NULL != vidisp_find(baresip_vidispl(), NULL));
 
-	debug("call: use_video=%d\n", call->use_video);
+	debug_bs("call: use_video=%d\n", call->use_video);
 	if (!call->use_video)
 		call->estvdir = SDP_INACTIVE;
 
@@ -945,7 +945,7 @@ int call_alloc(struct call **callp, const struct config *cfg, struct list *lst,
 
 	err = assign_linenum(&call->linenum, lst);
 	if (err) {
-		warning("call: could not assign linenumber\n");
+		warning_bs("call: could not assign linenumber\n");
 		goto out;
 	}
 
@@ -1029,7 +1029,7 @@ int call_connect(struct call *call, const struct pl *paddr)
 	if (!call || !paddr)
 		return EINVAL;
 
-	info("call: connecting to '%r'..\n", paddr);
+	info_bs("call: connecting to '%r'..\n", paddr);
 
 	call->outgoing = true;
 	err = str_x64dup(&call->id, rand_u64());
@@ -1103,7 +1103,7 @@ int call_modify(struct call *call)
 	if (!call)
 		return EINVAL;
 
-	debug("call: modify\n");
+	debug_bs("call: modify\n");
 
 	if (call_refresh_allowed(call)) {
 		err = bevent_call_emit(BEVENT_CALL_LOCAL_SDP, call, "offer");
@@ -1148,7 +1148,7 @@ void call_hangupf(struct call *call, uint16_t scode, const char *reason,
 
 	if (call->state == CALL_STATE_INCOMING) {
 		if (call->answered) {
-			info("call: abort call '%s' with %s\n",
+			info_bs("call: abort call '%s' with %s\n",
 			     sip_dialog_callid(sipsess_dialog(call->sess)),
 			     call->peer_uri);
 			sipsess_abort(call->sess);
@@ -1160,7 +1160,7 @@ void call_hangupf(struct call *call, uint16_t scode, const char *reason,
 			if (!str_isset(reason))
 				reason = "Busy Here";
 
-			info("call: rejecting incoming call from %s (%u %s)\n",
+			info_bs("call: rejecting incoming call from %s (%u %s)\n",
 			     call->peer_uri, scode, reason);
 			va_list ap;
 			va_start(ap, fmt);
@@ -1170,7 +1170,7 @@ void call_hangupf(struct call *call, uint16_t scode, const char *reason,
 		}
 	}
 	else {
-		info("call: terminate call '%s' with %s\n",
+		info_bs("call: terminate call '%s' with %s\n",
 		     sip_dialog_callid(sipsess_dialog(call->sess)),
 		     call->peer_uri);
 
@@ -1318,13 +1318,13 @@ int call_answer(struct call *call, uint16_t scode, enum vidmode vmode)
 	tmr_cancel(&call->tmr_answ);
 
 	if (CALL_STATE_INCOMING != call->state) {
-		info("call: answer: call is not in incoming state (%s)\n",
+		info_bs("call: answer: call is not in incoming state (%s)\n",
 		     state_name(call->state));
 		return EINVAL;
 	}
 
 	if (sipsess_awaiting_prack(call->sess)) {
-		info("call: answer: can not answer because we are awaiting a "
+		info_bs("call: answer: can not answer because we are awaiting a "
 		     "PRACK to a 1xx response with SDP\n");
 		return EAGAIN;
 	}
@@ -1332,7 +1332,7 @@ int call_answer(struct call *call, uint16_t scode, enum vidmode vmode)
 	if (vmode == VIDMODE_OFF)
 		call->video = mem_deref(call->video);
 
-	info("call: answering call on line %u from %s with %u\n",
+	info_bs("call: answering call on line %u from %s with %u\n",
 			call->linenum, call->peer_uri, scode);
 
 	if (call->got_offer) {
@@ -1424,7 +1424,7 @@ int call_hold(struct call *call, bool hold)
 	if (hold == call->on_hold)
 		return 0;
 
-	info("call: %s %s\n", hold ? "hold" : "resume", call->peer_uri);
+	info_bs("call: %s %s\n", hold ? "hold" : "resume", call->peer_uri);
 
 	call->on_hold = hold;
 
@@ -1830,7 +1830,7 @@ static int sipsess_offer_handler(struct mbuf **descp,
 		/* Decode SDP Offer */
 		err = sdp_decode(call->sdp, msg->mb, true);
 		if (err) {
-			warning("call: reinvite: could not decode SDP offer:"
+			warning_bs("call: reinvite: could not decode SDP offer:"
 				" %m\n", err);
 			return err;
 		}
@@ -1842,7 +1842,7 @@ static int sipsess_offer_handler(struct mbuf **descp,
 
 		err = update_media(call);
 		if (err) {
-			warning("call: reinvite: could not update media: %m\n",
+			warning_bs("call: reinvite: could not update media: %m\n",
 				err);
 			return err;
 		}
@@ -1860,7 +1860,7 @@ static int sipsess_offer_handler(struct mbuf **descp,
 		vrdir = sdp_media_rdir(vmedia);
 	}
 
-	info("call: got %r%s audio-video: %s-%s\n", &msg->met,
+	info_bs("call: got %r%s audio-video: %s-%s\n", &msg->met,
 	     got_offer ? " (SDP Offer)" : "", sdp_dir_name(ardir),
 	     sdp_dir_name(vrdir));
 
@@ -1883,7 +1883,7 @@ static int sipsess_answer_handler(const struct sip_msg *msg, void *arg)
 
 	MAGIC_CHECK(call);
 
-	debug("call: got SDP answer (%zu bytes)\n", mbuf_get_left(msg->mb));
+	debug_bs("call: got SDP answer (%zu bytes)\n", mbuf_get_left(msg->mb));
 
 	if (sip_msg_hdr_has_value(msg, SIP_HDR_SUPPORTED, "replaces"))
 		call->supported |= REPLACES;
@@ -1900,7 +1900,7 @@ static int sipsess_answer_handler(const struct sip_msg *msg, void *arg)
 
 	err = sdp_decode(call->sdp, msg->mb, false);
 	if (err) {
-		warning("call: could not decode SDP answer: %m\n", err);
+		warning_bs("call: could not decode SDP answer: %m\n", err);
 		return err;
 	}
 
@@ -1998,9 +1998,9 @@ static void sipsess_send_info_handler(int err, const struct sip_msg *msg,
 	(void)arg;
 
 	if (err)
-		warning("call: sending DTMF INFO failed (%m)", err);
+		warning_bs("call: sending DTMF INFO failed (%m)", err);
 	else if (msg && msg->scode != 200)
-		warning("call: sending DTMF INFO failed (scode: %d)",
+		warning_bs("call: sending DTMF INFO failed (scode: %d)",
 				msg->scode);
 }
 
@@ -2029,7 +2029,7 @@ static void sipsess_info_handler(struct sip *sip, const struct sip_msg *msg,
 			char s = toupper(sig.p[0]);
 			uint32_t duration = pl_u32(&dur);
 
-			info("call: received SIP INFO DTMF: '%c' "
+			info_bs("call: received SIP INFO DTMF: '%c' "
 			     "(duration=%r)\n", s, &dur);
 
 			(void)sip_reply(sip, msg, 200, "OK");
@@ -2076,7 +2076,7 @@ static void sipsess_refer_handler(struct sip *sip, const struct sip_msg *msg,
 	/* get the transfer target */
 	hdr = sip_msg_hdr(msg, SIP_HDR_REFER_TO);
 	if (!hdr) {
-		warning("call: bad REFER request from %r\n", &msg->from.auri);
+		warning_bs("call: bad REFER request from %r\n", &msg->from.auri);
 		(void)sip_reply(sip, msg, 400, "Missing Refer-To header");
 		return;
 	}
@@ -2093,7 +2093,7 @@ static void sipsess_refer_handler(struct sip *sip, const struct sip_msg *msg,
 			      sipnot_close_handler, call,
 			      "Allow: %H\r\n", ua_print_allowed, call->ua);
 	if (err) {
-		warning("call: refer: sipevent_accept failed: %m\n", err);
+		warning_bs("call: refer: sipevent_accept failed: %m\n", err);
 		return;
 	}
 
@@ -2126,7 +2126,7 @@ static void sipsess_close_handler(int err, const struct sip_msg *msg,
 	MAGIC_CHECK(call);
 
 	if (err) {
-		info("%s: session closed: %m\n", call->peer_uri, err);
+		info_bs("%s: session closed: %m\n", call->peer_uri, err);
 
 		(void)re_snprintf(reason, sizeof(reason), "%m", err);
 
@@ -2141,7 +2141,7 @@ static void sipsess_close_handler(int err, const struct sip_msg *msg,
 		(void)re_snprintf(reason, sizeof(reason), "%u %r",
 				  msg->scode, &msg->reason);
 
-		info("%s: session closed: %u %r\n",
+		info_bs("%s: session closed: %u %r\n",
 		     call->peer_uri, msg->scode, &msg->reason);
 
 		if (call->not) {
@@ -2150,7 +2150,7 @@ static void sipsess_close_handler(int err, const struct sip_msg *msg,
 		}
 	}
 	else {
-		info("%s: session closed\n", call->peer_uri);
+		info_bs("%s: session closed\n", call->peer_uri);
 	}
 
 	if (call->xcall)
@@ -2162,7 +2162,7 @@ static void sipsess_close_handler(int err, const struct sip_msg *msg,
 		reason_hdr = sip_msg_hdr(msg, SIP_HDR_REASON);
 
 	if (reason_hdr) {
-		info("Cancel reason: %r\n", &reason_hdr->val);
+		info_bs("Cancel reason: %r\n", &reason_hdr->val);
 		call_event_handler(call, CALL_EVENT_CLOSED, "%s,%r",
 						   reason, &reason_hdr->val);
 	}
@@ -2226,7 +2226,7 @@ static bool valid_addressfamily(struct call *call, const struct stream *strm)
 	raddr = sdp_media_raddr(m);
 
 	if (sa_isset(raddr, SA_ADDR) &&  sa_af(raddr) != call->af) {
-		info("call: incompatible address-family for %s"
+		info_bs("call: incompatible address-family for %s"
 				" (local=%s, remote=%s)\n",
 				sdp_media_name(m),
 				net_af2name(call->af),
@@ -2345,7 +2345,7 @@ int call_accept(struct call *call, struct sipsess_sock *sess_sock,
 
 		if (!have_common_audio_codecs(call) &&
 			!have_common_video_codecs(call)) {
-			info("call: no common audio or video codecs "
+			info_bs("call: no common audio or video codecs "
 				"- rejected\n");
 
 			sip_treply(NULL, uag_sip(), msg,
@@ -2370,7 +2370,7 @@ int call_accept(struct call *call, struct sipsess_sock *sess_sock,
 		struct call *rcall = call_find_replaces(ua_calls(call->ua),
 							&hdr->val);
 		if (!rcall) {
-			info("call: Replaces header present, but could not "
+			info_bs("call: Replaces header present, but could not "
 				"find matching call %r\n", &hdr->val);
 
 			sip_treply(NULL, uag_sip(), msg,
@@ -2401,7 +2401,7 @@ int call_accept(struct call *call, struct sipsess_sock *sess_sock,
 			     ua_print_require, call->ua);
 
 	if (err) {
-		warning("call: sipsess_accept: %m\n", err);
+		warning_bs("call: sipsess_accept: %m\n", err);
 		return err;
 	}
 
@@ -2461,7 +2461,7 @@ static void sipsess_progr_handler(const struct sip_msg *msg, void *arg)
 
 	MAGIC_CHECK(call);
 
-	info("call: SIP Progress: %u %r (%r/%r)\n",
+	info_bs("call: SIP Progress: %u %r (%r/%r)\n",
 	     msg->scode, &msg->reason, &msg->ctyp.type, &msg->ctyp.subtype);
 
 	call->msg_src = msg->src;
@@ -2522,7 +2522,7 @@ static void redirect_handler(const struct sip_msg *msg, const char *uri,
 {
 	struct call *call = arg;
 
-	info("call: redirect to %s\n", uri);
+	info_bs("call: redirect to %s\n", uri);
 	bevent_call_emit(BEVENT_CALL_REDIRECT, call,
 			 "%d,%s", msg->scode, uri);
 	return;
@@ -2556,7 +2556,7 @@ static int sipsess_desc_handler(struct mbuf **descp, const struct sa *src,
 	if (err)
 		return err;
 #if 0
-	info("- - - - - S D P - O f f e r - - - - -\n"
+	info_bs("- - - - - S D P - O f f e r - - - - -\n"
 	     "%b"
 	     "- - - - - - - - - - - - - - - - - - -\n",
 	     (*descp)->buf, (*descp)->end);
@@ -2614,7 +2614,7 @@ static int send_invite(struct call *call)
 			      call_print_replaces, call,
 			      custom_hdrs_print, &call->custom_hdrs);
 	if (err) {
-		warning("call: sipsess_connect: %m\n", err);
+		warning_bs("call: sipsess_connect: %m\n", err);
 		return err;
 	}
 
@@ -2652,7 +2652,7 @@ static int send_dtmf_info(struct call *call, char key)
 	err = sipsess_info(call->sess, "application/dtmf-relay", body,
 			   sipsess_send_info_handler, call);
 	if (err) {
-		warning("call: sipsess_info for DTMF failed (%m)\n", err);
+		warning_bs("call: sipsess_info for DTMF failed (%m)\n", err);
 		goto out;
 	}
 
@@ -2845,7 +2845,7 @@ static void sipsub_notify_handler(struct sip *sip, const struct sip_msg *msg,
 	sc = pl_u32(&scode);
 
 	if (sc >= 300) {
-		info("call: transfer failed: %u %r\n", sc, &reason);
+		info_bs("call: transfer failed: %u %r\n", sc, &reason);
 		call_event_handler(call, CALL_EVENT_TRANSFER_FAILED,
 				   "%u %r", sc, &reason);
 	}
@@ -2866,10 +2866,10 @@ static void sipsub_close_handler(int err, const struct sip_msg *msg,
 	call->sub = mem_deref(call->sub);
 
 	if (err) {
-		info("call: subscription closed: %m\n", err);
+		info_bs("call: subscription closed: %m\n", err);
 	}
 	else if (msg && msg->scode >= 300) {
-		info("call: transfer failed: %u %r\n",
+		info_bs("call: transfer failed: %u %r\n",
 		     msg->scode, &msg->reason);
 		call_event_handler(call, CALL_EVENT_TRANSFER_FAILED,
 				   "%u %r", msg->scode, &msg->reason);
@@ -2925,7 +2925,7 @@ int call_transfer(struct call *call, const char *uri)
 	if (err)
 		return err;
 
-	info("transferring call to %s\n", nuri);
+	info_bs("transferring call to %s\n", nuri);
 
 	call->sub = mem_deref(call->sub);
 	err = sipevent_drefer(&call->sub, uag_sipevent_sock(),
@@ -2936,7 +2936,7 @@ int call_transfer(struct call *call, const char *uri)
 		              "Refer-To: %s\r\nReferred-by: %s\r\n",
 			      nuri, account_aor(ua_account(call->ua)));
 	if (err) {
-		warning("call: sipevent_drefer: %m\n", err);
+		warning_bs("call: sipevent_drefer: %m\n", err);
 	}
 
 	mem_deref(nuri);
@@ -2960,7 +2960,7 @@ int call_replace_transfer(struct call *call, struct call *source_call)
 	if (!call || !source_call)
 		return EINVAL;
 
-	info("transferring call to %s\n", source_call->peer_uri);
+	info_bs("transferring call to %s\n", source_call->peer_uri);
 
 	call->sub = mem_deref(call->sub);
 
@@ -2977,7 +2977,7 @@ int call_replace_transfer(struct call *call, struct call *source_call)
 		account_aor(ua_account(call->ua)));
 
 	if (err) {
-		warning("call: sipevent_drefer: %m\n", err);
+		warning_bs("call: sipevent_drefer: %m\n", err);
 	}
 
 	return err;

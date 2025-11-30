@@ -35,7 +35,7 @@ static void handle_command(struct mqtt *mqtt, const struct pl *msg)
 
 	err = json_decode_odict(&od, 32, msg->p, msg->l, 16);
 	if (err) {
-		warning("mqtt: failed to decode JSON with %zu bytes (%m)\n",
+		warning_bs("mqtt: failed to decode JSON with %zu bytes (%m)\n",
 			msg->l, err);
 		goto out;
 	}
@@ -44,7 +44,7 @@ static void handle_command(struct mqtt *mqtt, const struct pl *msg)
 	prm = odict_string(od, "params");
 	tok = odict_string(od, "token");
 	if (!cmd) {
-		warning("mqtt: command is missing in json\n");
+		warning_bs("mqtt: command is missing in json\n");
 		goto out;
 	}
 
@@ -54,7 +54,7 @@ static void handle_command(struct mqtt *mqtt, const struct pl *msg)
 	if (aor) {
 		ua = uag_find_aor(aor);
 		if (!ua) {
-			warning("mqtt: ua not found (%s)\n", aor);
+			warning_bs("mqtt: ua not found (%s)\n", aor);
 			goto out;
 		}
 
@@ -63,7 +63,7 @@ static void handle_command(struct mqtt *mqtt, const struct pl *msg)
 
 			call = call_find_id(ua_calls(ua), callid);
 			if (!call) {
-				warning("mqtt: call not found (%s)\n", callid);
+				warning_bs("mqtt: call not found (%s)\n", callid);
 				goto out;
 			}
 
@@ -71,7 +71,7 @@ static void handle_command(struct mqtt *mqtt, const struct pl *msg)
 		}
 	}
 
-	debug("mqtt: handle_command:  cmd='%s', token='%s'\n", cmd, tok);
+	debug_bs("mqtt: handle_command:  cmd='%s', token='%s'\n", cmd, tok);
 
 	re_snprintf(cmd_buf, msg->l, "%s%s%s", cmd, prm ? " " : "", prm);
 
@@ -81,7 +81,7 @@ static void handle_command(struct mqtt *mqtt, const struct pl *msg)
 			       str_len(cmd_buf),
 			       &pf, ua);
 	if (err) {
-		warning("mqtt: error processing command (%m)\n", err);
+		warning_bs("mqtt: error processing command (%m)\n", err);
 	}
 
 	err = mbuf_write_u8(resp, '\0');
@@ -113,7 +113,7 @@ static void handle_command(struct mqtt *mqtt, const struct pl *msg)
 				   "%H",
 				   json_encode_odict, od_resp);
 	if (err) {
-		warning("mqtt: failed to publish message (%m)\n", err);
+		warning_bs("mqtt: failed to publish message (%m)\n", err);
 		goto out;
 	}
 
@@ -136,7 +136,7 @@ static void message_callback(struct mosquitto *mosq, void *obj,
 	bool match = false;
 	(void)mosq;
 
-	info("mqtt: got message '%b' for topic '%s'\n",
+	info_bs("mqtt: got message '%b' for topic '%s'\n",
 	     (char*) message->payload, (size_t)message->payloadlen,
 	     message->topic);
 
@@ -146,7 +146,7 @@ static void message_callback(struct mosquitto *mosq, void *obj,
 	mosquitto_topic_matches_sub(mqtt->subtopic, message->topic,
 				    &match);
 	if (match) {
-		info("mqtt: got message for '%s' topic\n", message->topic);
+		info_bs("mqtt: got message for '%s' topic\n", message->topic);
 
 		handle_command(mqtt, &msg);
 	}
@@ -170,12 +170,12 @@ int mqtt_subscribe_start(struct mqtt *mqtt)
 
 	ret = mosquitto_subscribe(mqtt->mosq, NULL, mqtt->subtopic, 0);
 	if (ret != MOSQ_ERR_SUCCESS) {
-		warning("mqtt: failed to subscribe (%s)\n",
+		warning_bs("mqtt: failed to subscribe (%s)\n",
 			mosquitto_strerror(ret));
 		return EPROTO;
 	}
 
-	info("mqtt: subscribed to pattern '%s'\n", mqtt->subtopic);
+	info_bs("mqtt: subscribed to pattern '%s'\n", mqtt->subtopic);
 
 	return 0;
 }

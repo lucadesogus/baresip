@@ -45,7 +45,7 @@ int ausrc_register(struct ausrc **asp, struct list *ausrcl,
 	as->name   = name;
 	as->alloch = alloch;
 
-	info("ausrc: %s\n", name);
+	info_bs("ausrc: %s\n", name);
 
 	*asp = as;
 

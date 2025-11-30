@@ -179,19 +179,19 @@ static int cons_alloc(struct ui_st **stp, const struct sa *laddr)
 
 	err = udp_listen(&st->us, laddr, udp_recv, st);
 	if (err) {
-		warning("cons: failed to listen on UDP %J (%m)\n",
+		warning_bs("cons: failed to listen on UDP %J (%m)\n",
 			laddr, err);
 		goto out;
 	}
 
 	err = tcp_listen(&st->ts, laddr, tcp_conn_handler, st);
 	if (err) {
-		warning("cons: failed to listen on TCP %J (%m)\n",
+		warning_bs("cons: failed to listen on TCP %J (%m)\n",
 			laddr, err);
 		goto out;
 	}
 
-	debug("cons: UI console listening on %J\n", laddr);
+	debug_bs("cons: UI console listening on %J\n", laddr);
 
  out:
 	if (err)

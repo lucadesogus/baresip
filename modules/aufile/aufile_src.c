@@ -104,7 +104,7 @@ static void timeout(void *arg)
 	if (!re_atomic_rlx(&st->run)) {
 		tmr_cancel(&st->tmr);
 
-		info("aufile: end of file\n");
+		info_bs("aufile: end of file\n");
 
 		/* error handler must be called from re_main thread */
 		if (st->errh)
@@ -140,7 +140,7 @@ static int read_file(struct ausrc_st *st)
 			break;
 
 		if (mb->end == 0) {
-			info("aufile: read end of file\n");
+			info_bs("aufile: read end of file\n");
 			break;
 		}
 
@@ -181,7 +181,7 @@ static int read_file(struct ausrc_st *st)
 			break;
 	}
 
-	info("aufile: loaded %zu bytes\n", aubuf_cur_size(st->aubuf));
+	info_bs("aufile: loaded %zu bytes\n", aubuf_cur_size(st->aubuf));
 	mem_deref(mb);
 	return err;
 }
@@ -199,12 +199,12 @@ int aufile_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		return EINVAL;
 
 	if (prm->fmt != AUFMT_S16LE) {
-		warning("aufile: unsupported sample format (%s)\n",
+		warning_bs("aufile: unsupported sample format (%s)\n",
 			aufmt_name(prm->fmt));
 		return ENOTSUP;
 	}
 
-	info("aufile: loading input file '%s'\n", dev);
+	info_bs("aufile: loading input file '%s'\n", dev);
 
 	st = mem_zalloc(sizeof(*st), destructor);
 	if (!st)
@@ -219,11 +219,11 @@ int aufile_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 
 	err = aufile_open(&st->aufile, &fprm, dev, AUFILE_READ);
 	if (err) {
-		warning("aufile: failed to open file '%s' (%m)\n", dev, err);
+		warning_bs("aufile: failed to open file '%s' (%m)\n", dev, err);
 		goto out;
 	}
 
-	info("aufile: %s: %u Hz, %d channels, %s\n",
+	info_bs("aufile: %s: %u Hz, %d channels, %s\n",
 	     dev, fprm.srate, fprm.channels, aufmt_name(fprm.fmt));
 
 	/* return wav format to caller */
@@ -238,7 +238,7 @@ int aufile_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	st->fmt    = fprm.fmt;
 	st->sampc  = prm->srate * prm->ch * st->ptime / 1000;
 
-	info("aufile: audio ptime=%u sampc=%zu\n", st->ptime, st->sampc);
+	info_bs("aufile: audio ptime=%u sampc=%zu\n", st->ptime, st->sampc);
 
 	/* 1 - inf seconds of audio */
 	err = aubuf_alloc(&st->aubuf, 0, 0);
@@ -283,7 +283,7 @@ int aufile_info_handler(const struct ausrc *as,
 	struct aufile_prm fprm;
 	err = aufile_open(&aufile, &fprm, dev, AUFILE_READ);
 	if (err) {
-		warning("aufile: failed to open file '%s' (%m)\n", dev, err);
+		warning_bs("aufile: failed to open file '%s' (%m)\n", dev, err);
 		return err;
 	}
 

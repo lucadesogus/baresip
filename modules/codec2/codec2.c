@@ -64,7 +64,7 @@ static int encode_update(struct auenc_state **aesp,
 		goto out;
 	}
 
-	info("codec2: %d samples per frame, %d bits per frame\n",
+	info_bs("codec2: %d samples per frame, %d bits per frame\n",
 	     codec2_samples_per_frame(st->c2),
 	     codec2_bits_per_frame(st->c2));
 
@@ -191,7 +191,7 @@ static int module_init(void)
 {
 	conf_get_u32(conf_cur(), "codec2_mode", &codec2_mode);
 
-	info("codec2: using mode %d\n", codec2_mode);
+	info_bs("codec2: using mode %d\n", codec2_mode);
 
 	aucodec_register(baresip_aucodecl(), &codec2);
 

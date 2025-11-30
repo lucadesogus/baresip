@@ -70,7 +70,7 @@ int avformat_video_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 	if (!stp || !vs || !prm || !size || !frameh)
 		return EINVAL;
 
-	debug("avformat: video: alloc dev='%s'\n", dev);
+	debug_bs("avformat: video: alloc dev='%s'\n", dev);
 
 	st = mem_zalloc(sizeof(*st), video_destructor);
 	if (!st)
@@ -92,7 +92,7 @@ int avformat_video_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 	}
 
 	if (st->shared->vid.idx < 0 || !st->shared->vid.ctx) {
-		info("avformat: video: media file has no video stream\n");
+		info_bs("avformat: video: media file has no video stream\n");
 		err = ENOENT;
 		goto out;
 	}
@@ -185,7 +185,7 @@ void avformat_video_decode(struct shared *st, AVPacket *pkt)
 
 	vf.fmt = avpixfmt_to_vidfmt(frame->format);
 	if (vf.fmt == (enum vidfmt)-1) {
-		warning("avformat: decode: bad pixel format"
+		warning_bs("avformat: decode: bad pixel format"
 			" (%i) (%s)\n",
 			frame->format,
 			av_get_pix_fmt_name(frame->format));

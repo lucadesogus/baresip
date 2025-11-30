@@ -31,7 +31,7 @@ Session::Session(const ZRTPConfig& config)
 
 	s_sessl.push_back(this);
 
-	debug("zrtp: New session <%d>\n", id());
+	debug_bs("zrtp: New session <%d>\n", id());
 }
 
 
@@ -46,7 +46,7 @@ Session::~Session()
 		}
 	}
 
-	debug("zrtp: Session <%d> is destroyed\n", id());
+	debug_bs("zrtp: Session <%d> is destroyed\n", id());
 }
 
 
@@ -137,7 +137,7 @@ void Session::on_secure(Stream *stream)
 	++m_encrypted;
 
 	if (m_encrypted == m_streams.size() && m_master) {
-		info("zrtp: All streams are encrypted (%s), "
+		info_bs("zrtp: All streams are encrypted (%s), "
 		     "SAS is [%s] (%s)\n",
 		     m_master->get_ciphers(),
 		     m_master->get_sas(),
@@ -151,7 +151,7 @@ void Session::on_secure(Stream *stream)
 					 NULL,
 					 m_master->session()->arg);
 			else
-				warning("zrtp: failed to print"
+				warning_bs("zrtp: failed to print"
 					" verified argument\n");
 			}
 		return;
@@ -163,7 +163,7 @@ void Session::on_secure(Stream *stream)
 	// Master stream has just entered secure state. Start other
 	// streams in the multistream mode.
 
-	debug("zrtp: Starting other streams (%d)\n", m_streams.size() - 1);
+	debug_bs("zrtp: Starting other streams (%d)\n", m_streams.size() - 1);
 
 	for (std::vector<Stream *>::iterator it = m_streams.begin();
 	     it != m_streams.end(); ++it) {
@@ -207,19 +207,19 @@ int Session::cmd_sas(bool verify, struct re_printf *pf, void *arg)
 	}
 
 	if (!sess) {
-		warning("zrtp: No session with id %d\n", id);
+		warning_bs("zrtp: No session with id %d\n", id);
 		return EINVAL;
 	}
 
 	if (!sess->m_master) {
-		warning("zrtp: No master stream for the session with id %d\n",
+		warning_bs("zrtp: No master stream for the session with id %d\n",
 		        sess->id());
 		return EFAULT;
 	}
 
 	sess->m_master->verify_sas(verify);
 
-	info("zrtp: Session <%d>: SAS [%s] is %s\n", sess->id(),
+	info_bs("zrtp: Session <%d>: SAS [%s] is %s\n", sess->id(),
 	     sess->m_master->get_sas(),
 	     (sess->m_master->sas_verified())? "verified" : "NOT VERIFIED");
 

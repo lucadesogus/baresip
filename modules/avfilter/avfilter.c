@@ -111,11 +111,11 @@ static int avfilter_command(struct re_printf *pf, void *arg)
 
 	if (str_isset(carg->prm)) {
 		str_ncpy(filter_descr, carg->prm, sizeof(filter_descr));
-		info("avfilter: enabled for %s\n", filter_descr);
+		info_bs("avfilter: enabled for %s\n", filter_descr);
 	}
 	else {
 		str_ncpy(filter_descr, "", sizeof(filter_descr));
-		info("avfilter: disabled\n");
+		info_bs("avfilter: disabled\n");
 	}
 
 	filter_updated = true;

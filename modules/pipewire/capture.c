@@ -65,7 +65,7 @@ int pw_capture_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if (!stp || !as || !prm || !rh)
 		return EINVAL;
 
-	info ("pipewire: opening capture(%u Hz, %d channels,"
+	info_bs("pipewire: opening capture(%u Hz, %d channels,"
 	      "device '%s')\n", prm->srate, prm->ch, dev);
 
 	st = mem_zalloc(sizeof(*st), ausrc_destructor);
@@ -117,7 +117,7 @@ int pw_capture_alloc(struct ausrc_st **stp, const struct ausrc *as,
 
 	pw_thread_loop_unlock(pw_loop_instance());
 
-	info ("pipewire: stream %s started (%m)\n", name, err);
+	info_bs("pipewire: stream %s started (%m)\n", name, err);
 
   out:
 	if (err)
@@ -149,7 +149,7 @@ static void on_process(void *arg)
 
 	b = pw_stream_dequeue_buffer(st->stream);
 	if (!b) {
-		warning("pipewire: out of buffers (%m)\n", errno);
+		warning_bs("pipewire: out of buffers (%m)\n", errno);
 		return;
 	}
 

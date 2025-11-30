@@ -130,13 +130,13 @@ static void pcp_resp_handler(int err, struct pcp_msg *msg, void *arg)
 	const struct pcp_map *map;
 
 	if (err) {
-		warning("pcp: mapping error: %m\n", err);
+		warning_bs("pcp: mapping error: %m\n", err);
 
 		complete(m->sess, err, NULL);
 		return;
 	}
 	else if (msg->hdr.result != PCP_SUCCESS) {
-		warning("pcp: mapping error: %s\n",
+		warning_bs("pcp: mapping error: %s\n",
 			pcp_result_name(msg->hdr.result));
 
 		re_printf("%H\n", pcp_msg_print, msg);
@@ -147,7 +147,7 @@ static void pcp_resp_handler(int err, struct pcp_msg *msg, void *arg)
 
 	map = pcp_msg_payload(msg);
 
-	info("pcp: %s: mapping for %s:"
+	info_bs("pcp: %s: mapping for %s:"
 	     " internal_port=%u, external_addr=%J\n",
 	     sdp_media_name(m->sdpm),
 	     comp->id==1 ? "RTP" : "RTCP",
@@ -245,7 +245,7 @@ static int media_alloc(struct mnat_media **mp, struct mnat_sess *sess,
 		/* note: using same address-family as the PCP server */
 		sa_init(&map.ext_addr, sa_af(&pcp_srv));
 
-		info("pcp: %s: internal port for %s is %u\n",
+		info_bs("pcp: %s: internal port for %s is %u\n",
 		     sdp_media_name(sdpm),
 		     i==0 ? "RTP" : "RTCP",
 		     map.int_port);
@@ -288,7 +288,7 @@ static void refresh_session(struct mnat_sess *sess, uint32_t epoch_time)
 		struct mnat_media *m = le->data;
 
 		if (epoch_time < m->srv_epoch) {
-			info("pcp: detected PCP Server reboot!\n");
+			info_bs("pcp: detected PCP Server reboot!\n");
 			media_refresh(m);
 		}
 
@@ -303,7 +303,7 @@ static void pcp_msg_handler(const struct pcp_msg *msg, void *arg)
 
 	(void)arg;
 
-	info("pcp: received notification: %H\n", pcp_msg_print, msg);
+	info_bs("pcp: received notification: %H\n", pcp_msg_print, msg);
 
 	if (msg->hdr.opcode == PCP_ANNOUNCE) {
 
@@ -342,13 +342,13 @@ static int module_init(void)
 		sa_set_port(&pcp_srv, PCP_PORT_SRV);
 	}
 
-	info("pcp: using PCP server at %J\n", &pcp_srv);
+	info_bs("pcp: using PCP server at %J\n", &pcp_srv);
 
 	/* NOTE: if multiple applications are listening on port 5350
 	   then this will not work */
 	err = pcp_listen(&lsnr, &pcp_srv, pcp_msg_handler, 0);
 	if (err) {
-		info("pcp: could not enable listener: %m\n", err);
+		info_bs("pcp: could not enable listener: %m\n", err);
 		err = 0;
 	}
 

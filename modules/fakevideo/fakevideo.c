@@ -81,7 +81,7 @@ static void src_destructor(void *arg)
 
 	/* Wait for termination of other thread */
 	if (re_atomic_rlx(&st->run)) {
-		debug("fakevideo: stopping read thread\n");
+		debug_bs("fakevideo: stopping read thread\n");
 		re_atomic_rlx_set(&st->run, false);
 		thrd_join(st->thread, NULL);
 	}

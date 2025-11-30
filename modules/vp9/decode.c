@@ -57,7 +57,7 @@ static void destructor(void *arg)
 	struct viddec_state *vds = arg;
 
 	if (vds->ctxup) {
-		debug("vp9: decoder stats: frames=%u, bytes=%zu\n",
+		debug_bs("vp9: decoder stats: frames=%u, bytes=%zu\n",
 		      vds->n_frames, vds->n_bytes);
 
 		vpx_codec_destroy(&vds->ctx);
@@ -126,7 +126,7 @@ static int ss_decode(struct ss *ss, struct mbuf *mb)
 	ss->y   = (v >> 4) & 0x1;
 	ss->g   = (v >> 3) & 0x1;
 
-	info("vp9: decode: ss n_s=%u y=%u g=%u\n",
+	info_bs("vp9: decode: ss n_s=%u y=%u g=%u\n",
 	     ss->n_s, ss->y, ss->g);
 
 	if (ss->n_s != 0)
@@ -191,11 +191,11 @@ static inline int hdr_decode(struct hdr *hdr, struct mbuf *mb)
 	hdr->v      = v>>1 & 0x1;
 
 	if (hdr->l) {
-		warning("vp9: decode: L-bit not supported\n");
+		warning_bs("vp9: decode: L-bit not supported\n");
 		return EPROTO;
 	}
 	if (hdr->f) {
-		warning("vp9: decode: F-bit not supported\n");
+		warning_bs("vp9: decode: F-bit not supported\n");
 		return EPROTO;
 	}
 
@@ -284,7 +284,7 @@ int vp9_decode(struct viddec_state *vds, struct vidframe *frame,
 		return err;
 
 #if 0
-	debug("vp9: [%c] header:"
+	debug_bs("vp9: [%c] header:"
 	      " i=%u p=%u l=%u f=%u start=%u end=%u picid=%u\n",
 	      marker ? 'M' : ' ',
 	      hdr.i, hdr.p, hdr.l, hdr.f, hdr.b, hdr.e, hdr.picid);
@@ -318,7 +318,7 @@ int vp9_decode(struct viddec_state *vds, struct vidframe *frame,
 	if (!pkt->hdr->m) {
 
 		if (vds->mb->end > DECODE_MAXSZ) {
-			warning("vp9: decode buffer size exceeded\n");
+			warning_bs("vp9: decode buffer size exceeded\n");
 			err = ENOMEM;
 			goto out;
 		}
@@ -329,19 +329,19 @@ int vp9_decode(struct viddec_state *vds, struct vidframe *frame,
 	res = vpx_codec_decode(&vds->ctx, vds->mb->buf,
 			       (unsigned int)vds->mb->end, NULL, 1);
 	if (res) {
-		debug("vp9: decode error: %s\n", vpx_codec_err_to_string(res));
+		debug_bs("vp9: decode error: %s\n", vpx_codec_err_to_string(res));
 		err = EPROTO;
 		goto out;
 	}
 
 	img = vpx_codec_get_frame(&vds->ctx, &iter);
 	if (!img) {
-		debug("vp9: no picture\n");
+		debug_bs("vp9: no picture\n");
 		goto out;
 	}
 
 	if (img->fmt != VPX_IMG_FMT_I420) {
-		warning("vp9: bad pixel format (%i)\n", img->fmt);
+		warning_bs("vp9: bad pixel format (%i)\n", img->fmt);
 		goto out;
 	}
 

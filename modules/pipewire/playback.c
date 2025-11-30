@@ -62,7 +62,7 @@ int pw_playback_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (!stp || !ap || !prm || !wh)
 		return EINVAL;
 
-	info ("pipewire: opening playback (%u Hz, %d channels, device %s, "
+	info_bs("pipewire: opening playback (%u Hz, %d channels, device %s, "
 		"ptime %u)\n", prm->srate, prm->ch, dev, prm->ptime);
 
 	st = mem_zalloc(sizeof(*st), auplay_destructor);
@@ -114,7 +114,7 @@ int pw_playback_alloc(struct auplay_st **stp, const struct auplay *ap,
 
 	pw_thread_loop_unlock(pw_loop_instance());
 
-	info ("pipewire: stream %s started (%m)\n", name, err);
+	info_bs("pipewire: stream %s started (%m)\n", name, err);
 
   out:
 	if (err)
@@ -142,7 +142,7 @@ static void on_process(void *arg)
 
 	b = pw_stream_dequeue_buffer(st->stream);
 	if (!b) {
-		warning("pipewire: out of buffers (%m)\n", errno);
+		warning_bs("pipewire: out of buffers (%m)\n", errno);
 		return;
 	}
 
@@ -154,7 +154,7 @@ static void on_process(void *arg)
 
 	sampv = d->data;
 	if (d->maxsize < st->nbytes) {
-		warning("pipewire: buffer to small\n");
+		warning_bs("pipewire: buffer to small\n");
 		return;
 	}
 

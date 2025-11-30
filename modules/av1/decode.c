@@ -103,7 +103,7 @@ static int copy_obu(struct mbuf *mb_bs, const uint8_t *buf, size_t size)
 
 	int err = av1_obu_decode(&hdr, &wrap);
 	if (err) {
-		warning("av1: decode: could not decode OBU"
+		warning_bs("av1: decode: could not decode OBU"
 			" [%zu bytes]: %m\n", size, err);
 		return err;
 	}
@@ -127,12 +127,12 @@ static int copy_obu(struct mbuf *mb_bs, const uint8_t *buf, size_t size)
 	case AV1_OBU_TILE_LIST:
 	case AV1_OBU_PADDING:
 		/* MUST be ignored by receivers. */
-		warning("av1: decode: copy: unexpected obu type [%H]\n",
+		warning_bs("av1: decode: copy: unexpected obu type [%H]\n",
 			av1_obu_print, &hdr);
 		return EPROTO;
 
 	default:
-		warning("av1: decode: copy: unknown obu type [%H]\n",
+		warning_bs("av1: decode: copy: unknown obu type [%H]\n",
 			av1_obu_print, &hdr);
 		return EPROTO;
 	}
@@ -163,7 +163,7 @@ int av1_decode(struct viddec_state *vds, struct vidframe *frame,
 		return err;
 
 #if 0
-	debug("av1: decode: header:  [%s]  [seq=%u, %4zu bytes]"
+	debug_bs("av1: decode: header:  [%s]  [seq=%u, %4zu bytes]"
 	      "  z=%u  y=%u  w=%u  n=%u\n",
 	      marker ? "M" : " ",
 	      seq, mbuf_get_left(mb),
@@ -171,11 +171,11 @@ int av1_decode(struct viddec_state *vds, struct vidframe *frame,
 #endif
 
 	if (hdr.n) {
-		info("av1: new coded video sequence\n");
+		info_bs("av1: new coded video sequence\n");
 
 		/* Note: if N equals 1 then Z must equal 0. */
 		if (hdr.z) {
-			warning("av1: Note: if N equals 1 then"
+			warning_bs("av1: Note: if N equals 1 then"
 				" Z must equal 0.\n");
 		}
 	}
@@ -207,7 +207,7 @@ int av1_decode(struct viddec_state *vds, struct vidframe *frame,
 	if (!pkt->hdr->m) {
 
 		if (vds->mb->end > DECODE_MAXSZ) {
-			warning("av1: decode buffer size exceeded\n");
+			warning_bs("av1: decode buffer size exceeded\n");
 			err = ENOMEM;
 			goto out;
 		}
@@ -281,7 +281,7 @@ int av1_decode(struct viddec_state *vds, struct vidframe *frame,
 	res = aom_codec_decode(&vds->ctx, mb2->buf,
 			       (unsigned int)mb2->end, NULL);
 	if (res) {
-		warning("av1: decode error [w=%u, %zu bytes]: %s (%s)\n",
+		warning_bs("av1: decode error [w=%u, %zu bytes]: %s (%s)\n",
 			hdr.w,
 			mb2->end,
 			aom_codec_err_to_string(res),
@@ -292,7 +292,7 @@ int av1_decode(struct viddec_state *vds, struct vidframe *frame,
 
 	img = aom_codec_get_frame(&vds->ctx, &iter);
 	if (!img) {
-		debug("av1: no picture\n");
+		debug_bs("av1: no picture\n");
 		goto out;
 	}
 
@@ -303,7 +303,7 @@ int av1_decode(struct viddec_state *vds, struct vidframe *frame,
 	}
 
 	if (img->fmt != AOM_IMG_FMT_I420) {
-		warning("av1: bad pixel format (%i)\n", img->fmt);
+		warning_bs("av1: bad pixel format (%i)\n", img->fmt);
 		goto out;
 	}
 
